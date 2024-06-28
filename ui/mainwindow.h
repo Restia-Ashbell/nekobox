@@ -91,7 +91,7 @@ private slots:
 
     void on_menu_add_from_input_triggered();
 
-    void on_menu_add_from_clipboard_triggered();
+    static void on_menu_add_from_clipboard_triggered();
 
     void on_menu_clone_triggered();
 
@@ -132,6 +132,8 @@ private slots:
     void on_proxyListTable_customContextMenuRequested(const QPoint &pos);
 
     void on_tabWidget_currentChanged(int index);
+
+    void on_tabWidget_customContextMenuRequested(const QPoint& p);
 
 private:
     Ui::MainWindow *ui;
