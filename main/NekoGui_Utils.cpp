@@ -113,26 +113,6 @@ QJsonArray QList2QJsonArray(const QList<T> &list) {
     return QJsonArray::fromVariantList(list2);
 }
 
-QJsonArray QListStr2QJsonArray(const QList<QString> &list) {
-    QVariantList list2;
-    bool isEmpty = true;
-    for (auto &item: list) {
-        if (item.trimmed().isEmpty()) continue;
-        list2.append(item);
-        isEmpty = false;
-    }
-
-    if (isEmpty) return {};
-    else return QJsonArray::fromVariantList(list2);
-}
-
-QJsonArray QListInt2QJsonArray(const QList<int> &list) {
-    QVariantList list2;
-    for (auto &item: list)
-        list2.append(item);
-    return QJsonArray::fromVariantList(list2);
-}
-
 template QJsonArray QList2QJsonArray<int>(const QList<int> &list);
 template QJsonArray QList2QJsonArray<QString>(const QList<QString> &list);
 
@@ -148,6 +128,28 @@ QList<QString> QJsonArray2QListString(const QJsonArray &arr) {
     for (auto item: arr)
         list2.append(item.toString());
     return list2;
+}
+
+QJsonArray QString2QJsonArray(const QString &str) {
+    QJsonArray jsonArray;
+    QStringList list = str.split(",", Qt::SkipEmptyParts);
+
+    for (const QString &item: list) {
+        QString trimmedItem = item.trimmed();
+
+        bool isInt, isDouble;
+        int intValue = trimmedItem.toInt(&isInt);
+        double doubleValue = trimmedItem.toDouble(&isDouble);
+
+        if (isInt) {
+            jsonArray.append(intValue);
+        } else if (isDouble) {
+            jsonArray.append(doubleValue);
+        } else {
+            jsonArray.append(trimmedItem);
+        }
+    }
+    return jsonArray;
 }
 
 QByteArray ReadFile(const QString &path) {

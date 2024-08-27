@@ -194,11 +194,11 @@ namespace NekoGui_sub {
             ok = ent->QUICBean()->TryParseLink(str);
         }
 
-        // Wireguard
-        if (str.startsWith("wg://")) {
+        // WireGuard
+        else if (str.startsWith("wg://")) {
             needFix = false;
             ent = NekoGui::ProfileManager::NewProxyEntity("wireguard");
-            ok = ent->WireguardBean()->TryParseLink(str);
+            ok = ent->WireGuardBean()->TryParseLink(str);
         }
 
         else return;
@@ -546,6 +546,24 @@ namespace NekoGui_sub {
                         if (bean->sni.isEmpty()) bean->sni = bean->serverAddress;
                         bean->serverAddress = Node2QString(proxy["ip"]);
                     }
+                } else if (type == "wireguard") {
+                    auto getFieldValue = [&](const auto &key) -> QString {
+                        auto node = proxy[key] ? proxy[key] : proxy["peers"][0][key];
+                        return node.IsSequence() ? Node2QStringList(node).join(",") : Node2QString(node);
+                    };
+
+                    auto bean = ent->WireGuardBean();
+                    ent->bean->serverAddress = getFieldValue("server");
+                    ent->bean->serverPort = getFieldValue("port").toInt();
+                    bean->publicKey = getFieldValue("public-key");
+                    bean->preSharedKey = getFieldValue("pre-shared-key");
+                    bean->reserved = getFieldValue("reserved");
+                    bean->privateKey = Node2QString(proxy["private-key"]);
+                    bean->MTU = Node2Int(proxy["mtu"], 1408);
+
+                    QString ip = Node2QString(proxy["ip"]);
+                    QString ipv6 = Node2QString(proxy["ipv6"]);
+                    bean->localAddress = ip.isEmpty() ? ipv6 : (ipv6.isEmpty() ? ip : ip + "," + ipv6);
                 } else {
                     MW_show_log(QObject::tr("第 %1 个节点解析失败").arg(index));
                     continue;
