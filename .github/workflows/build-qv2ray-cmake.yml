@@ -22,7 +22,7 @@ jobs:
           - cross_os: public_res
             cross_arch: public_res
       fail-fast: false
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checking GUI sources
         uses: actions/checkout@v4
@@ -40,15 +40,10 @@ jobs:
           path: artifacts.tgz
           key: CommonCache-${{ matrix.cross_os }}-${{ matrix.cross_arch }}-${{ hashFiles('.github/workflows/*', 'libs/*.sh', 'go_status', '*.txt') }}
       - name: Install Golang
-        if: steps.cache-common.outputs.cache-hit != 'true' && matrix.cross_os != 'windows7'
+        if: steps.cache-common.outputs.cache-hit != 'true'
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
-      - name: Install Older Golang
-        if: steps.cache-common.outputs.cache-hit != 'true' && matrix.cross_os == 'windows7'
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.20'
+          go-version: '1.24'
       - name: Build golang parts
         if: steps.cache-common.outputs.cache-hit != 'true'
         shell: bash
@@ -70,18 +65,18 @@ jobs:
     strategy:
       matrix:
         include:
-          - platform: windows-latest
+          - platform: windows-2025
             arch: amd64
-            qt_version: "6.8.1"
-          - platform: ubuntu-latest
+            qt_version: "6.8.2"
+          - platform: ubuntu-24.04
             arch: amd64
-            qt_version: "6.8.1"
+            qt_version: "6.8.2"
           - platform: macos-13
             arch: amd64
-            qt_version: "6.8.1"
-          - platform: macos-14
+            qt_version: "6.8.2"
+          - platform: macos-15
             arch: arm64
-            qt_version: "6.8.1"
+            qt_version: "6.8.2"
       fail-fast: false
     runs-on: ${{ matrix.platform }}
     env:
@@ -92,7 +87,7 @@ jobs:
         with:
           submodules: "recursive"
       - name: Install MSVC compiler
-        if: matrix.platform == 'windows-latest'
+        if: matrix.platform == 'windows-2025'
         uses: ilammy/msvc-dev-cmd@v1
       - name: Download Artifacts
         uses: actions/download-artifact@v4
@@ -123,7 +118,7 @@ jobs:
       # ========================================================================================================= Generate MakeFile and Build
       - name: Windows - Generate MakeFile and Build
         shell: bash
-        if: matrix.platform == 'windows-latest'
+        if: matrix.platform == 'windows-2025'
         env:
           CC: cl.exe
           CXX: cl.exe
@@ -136,7 +131,7 @@ jobs:
           ./libs/deploy_windows64.sh
       - name: Linux - Generate MakeFile and Build
         shell: bash
-        if: matrix.platform == 'ubuntu-latest'
+        if: matrix.platform == 'ubuntu-24.04'
         run: |
           sudo apt update && sudo apt upgrade -y
           mkdir build 
@@ -147,7 +142,7 @@ jobs:
           ./libs/deploy_linux64.sh
       - name: macOS - Generate MakeFile and Build
         shell: bash
-        if: matrix.platform == 'macos-13' || matrix.platform == 'macos-14'
+        if: matrix.platform == 'macos-13' || matrix.platform == 'macos-15'
         run: |
           mkdir build
           pushd build 
@@ -167,7 +162,7 @@ jobs:
   publish:
     name: Pack & Publish Release
     if: github.event.inputs.artifact-pack == 'y'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - build-cpp
     steps:
@@ -179,7 +174,7 @@ jobs:
           path: download-artifact
       - name: Pack
         run: |
-          curl -Lo - https://github.com/tcnksm/ghr/releases/download/v0.16.2/ghr_v0.16.2_linux_amd64.tar.gz | tar xzv
+          curl -Lo - https://github.com/tcnksm/ghr/releases/download/v0.17.0/ghr_v0.17.0_linux_amd64.tar.gz | tar xzv
           mv ghr*linux_amd64/ghr .
           source libs/env_deploy.sh
           COMMIT_HASH=$(git rev-parse --short HEAD)
