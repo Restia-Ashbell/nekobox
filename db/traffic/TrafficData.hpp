@@ -15,8 +15,7 @@ namespace NekoGui_traffic {
 
         long long last_update;
 
-        explicit TrafficData(std::string tag) {
-            this->tag = std::move(tag);
+        explicit TrafficData(std::string tag) : tag(std::move(tag)) {
             _add(new configItem("dl", &downlink, itemType::integer64));
             _add(new configItem("ul", &uplink, itemType::integer64));
         };

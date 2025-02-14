@@ -34,7 +34,13 @@ namespace NekoGui_fmt {
 
         QString custom_config = "";
         QString custom_outbound = "";
+
         int mux_state = 0;
+        bool multiplex_padding = false;
+        QString multiplex_protocol = "h2mux";
+        int multiplex_max_streams = 0;
+        int brutal_up = 0;
+        int brutal_down = 0;
 
         explicit AbstractBean(int version);
 

@@ -67,7 +67,7 @@ namespace NekoGui_fmt {
         // mux
         if (mux_state == 1) {
             query.addQueryItem("mux", "true");
-        } else if (mux_state == 2) {
+        } else if (mux_state == 0) {
             query.addQueryItem("mux", "false");
         }
 
@@ -92,7 +92,7 @@ namespace NekoGui_fmt {
             url.setUserName(fixShadowsocksUserNameEncodeMagic);
         } else {
             auto method_password = method + ":" + password;
-            url.setUserName(method_password.toUtf8().toBase64(QByteArray::Base64Option::Base64UrlEncoding));
+            url.setUserName(method_password.toUtf8().toBase64(QByteArray::Base64UrlEncoding));
         }
         url.setHost(serverAddress);
         url.setPort(serverPort);
@@ -103,7 +103,7 @@ namespace NekoGui_fmt {
         // mux
         if (mux_state == 1) {
             q.addQueryItem("mux", "true");
-        } else if (mux_state == 2) {
+        } else if (mux_state == 0) {
             q.addQueryItem("mux", "false");
         }
         // uot
@@ -127,12 +127,12 @@ namespace NekoGui_fmt {
             .arg(protocol)
             .arg(method)
             .arg(obfs)
-            .arg(password.isEmpty() ? QString() : QString::fromUtf8(password.toUtf8().toBase64(QByteArray::Base64Option::Base64UrlEncoding)))
-            .arg(obfsParam.isEmpty() ? QString() : QString::fromUtf8(obfsParam.toUtf8().toBase64(QByteArray::Base64Option::Base64UrlEncoding)))
-            .arg(protocolParam.isEmpty() ? QString() : QString::fromUtf8(protocolParam.toUtf8().toBase64(QByteArray::Base64Option::Base64UrlEncoding)))
-            .arg(name.isEmpty() ? QString() : QString::fromUtf8(name.toUtf8().toBase64(QByteArray::Base64Option::Base64UrlEncoding)));
+            .arg(password.isEmpty() ? QString() : QString::fromUtf8(password.toUtf8().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals)))
+            .arg(obfsParam.isEmpty() ? QString() : QString::fromUtf8(obfsParam.toUtf8().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals)))
+            .arg(protocolParam.isEmpty() ? QString() : QString::fromUtf8(protocolParam.toUtf8().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals)))
+            .arg(name.isEmpty() ? QString() : QString::fromUtf8(name.toUtf8().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals)));
 
-        return "ssr://" + QString::fromUtf8(dataString.toUtf8().toBase64(QByteArray::Base64Option::Base64UrlEncoding));
+        return "ssr://" + QString::fromUtf8(dataString.toUtf8().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals));
     }
 
     QString VMessBean::ToShareLink() {
@@ -203,7 +203,7 @@ namespace NekoGui_fmt {
             // mux
             if (mux_state == 1) {
                 query.addQueryItem("mux", "true");
-            } else if (mux_state == 2) {
+            } else if (mux_state == 0) {
                 query.addQueryItem("mux", "false");
             }
 
@@ -294,7 +294,7 @@ namespace NekoGui_fmt {
         QUrlQuery q;
         q.addQueryItem("user", user);
         if (!password.isEmpty()) q.addQueryItem("password", password);
-        if (!privateKey.isEmpty()) q.addQueryItem("private_key", QString::fromUtf8(privateKey.toUtf8().toBase64(QByteArray::Base64Option::Base64UrlEncoding)));
+        if (!privateKey.isEmpty()) q.addQueryItem("private_key", QString::fromUtf8(privateKey.toUtf8().toBase64(QByteArray::Base64UrlEncoding)));
         if (!privateKeyPath.isEmpty()) q.addQueryItem("private_key_path", privateKeyPath);
         if (!privateKeyPassphrase.isEmpty()) q.addQueryItem("private_key_passphrase", privateKeyPassphrase);
         if (!hostKey.isEmpty()) q.addQueryItem("host_key", hostKey);

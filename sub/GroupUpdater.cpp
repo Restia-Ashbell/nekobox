@@ -26,12 +26,20 @@ namespace NekoGui_sub {
         // 1. "security"
         if (stream->security == "none" || stream->security == "0" || stream->security == "false") {
             stream->security = "";
-        } else if (stream->security == "1" || stream->security == "true") {
+        } else if (stream->security == "1" || stream->security == "true" || stream->security == "reality") {
             stream->security = "tls";
         }
         // 2. TLS SNI: v2rayN config builder generate sni like this, so set sni here for their format.
         if (stream->security == "tls" && IsIpAddress(ent->bean->serverAddress) && (!stream->host.isEmpty()) && stream->sni.isEmpty()) {
             stream->sni = stream->host;
+        }
+        // 3. transport
+        if (stream->network == "none") {
+            stream->network = "tcp";
+        } else if (stream->network == "h2") {
+            stream->network = "http";
+        } else if (stream->network == "websocket") {
+            stream->network = "ws";
         }
     }
 
@@ -71,6 +79,8 @@ namespace NekoGui_sub {
     }
 
     void RawUpdater::update(const QString &str, bool needParse = true, int index = 0) {
+        if (str.length() < 2) return;
+
         // Base64 encoded subscription
         if (auto str2 = DecodeB64IfValid(str); !str2.isEmpty()) {
             update(str2);
@@ -84,7 +94,7 @@ namespace NekoGui_sub {
         }
 
         // Multi line
-        if (str.count("\n") > 0 && needParse) {
+        if (needParse && str.contains('\n')) {
             auto list = Disect(str);
             for (const auto &str2: list) {
                 update(str2.trimmed(), false, ++index);
@@ -92,29 +102,17 @@ namespace NekoGui_sub {
             return;
         }
 
-        // is comment or too short
-        if (str.startsWith("//") || str.startsWith("#") || str.length() < 2) {
+        // is comment
+        if (str.startsWith("//") || str.startsWith("#")) {
             return;
         }
 
         std::shared_ptr<NekoGui::ProxyEntity> ent;
-        bool needFix = true;
+        bool needFix = false;
         bool ok = true;
 
-        // Nekoray format
-        if (str.startsWith("nekoray://")) {
-            needFix = false;
-            auto link = QUrl(str);
-            if (!link.isValid()) return;
-            ent = NekoGui::ProfileManager::NewProxyEntity(link.host());
-            if (ent->bean->version == -114514) return;
-            auto j = DecodeB64IfValid(link.fragment().toUtf8(), QByteArray::Base64UrlEncoding);
-            if (j.isEmpty()) return;
-            ent->bean->FromJsonBytes(j);
-        }
-
         // Json
-        else if (str.startsWith('{')) {
+        if (str.startsWith('{')) {
             ent = NekoGui::ProfileManager::NewProxyEntity("custom");
             auto bean = ent->CustomBean();
             auto obj = QString2QJsonObject(str);
@@ -129,6 +127,17 @@ namespace NekoGui_sub {
             }
         }
 
+        // Nekoray format
+        if (str.startsWith("nekoray://")) {
+            auto link = QUrl(str);
+            if (!link.isValid()) return;
+            ent = NekoGui::ProfileManager::NewProxyEntity(link.host());
+            if (ent->bean->version == -114514) return;
+            auto j = DecodeB64IfValid(link.fragment().toUtf8(), QByteArray::Base64UrlEncoding);
+            if (j.isEmpty()) return;
+            ent->bean->FromJsonBytes(j);
+        }
+
         // SOCKS
         else if (str.startsWith("socks5://") || str.startsWith("socks4://") ||
                  str.startsWith("socks4a://") || str.startsWith("socks://")) {
@@ -138,6 +147,7 @@ namespace NekoGui_sub {
 
         // HTTP
         else if (str.startsWith("http://") || str.startsWith("https://")) {
+            needFix = true;
             ent = NekoGui::ProfileManager::NewProxyEntity("http");
             ok = ent->SocksHTTPBean()->TryParseLink(str);
         }
@@ -156,65 +166,63 @@ namespace NekoGui_sub {
 
         // VMess
         else if (str.startsWith("vmess://")) {
+            needFix = true;
             ent = NekoGui::ProfileManager::NewProxyEntity("vmess");
             ok = ent->VMessBean()->TryParseLink(str);
         }
 
         // VLESS
         else if (str.startsWith("vless://")) {
+            needFix = true;
             ent = NekoGui::ProfileManager::NewProxyEntity("vless");
             ok = ent->TrojanVLESSBean()->TryParseLink(str);
         }
 
         // Trojan
         else if (str.startsWith("trojan://")) {
+            needFix = true;
             ent = NekoGui::ProfileManager::NewProxyEntity("trojan");
             ok = ent->TrojanVLESSBean()->TryParseLink(str);
         }
 
         // Naive
         else if (str.startsWith("naive+")) {
-            needFix = false;
             ent = NekoGui::ProfileManager::NewProxyEntity("naive");
             ok = ent->NaiveBean()->TryParseLink(str);
         }
 
         // Hysteria1
         else if (str.startsWith("hysteria://")) {
-            needFix = false;
             ent = NekoGui::ProfileManager::NewProxyEntity("hysteria");
             ok = ent->QUICBean()->TryParseLink(str);
         }
 
         // Hysteria2
         else if (str.startsWith("hysteria2://") || str.startsWith("hy2://")) {
-            needFix = false;
             ent = NekoGui::ProfileManager::NewProxyEntity("hysteria2");
             ok = ent->QUICBean()->TryParseLink(str);
         }
 
         // TUIC
         else if (str.startsWith("tuic://")) {
-            needFix = false;
             ent = NekoGui::ProfileManager::NewProxyEntity("tuic");
             ok = ent->QUICBean()->TryParseLink(str);
         }
 
         // SSH
         else if (str.startsWith("ssh://")) {
-            needFix = false;
             ent = NekoGui::ProfileManager::NewProxyEntity("ssh");
             ok = ent->SSHBean()->TryParseLink(str);
         }
 
         // WireGuard
         else if (str.startsWith("wg://")) {
-            needFix = false;
             ent = NekoGui::ProfileManager::NewProxyEntity("wireguard");
             ok = ent->WireGuardBean()->TryParseLink(str);
         }
 
-        else return;
+        else
+            return;
 
         if (!ok) {
             if (index > 0) {
@@ -737,13 +745,11 @@ namespace NekoGui_sub {
                 }
 
                 // sort according to order in remote
-                group->order = {};
+                group->order.clear();
                 for (const auto &ent: rawUpdater->updated_order) {
                     auto deleted_index = update_del.indexOf(ent);
-                    if (deleted_index > 0) {
-                        if (deleted_index >= update_keep.count()) continue; // should not happen
-                        auto ent2 = update_keep[deleted_index];
-                        group->order.append(ent2->id);
+                    if (deleted_index >= 0) {
+                        group->order.append(update_keep[deleted_index]->id);
                     } else {
                         group->order.append(ent->id);
                     }

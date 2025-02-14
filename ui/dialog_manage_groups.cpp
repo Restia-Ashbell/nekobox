@@ -21,17 +21,23 @@
         ui->listWidget->setItemWidget(wI, w);            \
     }
 
-DialogManageGroups::DialogManageGroups(QWidget *parent) : QDialog(parent), ui(new Ui::DialogManageGroups) {
+DialogManageGroups::DialogManageGroups(QWidget *parent, int index) : QDialog(parent), ui(new Ui::DialogManageGroups) {
     ui->setupUi(this);
 
     for (auto id: NekoGui::profileManager->groupsTabOrder) {
         AddGroupToListIfExist(id)
     }
 
+    setWindowTitle(QString("%1 [%2]").arg(windowTitle()).arg(ui->listWidget->count()));
+
     connect(ui->listWidget, &QListWidget::itemDoubleClicked, this, [=](QListWidgetItem *wI) {
         auto w = dynamic_cast<GroupItem *>(ui->listWidget->itemWidget(wI));
         emit w->edit_clicked();
     });
+
+    if (index >= 0 && index < ui->listWidget->count()) {
+        ui->listWidget->scrollToItem(ui->listWidget->item(index));
+    }
 }
 
 DialogManageGroups::~DialogManageGroups() {

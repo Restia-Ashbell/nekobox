@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.14)
 
 set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
@@ -9,7 +9,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 
 # Find Qt
 if (NOT QT_VERSION_MAJOR)
@@ -66,18 +66,41 @@ if (NKR_PACKAGE OR NKR_PACKAGE_MACOS)
 endif ()
 
 include("cmake/myproto.cmake")
-list(APPEND NKR_EXTERNAL_TARGETS myproto)
 
-find_package(yaml-cpp CONFIG REQUIRED) # only Release is built
-list(APPEND NKR_EXTERNAL_TARGETS yaml-cpp::yaml-cpp)
-
-find_package(ZXing CONFIG REQUIRED)
-list(APPEND NKR_EXTERNAL_TARGETS ZXing::ZXing)
-
-set(QHOTKEY_INSTALL OFF)
 set(BUILD_SHARED_LIBS OFF)
-add_subdirectory(3rdparty/QHotkey)
-list(APPEND NKR_EXTERNAL_TARGETS qhotkey)
+set(QHOTKEY_INSTALL OFF)
+set(YAML_CPP_BUILD_TOOLS OFF)
+set(ZXING_EXAMPLES OFF)
+
+include(FetchContent)
+FetchContent_Declare(
+    QJsonModel
+    GIT_REPOSITORY https://github.com/dridk/QJsonModel.git
+    GIT_TAG master
+)
+FetchContent_Declare(
+    QHotkey
+    GIT_REPOSITORY https://github.com/Skycoder42/QHotkey.git
+    GIT_TAG master
+)
+FetchContent_Declare(
+    yaml-cpp
+    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+    GIT_TAG master
+)
+FetchContent_Declare(
+    zxing-cpp
+    GIT_REPOSITORY https://github.com/zxing-cpp/zxing-cpp.git
+    GIT_TAG master
+)
+FetchContent_Declare(
+    qrcodegen
+    GIT_REPOSITORY https://github.com/nayuki/QR-Code-generator.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(QJsonModel QHotkey yaml-cpp zxing-cpp qrcodegen)
+
+set_target_properties(ZXing PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
 
 # Sources
 set(PROJECT_SOURCES
@@ -88,20 +111,15 @@ set(PROJECT_SOURCES
         main/NekoGui_Utils.cpp
         main/HTTPRequestHelper.cpp
 
-        3rdparty/base64.cpp
-        3rdparty/qrcodegen.cpp
+        ${qrcodegen_SOURCE_DIR}/cpp/qrcodegen.cpp
+
         3rdparty/QtExtKeySequenceEdit.cpp
 
         3rdparty/qv2ray/v2/ui/LogHighlighter.cpp
-        3rdparty/qv2ray/v2/ui/QvAutoCompleteTextEdit.cpp
         3rdparty/qv2ray/v2/components/proxy/QvProxyConfigurator.cpp
-        3rdparty/qv2ray/v2/ui/widgets/common/QJsonModel.cpp
         3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.cpp
         3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp
         3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.ui
-
-        3rdparty/qv2ray/v3/components/GeositeReader/GeositeReader.cpp
-        3rdparty/qv2ray/v3/components/GeositeReader/picoproto.cpp
 
         rpc/gRPC.cpp
 
@@ -188,10 +206,6 @@ set(PROJECT_SOURCES
         ui/dialog_manage_routes.h
         ui/dialog_manage_routes.ui
 
-        ui/dialog_vpn_settings.cpp
-        ui/dialog_vpn_settings.h
-        ui/dialog_vpn_settings.ui
-
         ui/dialog_hotkey.cpp
         ui/dialog_hotkey.h
         ui/dialog_hotkey.ui
@@ -220,20 +234,21 @@ set_property(TARGET nekoray PROPERTY AUTOUIC ON)
 set_property(TARGET nekoray PROPERTY AUTOMOC ON)
 set_property(TARGET nekoray PROPERTY AUTORCC ON)
 
-# Target Source macOS
-
-set(MACOSX_ICON ${CMAKE_SOURCE_DIR}/res/nekoray.icns)
-if (APPLE)
+if(APPLE)
+    set(MACOSX_ICON ${CMAKE_SOURCE_DIR}/res/nekoray.icns)
     target_sources(nekoray PRIVATE ${MACOSX_ICON})
-endif ()
-set_target_properties(nekoray PROPERTIES
+    set_target_properties(nekoray PROPERTIES
         MACOSX_BUNDLE_ICON_FILE "nekoray.icns"
         RESOURCE ${MACOSX_ICON}
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/MacOSXBundleInfo.plist
         MACOSX_BUNDLE_GUI_IDENTIFIER moe.nekoray.macosx
         MACOSX_BUNDLE TRUE
-        WIN32_EXECUTABLE TRUE
-)
+    )
+endif()
+
+if(WIN32)
+    set_target_properties(nekoray PROPERTIES WIN32_EXECUTABLE TRUE)
+endif()
 
 # Target Source Translations
 
@@ -253,11 +268,22 @@ target_sources(nekoray PRIVATE ${CMAKE_BINARY_DIR}/translations.qrc)
 
 # Target Link
 
+target_include_directories(nekoray PRIVATE
+    ${zxing-cpp_SOURCE_DIR}/example
+    ${qrcodegen_SOURCE_DIR}/cpp
+)
+
 target_link_libraries(nekoray PRIVATE
-        Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network Qt${QT_VERSION_MAJOR}::Svg
+        Qt${QT_VERSION_MAJOR}::Widgets 
+        Qt${QT_VERSION_MAJOR}::Network 
+        Qt${QT_VERSION_MAJOR}::Svg
         Threads::Threads
-        ${NKR_EXTERNAL_TARGETS}
         ${PLATFORM_LIBRARIES}
+        QJsonModel
+        QHotkey::QHotkey 
+        yaml-cpp::yaml-cpp
+        ZXing::ZXing
+        myproto
 )
 
 qt_finalize_executable(nekoray)

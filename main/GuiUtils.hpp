@@ -70,7 +70,7 @@
     }
 
 #define C_EDIT_JSON_ALLOW_EMPTY(a)                                    \
-    auto editor = new JsonEditor(QString2QJsonObject(CACHE.a), this); \
+    auto editor = new JsonEditor(CACHE.a, this);                      \
     auto result = editor->OpenEditor();                               \
     CACHE.a = QJsonObject2QString(result, true);                      \
     if (result.isEmpty()) CACHE.a = "";                               \
@@ -91,3 +91,5 @@
             checkBox->setText(text + "*");                           \
         }                                                            \
     }
+
+#define ADJUST_SIZE runOnUiThread([=] { adjustSize(); adjustPosition(mainwindow); }, this);

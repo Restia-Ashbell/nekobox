@@ -4,8 +4,6 @@
 
 #include "main/NekoGui.hpp"
 
-#ifndef MW_INTERFACE
-
 #include <QTime>
 #include <QTableWidgetItem>
 #include <QKeyEvent>
@@ -20,8 +18,6 @@
 
 #include "db/ProxyEntity.hpp"
 #include "main/GuiUtils.hpp"
-
-#endif
 
 namespace NekoGui_sys {
     class CoreProcess;
@@ -67,6 +63,8 @@ public:
 
     bool StopVPNProcess(bool unconditional = false);
 
+    void updateLogMaxLines();
+
 signals:
 
     void profile_selected(int id);
@@ -77,8 +75,6 @@ public slots:
 
     void on_menu_exit_triggered();
 
-#ifndef MW_INTERFACE
-
 private slots:
 
     void on_masterLogBrowser_customContextMenuRequested(const QPoint &pos);
@@ -86,8 +82,6 @@ private slots:
     void on_menu_basic_settings_triggered();
 
     void on_menu_routing_settings_triggered();
-
-    void on_menu_vpn_settings_triggered();
 
     void on_menu_hotkey_settings_triggered();
 
@@ -162,6 +156,9 @@ private:
     QMutex mu_exit;
     QSemaphore sem_stopped;
     int exit_reason = 0;
+    //
+    bool dialog_is_using = false;
+    bool mw_sub_updating = false;
 
     QList<std::shared_ptr<NekoGui::ProxyEntity>> get_now_selected_list();
 
@@ -177,11 +174,12 @@ private:
 
     void closeEvent(QCloseEvent *event) override;
 
+    template<typename DialogType, typename... Args>
+    void openDialog(Args&&... args);
+
     //
 
     void HotkeyEvent(const QString &key);
-
-    bool StartVPNProcess();
 
     // grpc and ...
 
@@ -197,12 +195,8 @@ private:
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
-
-#endif // MW_INTERFACE
 };
 
 inline MainWindow *GetMainWindow() {
     return (MainWindow *) mainwindow;
 }
-
-void UI_InitMainWindow();

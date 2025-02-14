@@ -16,7 +16,7 @@
             },
             {
                 "tag": "dns-direct",
-                "address": "%DNS_ADDRESS%",
+                "address": "local",
                 "detour": "direct"
             },
             {

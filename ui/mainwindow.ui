@@ -108,6 +108,34 @@
        </widget>
       </item>
       <item>
+       <widget class="QToolButton" name="toolButton_dashboard">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Dashboard</string>
+        </property>
+        <property name="icon">
+         <iconset theme="b-internet-web-browser"/>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="popupMode">
+         <enum>QToolButton::ToolButtonPopupMode::InstantPopup</enum>
+        </property>
+        <property name="toolButtonStyle">
+         <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QToolButton" name="toolButton_document">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -413,7 +441,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_program">
@@ -447,7 +475,8 @@
      <addaction name="actionfake_3"/>
     </widget>
     <addaction name="actionShow_window"/>
-    <addaction name="menu_add_from_clipboard2"/>
+    <addaction name="menu_open_config_folder"/>
+    <addaction name="separator"/>
     <addaction name="menu_scan_qr"/>
     <addaction name="separator"/>
     <addaction name="actionStart_with_system"/>
@@ -469,9 +498,7 @@
     <addaction name="menu_manage_groups"/>
     <addaction name="menu_basic_settings"/>
     <addaction name="menu_routing_settings"/>
-    <addaction name="menu_vpn_settings"/>
     <addaction name="menu_hotkey_settings"/>
-    <addaction name="menu_open_config_folder"/>
    </widget>
    <widget class="QMenu" name="menu_server">
     <property name="title">
@@ -594,11 +621,6 @@
    </property>
    <property name="shortcut">
     <string notr="true">Del</string>
-   </property>
-  </action>
-  <action name="menu_add_from_clipboard2">
-   <property name="text">
-    <string>Add profile from clipboard</string>
    </property>
   </action>
   <action name="menu_profile_debug_info">
@@ -819,11 +841,6 @@
    </property>
    <property name="shortcut">
     <string notr="true">Ctrl+Shift+I</string>
-   </property>
-  </action>
-  <action name="menu_vpn_settings">
-   <property name="text">
-    <string>Tun Settings</string>
    </property>
   </action>
   <action name="actionRestart_Program">

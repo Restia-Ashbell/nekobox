@@ -4,24 +4,21 @@ namespace NekoGui {
 
     class Routing : public JsonStore {
     public:
-        QString direct_ip;
-        QString direct_domain;
-        QString proxy_ip;
-        QString proxy_domain;
-        QString block_ip;
-        QString block_domain;
+        QString block_rules;
+        QString proxy_rules;
+        QString direct_rules;
         QString def_outbound = "proxy";
-        QString custom = "{}";
+        QString rule_sets_provider = "https://raw.githubusercontent.com/SagerNet/sing-%type%/rule-set/%type%-%name%.srs";
+        QString custom = R"({"dns":{},"outbounds":[],"route":{}})";
 
         // DNS
-        QString remote_dns = "https://8.8.8.8/dns-query";
+        QString remote_dns = "https://dns.google/dns-query";
         QString remote_dns_strategy = "";
         QString direct_dns = "local";
         QString direct_dns_strategy = "";
         bool dns_routing = true;
         bool fake_dns = false;
-        bool use_dns_object = false;
-        QString dns_object = "";
+        bool enable_custom = false;
         QString dns_final_out = "proxy";
 
         // Misc
@@ -94,19 +91,13 @@ namespace NekoGui {
         // Saved
 
         // Misc
-        QString log_level = "warning";
-        QString test_latency_url = "http://cp.cloudflare.com/";
+        QString test_latency_url = "https://www.google.com/generate_204";
         QString test_download_url = "http://cachefly.cachefly.net/10mb.test";
         int test_download_timeout = 30;
         int test_concurrent = 5;
         bool old_share_link_format = true;
         int traffic_loop_interval = 1000;
-        bool disable_traffic_stats = false;
         int current_group = 0; // group id
-        QString mux_protocol = "";
-        bool mux_padding = false;
-        int mux_concurrency = 8;
-        bool mux_default_on = false;
         QString theme = "0";
         QString v2ray_asset_dir = "";
         int language = 0;
@@ -135,48 +126,48 @@ namespace NekoGui {
         int remember_id = -1919;
         bool remember_enable = false;
 
-        // Socks & HTTP Inbound
+        // Mixed Inbound
         QString inbound_address = "127.0.0.1";
-        int inbound_socks_port = 2080; // or Mixed
-        int inbound_http_port = 2081;
+        int inbound_port = 2080;
         InboundAuthorization *inbound_auth = new InboundAuthorization;
-        QString custom_inbound = "{\"inbounds\": []}";
+        QString custom_inbound = R"({"inbounds":[]})";
+
+        // Tun Inbound
+        QString tun_stack;
+        int tun_mtu = 9000;
+        bool tun_ipv6 = false;
+        bool tun_strict_route = false;
 
         // Routing
-        QString custom_route_global = "{\"rules\": []}";
         QString active_routing = "Default";
 
-        // VPN
-        QString vpn_implementation;
-        int vpn_mtu = 9000;
-        bool vpn_ipv6 = false;
-        bool vpn_hide_console = true;
-        bool vpn_strict_route = false;
-        bool vpn_rule_white = false;
-        bool enable_gso = false;
-        QString vpn_rule_process = "";
-        QString vpn_rule_cidr = "";
+        // Log
+        bool log_disabled = false;
+        bool log_timestamp = false;
+        QString log_level = "info";
+
+        // Clash API
+        QString clash_api_external_controller;
+        QString clash_api_dashboard = "zashboard";
+        QString clash_api_secret;
 
         // NTP
-        bool enable_ntp = false;
-        QString ntp_server_address = "";
+        bool ntp_enabled = false;
+        QString ntp_server;
         int ntp_server_port = 0;
-        QString ntp_interval = "";
+        QString ntp_interval = "30m";
+
+        // Certificate
+        QString certificate_store = "system";
+        QString certificate;
+        QString certificate_path;
+        QString certificate_directory_path;
 
         // Hotkey
         QString hotkey_mainwindow = "";
         QString hotkey_group = "";
         QString hotkey_route = "";
         QString hotkey_system_proxy_menu = "";
-
-        // Core
-        int core_box_clash_api = -9090;
-        QString core_box_clash_listen_addr = "127.0.0.1";
-        QString core_box_clash_api_secret = "";
-        QString core_box_underlying_dns = "";
-        bool core_ray_direct_dns = false;
-        bool core_ray_windows_disable_auto_interface = false;
-        QString core_ray_freedom_domainStrategy = "";
 
         // Other Core
         ExtraCore *extraCore = new ExtraCore;

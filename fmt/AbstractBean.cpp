@@ -14,6 +14,11 @@ namespace NekoGui_fmt {
         _add(new configItem("c_cfg", &custom_config, itemType::string));
         _add(new configItem("c_out", &custom_outbound, itemType::string));
         _add(new configItem("mux", &mux_state, itemType::integer));
+        _add(new configItem("multiplex_padding", &multiplex_padding, itemType::boolean));
+        _add(new configItem("multiplex_protocol", &multiplex_protocol, itemType::string));
+        _add(new configItem("multiplex_max_streams", &multiplex_max_streams, itemType::integer));
+        _add(new configItem("brutal_up", &brutal_up, itemType::integer));
+        _add(new configItem("brutal_down", &brutal_down, itemType::integer));
     }
 
     QString AbstractBean::ToNekorayShareLink(const QString &type) {

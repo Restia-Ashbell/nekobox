@@ -78,80 +78,61 @@ void MainWindow::speedtest_current_group(int mode) {
 
     QStringList full_test_flags;
     if (mode == libcore::FullTest) {
-        auto w = new QDialog(this);
-        auto layout = new QVBoxLayout(w);
-        w->setWindowTitle(tr("Test Options"));
+        QDialog dialog(this);
+        QVBoxLayout layout(&dialog);
+        dialog.setWindowTitle(tr("Test Options"));
         //
-        auto l1 = new QCheckBox(tr("Latency"));
-        auto l2 = new QCheckBox(tr("UDP latency"));
-        auto l3 = new QCheckBox(tr("Download speed"));
-        auto l4 = new QCheckBox(tr("In and Out IP"));
+        QCheckBox l1(tr("Latency"));
+        QCheckBox l2(tr("UDP latency"));
+        QCheckBox l3(tr("Download speed"));
+        QCheckBox l4(tr("In and Out IP"));
         //
-        auto box = new QDialogButtonBox;
-        box->setOrientation(Qt::Horizontal);
-        box->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
-        connect(box, &QDialogButtonBox::accepted, w, &QDialog::accept);
-        connect(box, &QDialogButtonBox::rejected, w, &QDialog::reject);
+        QDialogButtonBox box(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+        connect(&box, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+        connect(&box, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
         //
-        layout->addWidget(l1);
-        layout->addWidget(l2);
-        layout->addWidget(l3);
-        layout->addWidget(l4);
-        layout->addWidget(box);
-        if (w->exec() != QDialog::Accepted) {
-            w->deleteLater();
-            return;
-        }
+        layout.addWidget(&l1);
+        layout.addWidget(&l2);
+        layout.addWidget(&l3);
+        layout.addWidget(&l4);
+        layout.addWidget(&box);
+        if (dialog.exec() != QDialog::Accepted) return;
         //
-        if (l1->isChecked()) full_test_flags << "1";
-        if (l2->isChecked()) full_test_flags << "2";
-        if (l3->isChecked()) full_test_flags << "3";
-        if (l4->isChecked()) full_test_flags << "4";
+        if (l1.isChecked()) full_test_flags << "1";
+        if (l2.isChecked()) full_test_flags << "2";
+        if (l3.isChecked()) full_test_flags << "3";
+        if (l4.isChecked()) full_test_flags << "4";
         //
-        w->deleteLater();
         if (full_test_flags.isEmpty()) return;
     }
     speedtesting = true;
 
-    runOnNewThread([this, profiles, mode, full_test_flags] {
-        QMutex lock_write;
-        QMutex lock_return;
+    runOnNewThread([this, profiles, mode, full_test_flags] mutable {
+        QMutex threadListMutex;
+        QMutex profileListMutex;
+        QSemaphore doneSemaphore;
         int threadN = qMin(NekoGui::dataStore->test_concurrent, profiles.count());
-        auto profiles_test = profiles; // copy
 
         // Threads
-        lock_return.lock();
         for (int i = 0; i < threadN; ++i) {
             runOnNewThread([&] {
-                lock_write.lock();
-                speedtesting_threads << QObject::thread();
-                lock_write.unlock();
+                threadListMutex.lock();
+                speedtesting_threads << QThread::currentThread();
+                threadListMutex.unlock();
 
                 forever {
-                    //
-                    lock_write.lock();
-                    if (profiles_test.isEmpty()) {
-                        speedtesting_threads.removeOne(QObject::thread());
-                        if (speedtesting_threads.isEmpty()) {
-                            // quit control thread
-                            lock_write.unlock();
-                            lock_return.unlock();
-                            return;
-                        }
-                        // quit of this thread
-                        lock_write.unlock();
-                        return;
+                    std::shared_ptr<NekoGui::ProxyEntity> profile;
+                    {
+                        QMutexLocker locker(&profileListMutex);
+                        if (profiles.empty()) break;
+                        profile = profiles.takeFirst();
                     }
-                    auto profile = profiles_test.takeFirst();
-                    lock_write.unlock();
 
-                    //
                     libcore::TestReq req;
                     req.set_mode((libcore::TestMode) mode);
                     req.set_timeout(3000);
                     req.set_url(NekoGui::dataStore->test_latency_url.toStdString());
 
-                    //
                     std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> extCs;
                     QSemaphore extSem;
 
@@ -232,11 +213,15 @@ void MainWindow::speedtest_current_group(int mode) {
                         refresh_proxy_list(profileId);
                     });
                 }
+
+                threadListMutex.lock();
+                speedtesting_threads.removeOne(QThread::currentThread());
+                threadListMutex.unlock();
+                doneSemaphore.release();
             });
         }
         // Control
-        lock_return.lock();
-        lock_return.unlock();
+        doneSemaphore.acquire(threadN);
         speedtesting = false;
     });
 }
@@ -301,7 +286,7 @@ void MainWindow::neko_start(int _id) {
     auto neko_start_stage2 = [=] {
         libcore::LoadConfigReq req;
         req.set_core_config(QJsonObject2QString(result->coreConfig, false).toStdString());
-        req.set_disable_stats(NekoGui::dataStore->disable_traffic_stats);
+        req.set_disable_stats(NekoGui::dataStore->traffic_loop_interval == 0);
         //
         bool rpcOK;
         QString error = defaultClient->Start(&rpcOK, req);
@@ -426,7 +411,7 @@ void MainWindow::neko_stop(bool crash, bool sem) {
 #ifndef NKR_NO_GRPC
         NekoGui_traffic::trafficLooper->loop_enabled = false;
         NekoGui_traffic::trafficLooper->loop_mutex.lock();
-        if (NekoGui::dataStore->traffic_loop_interval != 0) {
+        if (NekoGui::dataStore->traffic_loop_interval > 0) {
             NekoGui_traffic::trafficLooper->UpdateAll();
             for (const auto &item: NekoGui_traffic::trafficLooper->items) {
                 NekoGui::profileManager->GetProfile(item->id)->Save();

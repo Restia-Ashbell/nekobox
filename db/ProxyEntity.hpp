@@ -26,7 +26,7 @@ namespace NekoGui_fmt {
     class CustomBean;
 
     class ChainBean;
-}; // namespace NekoGui_fmt
+} // namespace NekoGui_fmt
 
 namespace NekoGui {
     class ProxyEntity : public JsonStore {

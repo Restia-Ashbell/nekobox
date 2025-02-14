@@ -1,7 +1,7 @@
 #pragma once
 
 #include "3rdparty/qv2ray/wrapper.hpp"
-#include "3rdparty/qv2ray/v2/ui/widgets/common/QJsonModel.hpp"
+#include "QJsonModel.hpp"
 #include "ui_w_JsonEditor.h"
 
 #include <QDialog>
@@ -12,7 +12,7 @@ class JsonEditor
     Q_OBJECT
 
 public:
-    explicit JsonEditor(const QJsonObject& rootObject, QWidget* parent = nullptr);
+    explicit JsonEditor(const QString& jsonString, QWidget* parent = nullptr);
     ~JsonEditor();
     QJsonObject OpenEditor();
 
@@ -25,6 +25,6 @@ private slots:
 
 private:
     QJsonModel model;
-    QJsonObject original;
-    QJsonObject final;
+    QJsonDocument original;
+    QJsonDocument final;
 };

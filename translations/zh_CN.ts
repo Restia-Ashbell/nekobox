@@ -52,6 +52,10 @@
         <translation>订阅</translation>
     </message>
     <message>
+        <source>Inbound</source>
+        <translation>入站</translation>
+    </message>
+    <message>
         <source>Core</source>
         <translation>核心</translation>
     </message>
@@ -1160,6 +1164,10 @@ This needs to be run NekoBox with administrator privileges.</source>
     <message>
         <source>Ads</source>
         <translation>推广</translation>
+    </message>
+    <message>
+        <source>Dashboard</source>
+        <translation>面板</translation>
     </message>
     <message>
         <source>Type</source>

@@ -2,11 +2,10 @@
 #include "ui_dialog_edit_group.h"
 
 #include "db/Database.hpp"
-#include "ui/mainwindow_interface.h"
+#include "main/GuiUtils.hpp"
+#include "ui/mainwindow.h"
 
 #include <QClipboard>
-
-#define ADJUST_SIZE runOnUiThread([=] { adjustSize(); adjustPosition(mainwindow); }, this);
 
 DialogEditGroup::DialogEditGroup(const std::shared_ptr<NekoGui::Group> &ent, QWidget *parent) : QDialog(parent), ui(new Ui::DialogEditGroup) {
     ui->setupUi(this);

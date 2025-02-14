@@ -26,19 +26,7 @@ namespace NekoGui {
         // priv
         QList<int> globalProfiles;
 
-        // xxList is V2Ray format string list
-
-        QStringList domainListDNSRemote;
-        QStringList domainListDNSDirect;
-        QStringList domainListRemote;
-        QStringList domainListDirect;
-        QStringList ipListRemote;
-        QStringList ipListDirect;
-        QStringList domainListBlock;
-        QStringList ipListBlock;
-
         // config format
-
         QJsonArray routingRules;
         QJsonArray inbounds;
         QJsonArray outbounds;
@@ -52,8 +40,4 @@ namespace NekoGui {
 
     QString BuildChainInternal(int chainId, const QList<std::shared_ptr<ProxyEntity>> &ents,
                                const std::shared_ptr<BuildConfigStatus> &status);
-
-    QString WriteVPNSingBoxConfig();
-
-    QString WriteVPNLinuxScript(const QString &protectPath, const QString &configPath);
 } // namespace NekoGui

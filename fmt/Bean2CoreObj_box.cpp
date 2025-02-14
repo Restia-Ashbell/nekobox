@@ -48,13 +48,15 @@ namespace NekoGui_fmt {
         if (security == "tls") {
             QJsonObject tls{{"enabled", true}};
             if (allow_insecure || NekoGui::dataStore->skip_cert) tls["insecure"] = true;
+            if (!certificate.trimmed().isEmpty()) tls["certificate"] = certificate.trimmed();
+            if (ech_enabled) {
+                QJsonObject echObj{{"enabled", true}};
+                if (!ech.trimmed().isEmpty()) echObj["config"] = ech.trimmed();
+                tls["ech"] = echObj;
+            }
+            if (disable_sni) tls["disable_sni"] = true;
             if (!sni.trimmed().isEmpty()) tls["server_name"] = sni;
-            if (!certificate.trimmed().isEmpty()) {
-                tls["certificate"] = certificate.trimmed();
-            }
-            if (!alpn.trimmed().isEmpty()) {
-                tls["alpn"] = QList2QJsonArray(alpn.split(","));
-            }
+            if (!alpn.trimmed().isEmpty()) tls["alpn"] = QList2QJsonArray(alpn.split(","));
             QString fp = utlsFingerprint;
             if (!reality_pbk.trimmed().isEmpty()) {
                 tls["reality"] = QJsonObject{
@@ -70,6 +72,8 @@ namespace NekoGui_fmt {
                     {"fingerprint", fp},
                 };
             }
+            if (tls_fragment) tls["fragment"] = true;
+            if (tls_record_fragment) tls["record_fragment"] = true;
             outbound->insert("tls", tls);
         }
 
@@ -105,8 +109,7 @@ namespace NekoGui_fmt {
             {"server", serverAddress},
             {"server_port", serverPort},
             {"method", method},
-            {"password", password}
-        };
+            {"password", password}};
 
         if (uot != 0) {
             QJsonObject udp_over_tcp{
@@ -136,11 +139,10 @@ namespace NekoGui_fmt {
             {"server_port", serverPort},
             {"method", method},
             {"password", password},
-            {"obfs",obfs},
-            {"obfs_param",obfsParam},
-            {"protocol",protocol},
-            {"protocol_param",protocolParam}
-        };
+            {"obfs", obfs},
+            {"obfs_param", obfsParam},
+            {"protocol", protocol},
+            {"protocol_param", protocolParam}};
 
         result.outbound = outbound;
         return result;
@@ -223,7 +225,7 @@ namespace NekoGui_fmt {
             if (authPayloadType == hysteria_auth_base64) outbound["auth"] = authPayload;
             if (authPayloadType == hysteria_auth_string) outbound["auth_str"] = authPayload;
 
-            if (!hopPort.isEmpty()){
+            if (!hopPort.isEmpty()) {
                 outbound["server_ports"] = QJsonArray::fromStringList(QString(hopPort).replace('-', ':').split(',', Qt::SkipEmptyParts));
                 outbound["hop_interval"] = QString::number(hopInterval) + "s";
             }
@@ -240,7 +242,7 @@ namespace NekoGui_fmt {
                 };
             }
 
-            if (!hopPort.isEmpty()){
+            if (!hopPort.isEmpty()) {
                 outbound["server_ports"] = QJsonArray::fromStringList(QString(hopPort).replace('-', ':').split(',', Qt::SkipEmptyParts));
                 outbound["hop_interval"] = QString::number(hopInterval) + "s";
             }
@@ -276,7 +278,7 @@ namespace NekoGui_fmt {
             {"private_key_passphrase", privateKeyPassphrase},
             {"host_key", QString2QJsonArray(hostKey)},
             {"host_key_algorithms", QString2QJsonArray(hostKeyAlgorithms)},
-            {"client_version", clientVersion}
+            {"client_version", clientVersion},
         };
 
         result.outbound = outbound;
@@ -303,7 +305,7 @@ namespace NekoGui_fmt {
             {"reserved", QString2QJsonArray(reserved)},
             {"mtu", MTU},
             {"gso", enableGSO},
-            {"system_interface", useSystemInterface}
+            {"system_interface", useSystemInterface},
         };
 
         result.outbound = outbound;

@@ -143,23 +143,19 @@ namespace NekoGui {
         // Load type
         ProxyEntity ent0(nullptr, nullptr);
         ent0.fn = jsonPath;
-        auto validJson = ent0.Load();
-        auto type = ent0.type;
 
         // Load content
         std::shared_ptr<ProxyEntity> ent;
-        bool validType = validJson;
-
-        if (validType) {
-            ent = NewProxyEntity(type);
-            validType = ent->bean->version != -114514;
+        if (ent0.Load()) {
+            ent = NewProxyEntity(ent0.type);
+            if (ent->bean->version != -114514) {
+                ent->load_control_must = true;
+                ent->fn = jsonPath;
+                ent->last_save_content = std::move(ent0.last_save_content);
+                ent->Load();
+            }
         }
-
-        if (validType) {
-            ent->load_control_must = true;
-            ent->fn = jsonPath;
-            ent->Load();
-        }
+        
         return ent;
     }
 

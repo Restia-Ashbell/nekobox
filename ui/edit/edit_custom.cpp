@@ -146,7 +146,7 @@ bool EditCustom::onEnd() {
 }
 
 void EditCustom::on_as_json_clicked() {
-    auto editor = new JsonEditor(QString2QJsonObject(ui->config_simple->toPlainText()), this);
+    auto editor = new JsonEditor(ui->config_simple->toPlainText(), this);
     auto result = editor->OpenEditor();
     if (!result.isEmpty()) {
         ui->config_simple->setPlainText(QJsonObject2QString(result, false));

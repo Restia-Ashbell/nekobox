@@ -1,6 +1,6 @@
 #include "TrafficLooper.hpp"
 
-#include "ui/mainwindow_interface.h"
+#include "ui/mainwindow.h"
 
 #include <QThread>
 #include <QJsonObject>
@@ -14,7 +14,7 @@ namespace NekoGui_traffic {
     QElapsedTimer elapsedTimer;
 
     TrafficData *TrafficLooper::update_stats(TrafficData *item, libcore::QueryStatsResp &resp) {
-        if (NekoGui::dataStore->disable_traffic_stats) {
+        if (NekoGui::dataStore->traffic_loop_interval == 0) {
             return nullptr;
         }
         // last update
@@ -43,7 +43,7 @@ namespace NekoGui_traffic {
     }
 
     void TrafficLooper::UpdateAll() {
-        if (NekoGui::dataStore->disable_traffic_stats) {
+        if (NekoGui::dataStore->traffic_loop_interval == 0) {
             return;
         }
         auto resp = NekoGui_rpc::defaultClient->QueryStats();
@@ -70,7 +70,7 @@ namespace NekoGui_traffic {
     }
 
     void TrafficLooper::Loop() {
-        if (NekoGui::dataStore->disable_traffic_stats) {
+        if (NekoGui::dataStore->traffic_loop_interval == 0) {
             return;
         }
         elapsedTimer.start();

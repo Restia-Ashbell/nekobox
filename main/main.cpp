@@ -12,7 +12,7 @@
 #include "3rdparty/RunGuard.hpp"
 #include "main/NekoGui.hpp"
 
-#include "ui/mainwindow_interface.h"
+#include "ui/mainwindow.h"
 
 #ifdef Q_OS_WIN
 #include "sys/windows/MiniDump.h"
@@ -167,8 +167,8 @@ int main(int argc, char* argv[]) {
     if (!dir.exists("groups")) {
         dir_success &= dir.mkdir("groups");
     }
-    if (!dir.exists(ROUTES_PREFIX_NAME)) {
-        dir_success &= dir.mkdir(ROUTES_PREFIX_NAME);
+    if (!dir.exists("routes")) {
+        dir_success &= dir.mkdir("routes");
     }
     if (!dir_success) {
         QMessageBox::warning(nullptr, "Error", "No permission to write " + dir.absolutePath());
@@ -176,14 +176,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Load dataStore
-    switch (NekoGui::coreType) {
-        case NekoGui::CoreType::SING_BOX:
-            NekoGui::dataStore->fn = "groups/nekobox.json";
-            break;
-        default:
-            MessageBoxWarning("Error", "Unknown coreType.");
-            return 0;
-    }
+    NekoGui::dataStore->fn = "nekobox.json";
     auto isLoaded = NekoGui::dataStore->Load();
     if (!isLoaded) {
         NekoGui::dataStore->Save();
@@ -194,7 +187,7 @@ int main(int argc, char* argv[]) {
 
     // load routing
     NekoGui::dataStore->routing = std::make_unique<NekoGui::Routing>();
-    NekoGui::dataStore->routing->fn = ROUTES_PREFIX + NekoGui::dataStore->active_routing;
+    NekoGui::dataStore->routing->fn = "routes/" + NekoGui::dataStore->active_routing;
     isLoaded = NekoGui::dataStore->routing->Load();
     if (!isLoaded) {
         NekoGui::dataStore->routing->Save();
@@ -237,6 +230,6 @@ int main(int argc, char* argv[]) {
         MW_dialog_message("", "Raise");
     });
 
-    UI_InitMainWindow();
+    new MainWindow;
     return QApplication::exec();
 }

@@ -21,7 +21,6 @@
 
 #include <QInputDialog>
 
-#define ADJUST_SIZE runOnUiThread([=] { adjustSize(); adjustPosition(mainwindow); }, this);
 #define LOAD_TYPE(a) ui->type->addItem(NekoGui::ProfileManager::NewProxyEntity(a)->bean->DisplayType(), a);
 
 DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId, QWidget *parent)
@@ -86,24 +85,23 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
         ui->network_box->setVisible(networkBoxVisible);
         ADJUST_SIZE
     });
-    ui->network->removeItem(0);
-
-    ui->network->addItem("httpupgrade");
+    ui->network->addItem("tcp");
+    ui->network->addItems(Preset::SingBox::V2RayTransport);
 
     // security changed
     connect(ui->security, &QComboBox::currentTextChanged, this, [=](const QString &txt) {
-        if (txt == "tls") {
-            ui->security_box->setVisible(true);
-            ui->tls_camouflage_box->setVisible(true);
-            ui->reality_spx->hide();
-            ui->reality_spx_l->hide();
-        } else {
-            ui->security_box->setVisible(false);
-            ui->tls_camouflage_box->setVisible(false);
-        }
+        ui->security_box->setVisible(txt == "tls");
         ADJUST_SIZE
     });
     emit ui->security->currentTextChanged(ui->security->currentText());
+
+    // multiplex changed
+    ui->multiplex_protocol->addItems(Preset::SingBox::MultiplexProtocol);
+    connect(ui->multiplex, &QComboBox::currentIndexChanged, this, [=](int index) {
+        ui->multiplex_box->setVisible(index == 1);
+        ADJUST_SIZE
+    });
+    emit ui->multiplex->currentIndexChanged(ui->multiplex->currentIndex());
 
     // 确定模式和 ent
     newEnt = _type != "";
@@ -241,13 +239,23 @@ void DialogEditProfile::typeSelected(const QString &newType) {
             ui->utlsFingerprint->setCurrentText(stream->utlsFingerprint);
         }
         ui->insecure->setChecked(stream->allow_insecure);
+        ui->ech_enabled->setChecked(stream->ech_enabled);
+        ui->disable_sni->setChecked(stream->disable_sni);
         ui->header_type->setCurrentText(stream->header_type);
         ui->ws_early_data_name->setText(stream->ws_early_data_name);
         ui->ws_early_data_length->setText(Int2String(stream->ws_early_data_length));
         ui->reality_pbk->setText(stream->reality_pbk);
         ui->reality_sid->setText(stream->reality_sid);
-        ui->multiplex->setCurrentIndex(ent->bean->mux_state);
+        ui->tls_fragment->setChecked(stream->tls_fragment);
+        ui->tls_record_fragment->setChecked(stream->tls_record_fragment);
         CACHE.certificate = stream->certificate;
+        CACHE.ech = stream->ech;
+        ui->multiplex->setCurrentIndex(ent->bean->mux_state);
+        ui->multiplex_padding->setChecked(ent->bean->multiplex_padding);
+        ui->multiplex_protocol->setCurrentText(ent->bean->multiplex_protocol);
+        ui->multiplex_max_streams->setText(Int2String(ent->bean->multiplex_max_streams));
+        ui->brutal_up->setText(Int2String(ent->bean->brutal_up));
+        ui->brutal_down->setText(Int2String(ent->bean->brutal_down));
     } else {
         ui->right_all_w->setVisible(false);
     }
@@ -371,13 +379,23 @@ bool DialogEditProfile::onEnd() {
         stream->alpn = ui->alpn->text();
         stream->utlsFingerprint = ui->utlsFingerprint->currentText();
         stream->allow_insecure = ui->insecure->isChecked();
+        stream->ech_enabled = ui->ech_enabled->isChecked();
+        stream->disable_sni = ui->disable_sni->isChecked();
         stream->header_type = ui->header_type->currentText();
         stream->ws_early_data_name = ui->ws_early_data_name->text();
         stream->ws_early_data_length = ui->ws_early_data_length->text().toInt();
         stream->reality_pbk = ui->reality_pbk->text();
         stream->reality_sid = ui->reality_sid->text();
-        ent->bean->mux_state = ui->multiplex->currentIndex();
+        stream->tls_fragment = ui->tls_fragment->isChecked();
+        stream->tls_record_fragment = ui->tls_record_fragment->isChecked();
         stream->certificate = CACHE.certificate;
+        stream->ech = CACHE.ech;
+        ent->bean->mux_state = ui->multiplex->currentIndex();
+        ent->bean->multiplex_padding = ui->multiplex_padding->isChecked();
+        ent->bean->multiplex_protocol = ui->multiplex_protocol->currentText();
+        ent->bean->multiplex_max_streams = ui->multiplex_max_streams->text().toInt();
+        ent->bean->brutal_up = ui->brutal_up->text().toInt();
+        ent->bean->brutal_down = ui->brutal_down->text().toInt();
     }
 
     // cached custom
@@ -417,6 +435,11 @@ void DialogEditProfile::editor_cache_updated_impl() {
         ui->certificate_edit->setText(tr("Not set"));
     } else {
         ui->certificate_edit->setText(tr("Already set"));
+    }
+    if (CACHE.ech.isEmpty()) {
+        ui->ech_edit->setText(tr("Not set"));
+    } else {
+        ui->ech_edit->setText(tr("Already set"));
     }
     if (CACHE.custom_outbound.isEmpty()) {
         ui->custom_outbound_edit->setText(tr("Not set"));
@@ -458,16 +481,35 @@ void DialogEditProfile::on_certificate_edit_clicked() {
     }
 }
 
+void DialogEditProfile::on_ech_edit_clicked() {
+    bool ok;
+    auto txt = QInputDialog::getMultiLineText(this, "ECH", "", CACHE.ech, &ok);
+    if (ok) {
+        CACHE.ech = txt;
+        editor_cache_updated_impl();
+    }
+}
+
 void DialogEditProfile::on_apply_to_group_clicked() {
     if (apply_to_group_ui.empty()) {
         apply_to_group_ui[ui->multiplex] = new FloatCheckBox(ui->multiplex, this);
-        apply_to_group_ui[ui->sni] = new FloatCheckBox(ui->sni, this);
+        apply_to_group_ui[ui->multiplex_padding] = new FloatCheckBox(ui->multiplex_padding, this);
+        apply_to_group_ui[ui->multiplex_protocol] = new FloatCheckBox(ui->multiplex_protocol, this);
+        apply_to_group_ui[ui->multiplex_max_streams] = new FloatCheckBox(ui->multiplex_max_streams, this);
+        apply_to_group_ui[ui->brutal_up] = new FloatCheckBox(ui->brutal_up, this);
+        apply_to_group_ui[ui->brutal_down] = new FloatCheckBox(ui->brutal_down, this);
         apply_to_group_ui[ui->alpn] = new FloatCheckBox(ui->alpn, this);
         apply_to_group_ui[ui->host] = new FloatCheckBox(ui->host, this);
         apply_to_group_ui[ui->path] = new FloatCheckBox(ui->path, this);
         apply_to_group_ui[ui->utlsFingerprint] = new FloatCheckBox(ui->utlsFingerprint, this);
         apply_to_group_ui[ui->insecure] = new FloatCheckBox(ui->insecure, this);
         apply_to_group_ui[ui->certificate_edit] = new FloatCheckBox(ui->certificate_edit, this);
+        apply_to_group_ui[ui->ech_enabled] = new FloatCheckBox(ui->ech_enabled, this);
+        apply_to_group_ui[ui->ech_edit] = new FloatCheckBox(ui->ech_edit, this);
+        apply_to_group_ui[ui->disable_sni] = new FloatCheckBox(ui->disable_sni, this);
+        apply_to_group_ui[ui->sni] = new FloatCheckBox(ui->sni, this);
+        apply_to_group_ui[ui->tls_fragment] = new FloatCheckBox(ui->tls_fragment, this);
+        apply_to_group_ui[ui->tls_record_fragment] = new FloatCheckBox(ui->tls_record_fragment, this);
         apply_to_group_ui[ui->custom_config_edit] = new FloatCheckBox(ui->custom_config_edit, this);
         apply_to_group_ui[ui->custom_outbound_edit] = new FloatCheckBox(ui->custom_outbound_edit, this);
         ui->apply_to_group->setText(tr("Confirm"));
@@ -521,8 +563,16 @@ void DialogEditProfile::do_apply_to_group(const std::shared_ptr<NekoGui::Group> 
 
     if (key == ui->multiplex) {
         copyStream(&ent->bean->mux_state);
-    } else if (key == ui->sni) {
-        copyStream(&stream->sni);
+    } else if (key == ui->multiplex_padding) {
+        copyStream(&ent->bean->multiplex_padding);
+    } else if (key == ui->multiplex_protocol) {
+        copyStream(&ent->bean->multiplex_protocol);
+    } else if (key == ui->multiplex_max_streams) {
+        copyStream(&ent->bean->multiplex_max_streams);
+    } else if (key == ui->brutal_up) {
+        copyStream(&ent->bean->brutal_up);
+    } else if (key == ui->brutal_down) {
+        copyStream(&ent->bean->brutal_down);
     } else if (key == ui->alpn) {
         copyStream(&stream->alpn);
     } else if (key == ui->host) {
@@ -535,6 +585,18 @@ void DialogEditProfile::do_apply_to_group(const std::shared_ptr<NekoGui::Group> 
         copyStream(&stream->allow_insecure);
     } else if (key == ui->certificate_edit) {
         copyStream(&stream->certificate);
+    } else if (key == ui->ech_enabled) {
+        copyStream(&stream->ech_enabled);
+    } else if (key == ui->ech_edit) {
+        copyStream(&stream->ech);
+    } else if (key == ui->sni) {
+        copyStream(&stream->sni);
+    } else if (key == ui->disable_sni) {
+        copyStream(&stream->disable_sni);
+    } else if (key == ui->tls_fragment) {
+        copyStream(&stream->tls_fragment);
+    } else if (key == ui->tls_record_fragment) {
+        copyStream(&stream->tls_record_fragment);
     } else if (key == ui->custom_config_edit) {
         copyBean(&ent->bean->custom_config);
     } else if (key == ui->custom_outbound_edit) {

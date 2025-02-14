@@ -17,7 +17,7 @@ class DialogManageGroups : public QDialog {
     Q_OBJECT
 
 public:
-    explicit DialogManageGroups(QWidget *parent = nullptr);
+    explicit DialogManageGroups(QWidget *parent = nullptr, int index = -1);
 
     ~DialogManageGroups() override;
 

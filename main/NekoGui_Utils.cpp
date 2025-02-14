@@ -1,6 +1,5 @@
 #include "NekoGui_Utils.hpp"
 
-#include "3rdparty/base64.h"
 #include "3rdparty/QThreadCreateThread.hpp"
 
 #include <random>
@@ -43,18 +42,12 @@ QStringList SplitLinesSkipSharp(const QString &_string, int maxLine) {
 }
 
 QByteArray DecodeB64IfValid(const QString &input, QByteArray::Base64Options options) {
-    Qt515Base64::Base64Options newOptions = Qt515Base64::Base64Option::AbortOnBase64DecodingErrors;
-    if (options.testFlag(QByteArray::Base64UrlEncoding)) newOptions |= Qt515Base64::Base64Option::Base64UrlEncoding;
-    if (options.testFlag(QByteArray::OmitTrailingEquals)) newOptions |= Qt515Base64::Base64Option::OmitTrailingEquals;
-    auto result = Qt515Base64::QByteArray_fromBase64Encoding(input.toUtf8(), newOptions);
-    if (result) {
-        return result.decoded;
-    }
-    return {};
+    auto result = QByteArray::fromBase64Encoding(input.toUtf8(), options | QByteArray::AbortOnBase64DecodingErrors);
+    return result ? result.decoded : QByteArray();
 }
 
 QByteArray DecodeBase64OrBase64Url(const QString &input) {
-    return QByteArray::fromBase64(QString(input).replace("-", "+").replace("_", "/").toUtf8());
+    return QByteArray::fromBase64(input.toUtf8().replace("-", "+").replace("_", "/"));
 }
 
 QString QStringList2Command(const QStringList &list) {
@@ -99,9 +92,7 @@ quint64 GetRandomUint64() {
 
 // QString >> QJson
 QJsonObject QString2QJsonObject(const QString &jsonString) {
-    QJsonDocument jsonDocument = QJsonDocument::fromJson(jsonString.toUtf8());
-    QJsonObject jsonObject = jsonDocument.object();
-    return jsonObject;
+    return QJsonDocument::fromJson(jsonString.toUtf8()).object();
 }
 
 // QJson >> QString

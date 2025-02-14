@@ -71,7 +71,7 @@ namespace NekoGui_fmt {
         if (mux_str == "true") {
             mux_state = 1;
         } else if (mux_str == "false") {
-            mux_state = 2;
+            mux_state = 0;
         }
 
         // *ray misnomer
@@ -141,15 +141,15 @@ namespace NekoGui_fmt {
                 name = query.queryItemValue("remarks");
                 uuid = url.password();
                 security = url.userName();
-                stream->network = GetQueryValue(query, "obfs", "tcp").replace("websocket", "ws");
+                stream->network = GetQueryValue(query, "obfs", "tcp");
                 if (GetQueryValue(query, "tls") == "1") stream->security = "tls";
             } else {
                 // https://github.com/XTLS/Xray-core/discussions/716
                 name = url.fragment(QUrl::FullyDecoded);
                 uuid = url.userName();
                 security = GetQueryValue(query, "encryption", "auto");
-                stream->network = GetQueryValue(query, "type", "tcp").replace("h2", "http");
-                stream->security = GetQueryValue(query, "security", "tls").replace("reality", "tls");
+                stream->network = GetQueryValue(query, "type", "tcp");
+                stream->security = GetQueryValue(query, "security", "");
             }
             serverAddress = url.host();
             serverPort = url.port();
@@ -175,7 +175,7 @@ namespace NekoGui_fmt {
             if (mux_str == "true") {
                 mux_state = 1;
             } else if (mux_str == "false") {
-                mux_state = 2;
+                mux_state = 0;
             }
 
             // type
@@ -211,16 +211,16 @@ namespace NekoGui_fmt {
         if (!url.password().isEmpty()) {
             name = query.queryItemValue("remarks");
             password = url.password();
-            stream->network = GetQueryValue(query, "obfs", "tcp").replace("websocket", "ws");
+            stream->network = GetQueryValue(query, "obfs", "tcp");
             if (GetQueryValue(query, "tls") == "1") stream->security = "tls";
         } else {
             name = url.fragment(QUrl::FullyDecoded);
             password = url.userName();
-            stream->network = GetQueryValue(query, "type", "tcp").replace("h2", "http");
+            stream->network = GetQueryValue(query, "type", "tcp");
             if (proxy_type == proxy_Trojan) {
-                stream->security = GetQueryValue(query, "security", "tls").replace("reality", "tls").replace("none", "");
+                stream->security = GetQueryValue(query, "security", "tls");
             } else {
-                stream->security = GetQueryValue(query, "security", "").replace("reality", "tls").replace("none", "");
+                stream->security = GetQueryValue(query, "security", "");
             }
         }
         serverAddress = url.host();
@@ -267,7 +267,7 @@ namespace NekoGui_fmt {
         if (mux_str == "true") {
             mux_state = 1;
         } else if (mux_str == "false") {
-            mux_state = 2;
+            mux_state = 0;
         }
 
         // protocol
@@ -377,7 +377,7 @@ namespace NekoGui_fmt {
         serverPort = url.port();
         user = query.queryItemValue("user");
         password = query.queryItemValue("password");
-        privateKey = DecodeB64IfValid(query.queryItemValue("private_key"), QByteArray::Base64Option::Base64UrlEncoding);
+        privateKey = DecodeB64IfValid(query.queryItemValue("private_key"), QByteArray::Base64UrlEncoding);
         privateKeyPath = query.queryItemValue("private_key_path");
         privateKeyPassphrase = query.queryItemValue("private_key_passphrase");
         hostKey = query.queryItemValue("host_key");

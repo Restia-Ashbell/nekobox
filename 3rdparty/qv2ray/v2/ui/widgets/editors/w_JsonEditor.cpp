@@ -2,23 +2,24 @@
 
 #include "main/NekoGui.hpp"
 
-JsonEditor::JsonEditor(const QJsonObject& rootObject, QWidget* parent) : QDialog(parent) {
+JsonEditor::JsonEditor(const QString& jsonString, QWidget* parent) : QDialog(parent) {
     setupUi(this);
     //    QvMessageBusConnect(JsonEditor);
     //
-    original = rootObject;
-    final = rootObject;
-    QString jsonString = JsonToString(rootObject);
+    QJsonParseError err;
+    original = QJsonDocument::fromJson(jsonString.toUtf8(), &err);
+    final = original;
+    auto formatJson = original.toJson(QJsonDocument::Indented);
 
-    if (VerifyJsonString(jsonString).isEmpty()) {
+    if (err.error == QJsonParseError::NoError) {
+        model.loadJson(formatJson);
         jsonTree->setModel(&model);
-        model.loadJson(QJsonDocument(rootObject).toJson());
     } else {
         QvMessageBoxWarn(this, tr("Json Contains Syntax Errors"),
                          tr("Original Json may contain syntax errors. Json tree is disabled."));
     }
 
-    jsonEditor->setText(JsonToString(rootObject));
+    jsonEditor->setText(formatJson);
     jsonTree->expandAll();
     jsonTree->resizeColumnToContents(0);
 }
@@ -37,10 +38,10 @@ JsonEditor::JsonEditor(const QJsonObject& rootObject, QWidget* parent) : QDialog
 
 QJsonObject JsonEditor::OpenEditor() {
     int resultCode = this->exec();
-    auto string = jsonEditor->toPlainText();
+    QString jsonText = jsonEditor->toPlainText();
 
-    while (resultCode == QDialog::Accepted && !VerifyJsonString(string).isEmpty()) {
-        if (string.isEmpty()) {
+    while (resultCode == QDialog::Accepted && QJsonDocument::fromJson(jsonText.toUtf8()).isNull()) {
+        if (jsonText.trimmed().isEmpty()) {
             resultCode = QDialog::Accepted;
             final = {};
             break;
@@ -48,40 +49,42 @@ QJsonObject JsonEditor::OpenEditor() {
         QvMessageBoxWarn(this, tr("Json Contains Syntax Errors"),
                          tr("You must correct these errors before continuing."));
         resultCode = this->exec();
-        string = jsonEditor->toPlainText();
+        jsonText = jsonEditor->toPlainText();
     }
 
-    return resultCode == QDialog::Accepted ? final : original;
+    return (resultCode == QDialog::Accepted ? final : original).object();
 }
 
 JsonEditor::~JsonEditor() {
 }
 
 void JsonEditor::on_jsonEditor_textChanged() {
-    auto string = jsonEditor->toPlainText();
-    auto VerifyResult = VerifyJsonString(string);
-    jsonValidateStatus->setText(VerifyResult);
+    const QString jsonText = jsonEditor->toPlainText();
+    QJsonParseError err;
+    QJsonDocument temp = QJsonDocument::fromJson(jsonText.toUtf8(), &err);
 
-    if (VerifyResult.isEmpty()) {
+    if (err.error == QJsonParseError::NoError) {
         BLACK(jsonEditor);
-        final = JsonFromString(string);
-        model.loadJson(QJsonDocument(final).toJson());
+        final = temp;
+        model.loadJson(temp.toJson());
         jsonTree->expandAll();
         jsonTree->resizeColumnToContents(0);
+        jsonValidateStatus->clear();
     } else {
         RED(jsonEditor);
+        jsonValidateStatus->setText(err.errorString());
     }
 }
 
 void JsonEditor::on_formatJsonBtn_clicked() {
-    auto string = jsonEditor->toPlainText();
-    auto VerifyResult = VerifyJsonString(string);
-    jsonValidateStatus->setText(VerifyResult);
+    const QString jsonText = jsonEditor->toPlainText();
+    QJsonParseError err;
+    auto formatJson = QJsonDocument::fromJson(jsonText.toUtf8(), &err).toJson(QJsonDocument::Indented);
 
-    if (VerifyResult.isEmpty()) {
+    if (err.error == QJsonParseError::NoError) {
         BLACK(jsonEditor);
-        jsonEditor->setPlainText(JsonToString(JsonFromString(string)));
-        model.loadJson(QJsonDocument(JsonFromString(string)).toJson());
+        jsonEditor->setPlainText(formatJson);
+        model.loadJson(formatJson);
         jsonTree->setModel(&model);
         jsonTree->expandAll();
         jsonTree->resizeColumnToContents(0);

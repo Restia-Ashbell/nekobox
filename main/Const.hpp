@@ -15,10 +15,4 @@ namespace NekoGui {
             FOR_DESTINATION,
         };
     }
-
-    namespace CoreType {
-        enum CoreType {
-            SING_BOX,
-        };
-    }
 } // namespace NekoGui

@@ -16,9 +16,9 @@ public:
         this->setSelectionBehavior(QAbstractItemView::SelectRows);
     };
 
-    QList<int> order;          // id sorted (save)
-    std::map<int, int> id2Row; // id2Row
-    QList<int> row2Id;         // row2Id: use this to refresh data
+    QList<int> order;       // id sorted (save)
+    QList<int> row2Id;      // row2Id: use this to refresh data
+    QHash<int, int> id2Row; // id2Row
 
     std::function<void()> callback_save_order;
     std::function<void(int id)> refresh_data;
@@ -41,35 +41,28 @@ public:
             return;
         }
 
-        // 纠错: order 里面含有不在当前表格控件的 id
         bool needSave = false;
-        auto deleted_profiles = order;
-        for (int i = 0; i < this->rowCount(); i++) {
-            auto id = row2Id[i];
-            deleted_profiles.removeAll(id);
-        }
-        for (auto deleted_profile: deleted_profiles) {
-            needSave = true;
-            order.removeAll(deleted_profile);
-        }
 
-        // map(dstRow -> srcId)
-        QMap<int, int> newRows;
-        for (int i = 0; i < this->rowCount(); i++) {
-            auto id = row2Id[i];
-            auto dst = order.indexOf(id);
-            if (dst == i) continue;
-            if (dst == -1) {
-                // 纠错: 新的profile不需要移动
+        QList<int> newRow2Id;
+        newRow2Id.reserve(row2Id.size());
+
+        for (int id: order) {
+            if (row2Id.contains(id) && !newRow2Id.contains(id)) {
+                newRow2Id.append(id);
+            } else {
                 needSave = true;
-                continue;
             }
-            newRows[dst] = id;
         }
 
-        for (int i = 0; i < this->rowCount(); i++) {
-            if (!newRows.contains(i)) continue;
-            row2Id[i] = newRows[i];
+        for (int id: row2Id) {
+            if (!newRow2Id.contains(id)) {
+                newRow2Id.append(id);
+                needSave = true;
+            }
+        }
+
+        if (row2Id != newRow2Id) {
+            row2Id = std::move(newRow2Id);
         }
 
         // Then save the order
@@ -88,8 +81,8 @@ protected:
 
         // 原行号与目标行号的确定
         int row_src, row_dst;
-        row_src = this->currentRow();                        // 原行号 可加if
-        auto id_src = row2Id[row_src];                       // id_src
+        row_src = this->currentRow();                                       // 原行号 可加if
+        auto id_src = row2Id[row_src];                                      // id_src
         QTableWidgetItem *item = this->itemAt(event->position().toPoint()); // 获取落点的item
         if (item != nullptr) {
             // 判断是否为空

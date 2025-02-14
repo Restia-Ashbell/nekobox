@@ -17,78 +17,79 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
        <string>Common</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <widget class="QWidget" name="widget" native="true">
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="4" column="1">
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Orientation::Vertical</enum>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="1" column="1">
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Custom</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <widget class="QPushButton" name="custom_edit">
+            <property name="text">
+             <string>Custom DNS and Route</string>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="5" column="1">
-           <widget class="QGroupBox" name="groupBox">
-            <property name="title">
-             <string>Route sets</string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_7">
-             <item>
-              <widget class="QPushButton" name="load_save">
-               <property name="text">
-                <string>Mange route set</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="custom_route_global_edit">
-               <property name="text">
-                <string>Custom Route (global)</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>Note: Other settings are independent for each route set.</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_6">
-            <property name="toolTip">
-             <string notr="true">For V2Ray, it sets routing.domainStrategy
-For sing-box, it sets inbound.domain_strategy</string>
+          <item>
+           <widget class="QCheckBox" name="enable_custom">
+            <property name="text">
+             <string>Enable Custom</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Route sets</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <widget class="QPushButton" name="load_save">
+            <property name="text">
+             <string>Mange route set</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
             <property name="text">
-             <string>Domain Strategy</string>
+             <string>Note: Other settings are independent for each route set.</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
-           <widget class="QComboBox" name="outbound_domain_strategy">
-            <property name="editable">
-             <bool>false</bool>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="2">
+        <widget class="QGroupBox" name="commonBox">
+         <property name="title">
+          <string/>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Sniffing Mode</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="0" column="1">
            <widget class="QComboBox" name="sniffing_mode">
             <item>
              <property name="text">
@@ -108,13 +109,24 @@ For sing-box, it sets inbound.domain_strategy</string>
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="label_6">
+            <property name="toolTip">
+             <string notr="true">For V2Ray, it sets routing.domainStrategy
+For sing-box, it sets inbound.domain_strategy</string>
+            </property>
             <property name="text">
-             <string>Sniffing Mode</string>
+             <string>Domain Strategy</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="1" column="1">
+           <widget class="QComboBox" name="domainStrategyCombo">
+            <property name="editable">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
            <widget class="QLabel" name="label_3">
             <property name="text">
              <string>Server Address Strategy</string>
@@ -122,24 +134,11 @@ For sing-box, it sets inbound.domain_strategy</string>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QComboBox" name="domainStrategyCombo">
+           <widget class="QComboBox" name="outbound_domain_strategy">
             <property name="editable">
              <bool>false</bool>
             </property>
            </widget>
-          </item>
-          <item row="1" column="2">
-           <spacer name="horizontalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
           </item>
          </layout>
         </widget>
@@ -159,20 +158,15 @@ For sing-box, it sets inbound.domain_strategy</string>
          <layout class="QGridLayout" name="gridLayout">
           <item row="1" column="0">
            <widget class="QLabel" name="label_8">
-            <property name="toolTip">
-             <string>This is especially important and it is recommended to use the default value of &quot;localhost&quot;.
-If the default value does not work, try changing it to &quot;223.5.5.5&quot;.
-For more information, see the document &quot;Configuration/DNS&quot;.</string>
-            </property>
             <property name="text">
              <string>Direct DNS</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="2">
-           <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item row="1" column="2">
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
             <item>
-             <widget class="QComboBox" name="remote_dns">
+             <widget class="QComboBox" name="direct_dns">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -184,62 +178,52 @@ For more information, see the document &quot;Configuration/DNS&quot;.</string>
               </property>
               <item>
                <property name="text">
-                <string notr="true">https://8.8.8.8/dns-query</string>
+                <string notr="true">local</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string notr="true">https://1.0.0.1/dns-query</string>
+                <string notr="true">https://dns.alidns.com/dns-query</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string notr="true">https://1.1.1.1/dns-query</string>
+                <string notr="true">https://doh.pub/dns-query</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string notr="true">https://dns.google/dns-query</string>
+                <string notr="true">https://223.5.5.5/dns-query</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string notr="true">https://one.one.one.one/dns-query</string>
+                <string notr="true">https://1.12.12.12/dns-query</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string notr="true">https://[2001:4860:4860::8888]/dns-query</string>
+                <string notr="true">https://[2400:3200::1]/dns-query</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string notr="true">https://[2606:4700:4700::1111]/dns-query</string>
+                <string notr="true">https://[2402:4e00]/dns-query</string>
                </property>
               </item>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_10">
+             <widget class="QLabel" name="label_11">
               <property name="text">
                <string>Query Strategy</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="remote_dns_strategy"/>
+             <widget class="QComboBox" name="direct_dns_strategy"/>
             </item>
            </layout>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_9">
-            <property name="text">
-             <string>Remote DNS</string>
-            </property>
-            <property name="buddy">
-             <cstring>widget</cstring>
-            </property>
-           </widget>
           </item>
           <item row="2" column="2">
            <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -293,10 +277,10 @@ For more information, see the document &quot;Configuration/DNS&quot;.</string>
             </item>
            </layout>
           </item>
-          <item row="1" column="2">
-           <layout class="QHBoxLayout" name="horizontalLayout_8">
+          <item row="0" column="2">
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
-             <widget class="QComboBox" name="direct_dns">
+             <widget class="QComboBox" name="remote_dns">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -308,114 +292,70 @@ For more information, see the document &quot;Configuration/DNS&quot;.</string>
               </property>
               <item>
                <property name="text">
-                <string notr="true">local</string>
+                <string notr="true">https://dns.google/dns-query</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string notr="true">https://223.5.5.5/dns-query</string>
+                <string notr="true">https://one.one.one.one/dns-query</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string notr="true">https://1.12.12.12/dns-query</string>
+                <string notr="true">https://8.8.8.8/dns-query</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string notr="true">https://dns.alidns.com/dns-query</string>
+                <string notr="true">https://1.1.1.1/dns-query</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string notr="true">https://doh.pub/dns-query</string>
+                <string notr="true">https://[2001:4860:4860::8888]/dns-query</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string notr="true">223.5.5.5</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">119.29.29.29</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">2400:3200::1</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">2402:4e00::</string>
+                <string notr="true">https://[2606:4700:4700::1111]/dns-query</string>
                </property>
               </item>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_11">
+             <widget class="QLabel" name="label_10">
               <property name="text">
                <string>Query Strategy</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="direct_dns_strategy"/>
+             <widget class="QComboBox" name="remote_dns_strategy"/>
             </item>
            </layout>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>Remote DNS</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_2">
-         <property name="title">
-          <string>DNS Object Settings</string>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_5">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <item>
-             <widget class="QCheckBox" name="use_dns_object">
-              <property name="text">
-               <string>Use DNS Object</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="format_dns_object">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Format</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="dns_document">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Document</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QPlainTextEdit" name="dns_object"/>
-          </item>
-         </layout>
-        </widget>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
@@ -425,124 +365,50 @@ For more information, see the document &quot;Configuration/DNS&quot;.</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_6">
        <item>
-        <widget class="QGroupBox" name="gb2">
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <layout class="QGridLayout" name="gridLayout_3" rowstretch="0,1,1" columnstretch="0,1,1,1">
-            <item row="0" column="3">
-             <widget class="QLabel" name="label_82">
-              <property name="text">
-               <string>Block</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignmentFlag::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="3">
-             <layout class="QGridLayout" name="blockTxtLayout"/>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLabel" name="label_80">
-              <property name="text">
-               <string>Direct</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignmentFlag::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_7">
-              <property name="text">
-               <string>Domain</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <layout class="QGridLayout" name="directTxtLayout"/>
-            </item>
-            <item row="1" column="2">
-             <layout class="QGridLayout" name="proxyIPLayout"/>
-            </item>
-            <item row="0" column="2">
-             <widget class="QLabel" name="label_81">
-              <property name="text">
-               <string>Proxy</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignmentFlag::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="2">
-             <layout class="QGridLayout" name="proxyTxtLayout"/>
-            </item>
-            <item row="1" column="3">
-             <layout class="QGridLayout" name="blockIPLayout"/>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>IP</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <layout class="QGridLayout" name="directIPLayout"/>
-            </item>
-           </layout>
+        <widget class="QGroupBox" name="simple_route_box">
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="1" column="2">
+           <widget class="QLabel" name="label_83">
+            <property name="text">
+             <string>Direct</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
           </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item row="2" column="1">
+           <widget class="QPlainTextEdit" name="proxyTxt"/>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="label_84">
+            <property name="text">
+             <string>Proxy</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" colspan="3">
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QWidget" name="horizontalWidget_2" native="true">
-              <layout class="QHBoxLayout" name="horizontalLayout_6">
-               <property name="leftMargin">
-                <number>0</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <property name="bottomMargin">
-                <number>0</number>
-               </property>
-               <item>
-                <widget class="QToolButton" name="preset">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>Preset</string>
-                 </property>
-                 <property name="popupMode">
-                  <enum>QToolButton::ToolButtonPopupMode::InstantPopup</enum>
-                 </property>
-                 <property name="toolButtonStyle">
-                  <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="custom_route_edit">
-                 <property name="text">
-                  <string>Custom Route</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
+             <widget class="QToolButton" name="preset">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Preset</string>
+              </property>
+              <property name="popupMode">
+               <enum>QToolButton::ToolButtonPopupMode::InstantPopup</enum>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
+              </property>
              </widget>
             </item>
             <item>
@@ -559,48 +425,60 @@ For more information, see the document &quot;Configuration/DNS&quot;.</string>
              </spacer>
             </item>
             <item>
-             <widget class="QWidget" name="horizontalWidget" native="true">
-              <layout class="QHBoxLayout" name="horizontalLayout_2">
-               <property name="leftMargin">
-                <number>0</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <property name="bottomMargin">
-                <number>0</number>
-               </property>
-               <item>
-                <widget class="QLabel" name="label_4">
-                 <property name="text">
-                  <string>Default Outbound</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="def_outbound">
-                 <item>
-                  <property name="text">
-                   <string notr="true">proxy</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string notr="true">direct</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string notr="true">block</string>
-                  </property>
-                 </item>
-                </widget>
-               </item>
-              </layout>
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Default Outbound</string>
+              </property>
              </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="def_outbound">
+              <item>
+               <property name="text">
+                <string notr="true">proxy</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">direct</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string notr="true">block</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPlainTextEdit" name="blockTxt"/>
+          </item>
+          <item row="2" column="2">
+           <widget class="QPlainTextEdit" name="directTxt"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_85">
+            <property name="text">
+             <string>Block</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="3">
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Rule Sets Provider</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="rule_sets_provider"/>
             </item>
            </layout>
           </item>
@@ -632,11 +510,6 @@ For more information, see the document &quot;Configuration/DNS&quot;.</string>
  </widget>
  <tabstops>
   <tabstop>tabWidget</tabstop>
-  <tabstop>sniffing_mode</tabstop>
-  <tabstop>domainStrategyCombo</tabstop>
-  <tabstop>outbound_domain_strategy</tabstop>
-  <tabstop>load_save</tabstop>
-  <tabstop>custom_route_global_edit</tabstop>
   <tabstop>remote_dns</tabstop>
   <tabstop>remote_dns_strategy</tabstop>
   <tabstop>direct_dns</tabstop>
@@ -644,13 +517,6 @@ For more information, see the document &quot;Configuration/DNS&quot;.</string>
   <tabstop>dns_routing</tabstop>
   <tabstop>fake_dns</tabstop>
   <tabstop>dns_final_out</tabstop>
-  <tabstop>use_dns_object</tabstop>
-  <tabstop>format_dns_object</tabstop>
-  <tabstop>dns_document</tabstop>
-  <tabstop>dns_object</tabstop>
-  <tabstop>preset</tabstop>
-  <tabstop>custom_route_edit</tabstop>
-  <tabstop>def_outbound</tabstop>
  </tabstops>
  <resources/>
  <connections>
