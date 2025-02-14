@@ -222,6 +222,11 @@ namespace NekoGui_fmt {
 
             if (authPayloadType == hysteria_auth_base64) outbound["auth"] = authPayload;
             if (authPayloadType == hysteria_auth_string) outbound["auth_str"] = authPayload;
+
+            if (!hopPort.isEmpty()){
+                outbound["server_ports"] = QJsonArray::fromStringList(QString(hopPort).replace('-', ':').split(',', Qt::SkipEmptyParts));
+                outbound["hop_interval"] = QString::number(hopInterval) + "s";
+            }
         } else if (proxy_type == proxy_Hysteria2) {
             outbound["type"] = "hysteria2";
             outbound["password"] = password;
@@ -233,6 +238,11 @@ namespace NekoGui_fmt {
                     {"type", "salamander"},
                     {"password", obfsPassword},
                 };
+            }
+
+            if (!hopPort.isEmpty()){
+                outbound["server_ports"] = QJsonArray::fromStringList(QString(hopPort).replace('-', ':').split(',', Qt::SkipEmptyParts));
+                outbound["hop_interval"] = QString::number(hopInterval) + "s";
             }
         } else if (proxy_type == proxy_TUIC) {
             outbound["type"] = "tuic";
