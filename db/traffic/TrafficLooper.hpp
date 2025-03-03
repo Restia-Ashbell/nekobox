@@ -5,6 +5,7 @@
 #include <QMutex>
 
 #include "TrafficData.hpp"
+#include "rpc/gRPC.h"
 
 namespace NekoGui_traffic {
     class TrafficLooper {
@@ -23,7 +24,7 @@ namespace NekoGui_traffic {
     private:
         TrafficData *direct = new TrafficData("direct");
 
-        [[nodiscard]] static TrafficData *update_stats(TrafficData *item);
+        [[nodiscard]] static TrafficData *update_stats(TrafficData *item, libcore::QueryStatsResp &resp);
     };
 
     extern TrafficLooper *trafficLooper;

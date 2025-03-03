@@ -240,18 +240,15 @@ namespace NekoGui_rpc {
         }
     }
 
-    long long Client::QueryStats(const std::string &tag, const std::string &direct) {
-        libcore::QueryStatsReq request;
-        request.set_tag(tag);
-        request.set_direct(direct);
-
+    libcore::QueryStatsResp Client::QueryStats() {
+        libcore::EmptyReq request;
         libcore::QueryStatsResp reply;
         auto status = default_grpc_channel->Call("QueryStats", request, &reply, 500);
 
         if (status == QNetworkReply::NoError) {
-            return reply.traffic();
+            return reply;
         } else {
-            return 0;
+            return {};
         }
     }
 

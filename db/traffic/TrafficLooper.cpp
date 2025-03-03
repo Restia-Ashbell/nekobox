@@ -1,6 +1,5 @@
 #include "TrafficLooper.hpp"
 
-#include "rpc/gRPC.h"
 #include "ui/mainwindow_interface.h"
 
 #include <QThread>
@@ -14,7 +13,7 @@ namespace NekoGui_traffic {
     TrafficLooper *trafficLooper = new TrafficLooper;
     QElapsedTimer elapsedTimer;
 
-    TrafficData *TrafficLooper::update_stats(TrafficData *item) {
+    TrafficData *TrafficLooper::update_stats(TrafficData *item, libcore::QueryStatsResp &resp) {
         if (NekoGui::dataStore->disable_traffic_stats) {
             return nullptr;
         }
@@ -25,8 +24,8 @@ namespace NekoGui_traffic {
         if (interval <= 0) return nullptr;
 
         // query
-        auto uplink = NekoGui_rpc::defaultClient->QueryStats(item->tag, "uplink");
-        auto downlink = NekoGui_rpc::defaultClient->QueryStats(item->tag, "downlink");
+        auto uplink = resp.ups().contains(item->tag) ? resp.ups().at(item->tag) : 0;
+        auto downlink = resp.downs().contains(item->tag) ? resp.downs().at(item->tag) : 0;
 
         // add diff
         item->downlink += downlink;
@@ -47,13 +46,14 @@ namespace NekoGui_traffic {
         if (NekoGui::dataStore->disable_traffic_stats) {
             return;
         }
+        auto resp = NekoGui_rpc::defaultClient->QueryStats();
         std::map<std::string, TrafficData *> updated; // tag to diff
         for (const auto &item: this->items) {
             auto data = item.get();
             auto diff = updated[data->tag];
             // 避免重复查询一个 outbound tag
             if (diff == nullptr) {
-                diff = update_stats(data);
+                diff = update_stats(data, resp);
                 updated[data->tag] = diff;
             } else {
                 data->uplink += diff->uplink;
@@ -62,7 +62,7 @@ namespace NekoGui_traffic {
                 data->downlink_rate = diff->downlink_rate;
             }
         }
-        updated[direct->tag] = update_stats(direct);
+        updated[direct->tag] = update_stats(direct, resp);
         //
         for (const auto &pair: updated) {
             delete pair.second;

@@ -302,10 +302,6 @@ void MainWindow::neko_start(int _id) {
         libcore::LoadConfigReq req;
         req.set_core_config(QJsonObject2QString(result->coreConfig, false).toStdString());
         req.set_disable_stats(NekoGui::dataStore->disable_traffic_stats);
-        if (NekoGui::dataStore->traffic_loop_interval > 0) {
-            req.add_stats_outbounds("proxy");
-            req.add_stats_outbounds("direct");
-        }
         //
         bool rpcOK;
         QString error = defaultClient->Start(&rpcOK, req);

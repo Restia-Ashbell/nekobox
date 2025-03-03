@@ -22,7 +22,7 @@ namespace NekoGui_rpc {
 
         QString Stop(bool *rpcOK);
 
-        long long QueryStats(const std::string &tag, const std::string &direct);
+        libcore::QueryStatsResp QueryStats();
 
         libcore::TestResp Test(bool *rpcOK, const libcore::TestReq &request);
 

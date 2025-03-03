@@ -690,13 +690,22 @@ namespace NekoGui {
 
         // experimental
         QJsonObject experimentalObj;
-        if (!status->forTest && dataStore->core_box_clash_api > 0) {
-            QJsonObject clash_api = {
-                {"external_controller", NekoGui::dataStore->core_box_clash_listen_addr + ":" + Int2String(dataStore->core_box_clash_api)},
-                {"secret", dataStore->core_box_clash_api_secret},
-                {"external_ui", "dashboard"},
-            };
-            experimentalObj["clash_api"] = clash_api;
+        if (!status->forTest) {
+            experimentalObj["cache_file"] = QJsonObject{{"enabled", true}};
+
+            QJsonObject clash_api;
+            if (dataStore->core_box_clash_api > 0) {
+                clash_api = {
+                    {"external_controller", NekoGui::dataStore->core_box_clash_listen_addr + ":" + Int2String(dataStore->core_box_clash_api)},
+                    {"secret", dataStore->core_box_clash_api_secret},
+                    {"external_ui", "dashboard"},
+                };
+            } else if (!dataStore->disable_traffic_stats) {
+                clash_api["default_mode"] = "";
+            }
+            if (!clash_api.isEmpty()) {
+                experimentalObj["clash_api"] = clash_api;
+            }
         }
 
         status->result->coreConfig.insert("dns", dns);
