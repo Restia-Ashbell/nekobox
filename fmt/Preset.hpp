@@ -6,6 +6,76 @@ namespace Preset {
         inline QStringList DomainStrategy = {"", "ipv4_only", "ipv6_only", "prefer_ipv4", "prefer_ipv6"};
         inline QStringList UtlsFingerPrint = {"", "chrome", "firefox", "edge", "safari", "360", "qq", "ios", "android", "random", "randomized"};
         inline QStringList ShadowsocksMethods = {"2022-blake3-aes-128-gcm", "2022-blake3-aes-256-gcm", "2022-blake3-chacha20-poly1305", "none", "aes-128-gcm", "aes-192-gcm", "aes-256-gcm", "chacha20-ietf-poly1305", "xchacha20-ietf-poly1305", "aes-128-ctr", "aes-192-ctr", "aes-256-ctr", "aes-128-cfb", "aes-192-cfb", "aes-256-cfb", "rc4-md5", "chacha20-ietf", "xchacha20"};
+        inline QStringList shadowaead2022 = {
+            "2022-blake3-aes-128-gcm",
+            "2022-blake3-aes-256-gcm",
+            "2022-blake3-chacha20-poly1305",
+            "2022-blake3-chacha8-poly1305",
+            "2022-blake3-aes-128-ccm",
+            "2022-blake3-aes-256-ccm"
+        };
+        inline QStringList shadowaead = {
+            "aes-128-gcm",
+            "aes-192-gcm",
+            "aes-256-gcm",
+            "chacha20-ietf-poly1305",
+            "xchacha20-ietf-poly1305",
+            "chacha8-ietf-poly1305",
+            "xchacha8-ietf-poly1305",
+            "rabbit128-poly1305",
+            "aes-128-ccm",
+            "aes-192-ccm",
+            "aes-256-ccm",
+            "aes-128-gcm-siv",
+            "aes-256-gcm-siv",
+            "aegis-128l",
+            "aegis-256",
+            "aez-384",
+            "deoxys-ii-256-128",
+            "lea-128-gcm",
+            "lea-192-gcm",
+            "lea-256-gcm",
+            "sm4-gcm",
+            "sm4-ccm"
+        };        
+        inline QStringList shadowstream = {
+            "aes-128-ctr",
+            "aes-192-ctr",
+            "aes-256-ctr",
+            "aes-128-cfb",
+            "aes-192-cfb",
+            "aes-256-cfb",
+            "aes-128-cfb8",
+            "aes-192-cfb8",
+            "aes-256-cfb8",
+            "aes-128-ofb",
+            "aes-192-ofb",
+            "aes-256-ofb",
+            "camellia-128-cfb",
+            "camellia-192-cfb",
+            "camellia-256-cfb",
+            "camellia-128-cfb8",
+            "camellia-192-cfb8",
+            "camellia-256-cfb8",
+            "rc4-md5",
+            "rc4-md5-6",
+            "rc4",
+            "bf-cfb",
+            "cast5-cfb",
+            "des-cfb",
+            "idea-cfb",
+            "rc2-cfb",
+            "seed-cfb",
+            "chacha20-ietf",
+            "xchacha20",
+            "chacha20",
+            "xsalsa20",
+            "salsa20",
+            "hc128",
+            "table",
+            "zuc"
+        };
+        inline QStringList shadownone = {"none"};
         inline QStringList Flows = {"xtls-rprx-vision"};
     } // namespace SingBox
 

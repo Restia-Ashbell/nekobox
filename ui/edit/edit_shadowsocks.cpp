@@ -7,7 +7,7 @@
 EditShadowSocks::EditShadowSocks(QWidget *parent) : QWidget(parent),
                                                     ui(new Ui::EditShadowSocks) {
     ui->setupUi(this);
-    ui->method->addItems(Preset::SingBox::ShadowsocksMethods);
+    ui->method->addItems(Preset::SingBox::shadownone + Preset::SingBox::shadowaead2022 + Preset::SingBox::shadowaead + Preset::SingBox::shadowstream);
 }
 
 EditShadowSocks::~EditShadowSocks() {
