@@ -380,10 +380,11 @@ namespace NekoGui_sub {
                             // For VLESS, default to use xudp
                             bean->stream->packet_encoding = "xudp";
                         }
+                        if (Node2Bool(proxy["tls"])) bean->stream->security = "tls";
                     } else {
                         bean->password = Node2QString(proxy["password"]);
+                        bean->stream->security = "tls";
                     }
-                    bean->stream->security = "tls";
                     bean->stream->network = Node2QString(proxy["network"], "tcp");
                     bean->stream->sni = FIRST_OR_SECOND(Node2QString(proxy["sni"]), Node2QString(proxy["servername"]));
                     bean->stream->alpn = Node2QStringList(proxy["alpn"]).join(",");
