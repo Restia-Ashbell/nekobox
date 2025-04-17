@@ -151,8 +151,6 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
             themeManager->ApplyTheme(ui->theme->currentText());
             NekoGui::dataStore->theme = ui->theme->currentText();
         }
-        repaint();
-        mainwindow->repaint();
         NekoGui::dataStore->Save();
     });
 
