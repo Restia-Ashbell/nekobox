@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release Tag'
+        description: "Release Tag"
         required: false
       artifact-pack:
-        description: 'Whether to pack(y/n)'
+        description: "Whether to pack(y/n)"
         required: false
   push:
     branches:
@@ -16,8 +16,8 @@ jobs:
   build-go:
     strategy:
       matrix:
-        cross_os: [ windows, linux, darwin ]
-        cross_arch: [ amd64, arm64 ]
+        cross_os: [windows, linux, darwin]
+        cross_arch: [amd64, arm64]
         include:
           - cross_os: public_res
             cross_arch: public_res
@@ -29,7 +29,7 @@ jobs:
       - name: Checking core sources
         uses: actions/checkout@v4
         with:
-          repository: 'Restia-Ashbell/sing-box'
+          repository: "Restia-Ashbell/sing-box"
           path: CORE
       - name: Go Status
         run: cd CORE && git ls-files | xargs cat | sha1sum > ../go_status
@@ -43,7 +43,7 @@ jobs:
         if: steps.cache-common.outputs.cache-hit != 'true'
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: "1.24"
       - name: Build golang parts
         if: steps.cache-common.outputs.cache-hit != 'true'
         shell: bash
@@ -67,16 +67,22 @@ jobs:
         include:
           - platform: windows-2025
             arch: amd64
-            qt_version: "6.8.2"
+            qt_version: "6.9.0"
+          - platform: windows-11-arm
+            arch: arm64
+            qt_version: "6.9.0"
           - platform: ubuntu-24.04
             arch: amd64
-            qt_version: "6.8.2"
+            qt_version: "6.9.0"
+          - platform: ubuntu-24.04-arm
+            arch: arm64
+            qt_version: "6.9.0"
           - platform: macos-13
             arch: amd64
-            qt_version: "6.8.2"
+            qt_version: "6.9.0"
           - platform: macos-15
             arch: arm64
-            qt_version: "6.8.2"
+            qt_version: "6.9.0"
       fail-fast: false
     runs-on: ${{ matrix.platform }}
     env:
@@ -87,24 +93,27 @@ jobs:
         with:
           submodules: "recursive"
       - name: Install MSVC compiler
-        if: matrix.platform == 'windows-2025'
+        if: startsWith(matrix.platform, 'windows')
         uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
           path: download-artifact
       # ========================================================================================================= Qt Install
       - name: Install Qt
-        uses: jurplel/install-qt-action@v4
+        uses: jdpurcell/install-qt-action@v5
         with:
           version: ${{ matrix.qt_version }}
+          use-naqt: true
+          setup-python: false
           cache: true
           cache-key-prefix: QtCache-${{ matrix.platform }}-${{ matrix.arch }}
       # ========================================================================================================= 编译与 Qt 无关的依赖
-      - name: Install ninja-build tool
-        uses: seanmiddleditch/gha-setup-ninja@v5
-        with:
-          version: '1.12.1'
+      - name: Check ninja-build tool
+        shell: bash
+        run: ninja --version
       - name: Cache Download
         id: cache-deps
         uses: actions/cache@v4
@@ -118,37 +127,38 @@ jobs:
       # ========================================================================================================= Generate MakeFile and Build
       - name: Windows - Generate MakeFile and Build
         shell: bash
-        if: matrix.platform == 'windows-2025'
+        if: startsWith(matrix.platform, 'windows')
         env:
           CC: cl.exe
           CXX: cl.exe
+          ARCH: ${{ matrix.arch }}
         run: |
           mkdir build
           pushd build 
           cmake -GNinja -DQT_VERSION_MAJOR=6 -DCMAKE_BUILD_TYPE=Release ..
           ninja
-          popd 
-          ./libs/deploy_windows64.sh
+          popd
+          ./libs/deploy_windows.sh
       - name: Linux - Generate MakeFile and Build
         shell: bash
-        if: matrix.platform == 'ubuntu-24.04'
+        if: startsWith(matrix.platform, 'ubuntu')
         run: |
           sudo apt update && sudo apt upgrade -y
           mkdir build 
           pushd build 
           cmake -GNinja -DQT_VERSION_MAJOR=6  -DCMAKE_BUILD_TYPE=Release .. 
           ninja 
-          popd 
-          ./libs/deploy_linux64.sh
+          popd
+          ./libs/deploy_linux.sh
       - name: macOS - Generate MakeFile and Build
         shell: bash
-        if: matrix.platform == 'macos-13' || matrix.platform == 'macos-15'
+        if: startsWith(matrix.platform, 'macos')
         run: |
           mkdir build
-          pushd build 
+          pushd build
           cmake -GNinja -DQT_VERSION_MAJOR=6 -DCMAKE_BUILD_TYPE=Release -DNKR_PACKAGE_MACOS=1 ..
           ninja
-          popd 
+          popd
           ./libs/deploy_macos.sh
       # ========================================================================================================= Deployments
       - name: Tar files
@@ -181,13 +191,17 @@ jobs:
           find . -name artifacts.tgz | xargs -n1 tar xvzf
           cd deployment
           ####
-          mv windows-amd64 nekoray
-          zip -r nekoray-$COMMIT_HASH-windows-amd64.zip nekoray
-          rm -rf nekoray
+          for arch in amd64 arm64; do
+            mv windows-$arch nekoray
+            zip -r nekoray-$COMMIT_HASH-windows-$arch.zip nekoray
+            rm -rf nekoray
+          done
           ####
-          mv linux-amd64 nekoray
-          zip -r nekoray-$COMMIT_HASH-linux-amd64.zip nekoray
-          rm -rf nekoray
+          for arch in amd64 arm64; do
+            mv linux-$arch nekoray
+            zip -r nekoray-$COMMIT_HASH-linux-$arch.zip nekoray
+            rm -rf nekoray
+          done
           ####
           mv macos-amd64/nekoray.dmg nekoray-$COMMIT_HASH-macos-amd64.dmg
           mv macos-arm64/nekoray.dmg nekoray-$COMMIT_HASH-macos-arm64.dmg

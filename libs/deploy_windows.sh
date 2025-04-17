@@ -2,7 +2,7 @@
 set -e
 
 source libs/env_deploy.sh
-DEST=$DEPLOYMENT/windows-amd64
+DEST=$DEPLOYMENT/windows-$ARCH
 rm -rf $DEST
 mkdir -p $DEST
 
@@ -10,7 +10,7 @@ mkdir -p $DEST
 cp $BUILD/nekoray.exe $DEST
 
 cd download-artifact
-cd *windows-amd64
+cd *windows-$ARCH
 tar xvzf artifacts.tgz -C ../../
 cd ..
 cd *public_res

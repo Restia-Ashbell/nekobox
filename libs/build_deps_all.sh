@@ -50,7 +50,7 @@ ninja && ninja install
 cd ../..
 
 #### protobuf ####
-git clone --recurse-submodules -b v29.0 --depth 1 --shallow-submodules https://github.com/protocolbuffers/protobuf
+git clone --recurse-submodules -b v29.4 --depth 1 --shallow-submodules https://github.com/protocolbuffers/protobuf
 
 #备注：交叉编译要在 host 也安装 protobuf 并且版本一致,编译安装，同参数，安装到 /usr/local
 

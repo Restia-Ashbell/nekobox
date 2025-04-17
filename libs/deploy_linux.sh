@@ -8,7 +8,7 @@ else
 fi
 
 source libs/env_deploy.sh
-DEST=$DEPLOYMENT/linux-amd64
+DEST=$DEPLOYMENT/linux-$ARCH
 rm -rf $DEST
 mkdir -p $DEST
 
@@ -28,13 +28,18 @@ rmdir $DEPLOYMENT/public_res
 
 sudo add-apt-repository universe
 sudo apt install libfuse2
-wget https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20240109-1/linuxdeploy-x86_64.AppImage
-wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/1-alpha-20240109-1/linuxdeploy-plugin-qt-x86_64.AppImage
-chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-qt-x86_64.AppImage
+if [ "$ARCH" = "arm64" ]; then
+  ARCH="aarch64"
+elif [ "$ARCH" = "amd64" ]; then
+  ARCH="x86_64"
+fi
+wget https://github.com/linuxdeploy/linuxdeploy/releases/latest/download/linuxdeploy-$ARCH.AppImage -O linuxdeploy.AppImage
+wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/latest/download/linuxdeploy-plugin-qt-$ARCH.AppImage -O linuxdeploy-plugin-qt.AppImage
+chmod +x linuxdeploy.AppImage linuxdeploy-plugin-qt.AppImage
 
 export EXTRA_QT_PLUGINS="svg;iconengines;"
-./linuxdeploy-x86_64.AppImage --appdir $DEST --executable $DEST/nekoray --plugin qt
-rm linuxdeploy-x86_64.AppImage linuxdeploy-plugin-qt-x86_64.AppImage
+./linuxdeploy.AppImage --appdir $DEST --executable $DEST/nekoray --plugin qt
+rm linuxdeploy.AppImage linuxdeploy-plugin-qt.AppImage
 cd $DEST
 rm nekoray
 mv ./usr/bin/nekoray .
