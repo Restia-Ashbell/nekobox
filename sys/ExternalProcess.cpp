@@ -76,32 +76,10 @@ namespace NekoGui_sys {
         ExternalProcess::arguments = args;
 
         connect(this, &QProcess::readyReadStandardOutput, this, [&]() {
-            auto log = readAllStandardOutput();
-            if (!NekoGui::dataStore->core_running) {
-                if (log.contains("grpc server listening")) {
-                    // The core really started
-                    NekoGui::dataStore->core_running = true;
-                    if (start_profile_when_core_is_up >= 0) {
-                        MW_dialog_message("ExternalProcess", "CoreStarted," + Int2String(start_profile_when_core_is_up));
-                        start_profile_when_core_is_up = -1;
-                    }
-                } else if (log.contains("failed to serve")) {
-                    // The core failed to start
-                    QProcess::kill();
-                }
-            }
-            if (logCounter.fetchAndAddRelaxed(log.count("\n")) > NekoGui::dataStore->max_log_line) return;
-            MW_show_log(log);
+            handleCoreProcessOutput(readAllStandardOutput(), false);
         });
         connect(this, &QProcess::readyReadStandardError, this, [&]() {
-            auto log = readAllStandardError().trimmed();
-            if (show_stderr) {
-                MW_show_log(log);
-                return;
-            }
-            if (log.contains("token is set")) {
-                show_stderr = true;
-            }
+            handleCoreProcessOutput(readAllStandardError(), true);
         });
         connect(this, &QProcess::errorOccurred, this, [&](QProcess::ProcessError error) {
             if (error == QProcess::ProcessError::FailedToStart) {
@@ -139,8 +117,29 @@ namespace NekoGui_sys {
         });
     }
 
+    void CoreProcess::handleCoreProcessOutput(const QString &log, bool isError) {
+        if (!NekoGui::dataStore->core_running) {
+            if (log.contains("grpc server listening")) {
+                // The core really started
+                NekoGui::dataStore->core_running = true;
+                if (start_profile_when_core_is_up >= 0) {
+                    MW_dialog_message("ExternalProcess", "CoreStarted," + Int2String(start_profile_when_core_is_up));
+                    start_profile_when_core_is_up = -1;
+                }
+            } else if (log.contains("failed to serve")) {
+                // The core failed to start
+                QProcess::kill();
+            }
+        }
+    
+        if (logCounter.fetchAndAddRelaxed(log.count("\n")) > NekoGui::dataStore->max_log_line)
+            return;
+    
+        MW_show_log(log);
+    }
+    
+
     void CoreProcess::Start() {
-        show_stderr = false;
         ExternalProcess::Start();
         write((NekoGui::dataStore->core_token + "\n").toUtf8());
     }
