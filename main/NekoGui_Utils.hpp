@@ -4,6 +4,7 @@
 #include <memory>
 #include <QObject>
 #include <QString>
+#include <QThread>
 #include <QDebug>
 
 //
@@ -25,7 +26,6 @@ inline std::function<void(QString, QString)> MW_dialog_message;
 
 // Dispatchers
 
-class QThread;
 inline QThread *DS_cores;
 
 // Timers
@@ -161,9 +161,19 @@ void ActivateWindow(QWidget *w);
 
 //
 
-void runOnUiThread(const std::function<void()> &callback, QObject *parent = nullptr);
+void runOnUiThread(const std::function<void()> &callback, QObject *context = nullptr);
 
-void runOnNewThread(const std::function<void()> &callback);
+template<typename Function, typename... Args>
+void runOnNewThread(Function &&func, Args &&...args) {
+    auto thread = new QThread;
+    auto boundFunc = std::bind(std::forward<Function>(func), std::forward<Args>(args)...);
+    QObject::connect(thread, &QThread::started, [f = std::move(boundFunc), thread]() mutable {
+        f();
+        thread->quit();
+    });
+    QObject::connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+    thread->start();
+}
 
 template<typename EMITTER, typename SIGNAL, typename RECEIVER, typename ReceiverFunc>
 inline void connectOnce(EMITTER *emitter, SIGNAL signal, RECEIVER *receiver, ReceiverFunc f,

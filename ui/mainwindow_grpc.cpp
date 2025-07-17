@@ -16,6 +16,7 @@
 #include <QDesktopServices>
 #include <QMessageBox>
 #include <QDialogButtonBox>
+#include <QtConcurrent>
 
 // ext core
 
@@ -35,32 +36,16 @@ std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> CreateExtCFromExtR(cons
     return l;
 }
 
-// 测速
-
-inline bool speedtesting = false;
-inline QList<QThread *> speedtesting_threads = {};
-
 void MainWindow::speedtest_current_group(int mode) {
-    auto profiles = get_selected_or_group();
-    if (profiles.isEmpty()) return;
-    auto group = NekoGui::profileManager->CurrentGroup();
-    if (group->archive) return;
-
-    // menu_stop_testing
-    if (mode == 114514) {
-        while (!speedtesting_threads.isEmpty()) {
-            auto t = speedtesting_threads.takeFirst();
-            if (t != nullptr) t->exit();
-        }
-        speedtesting_threads.clear();
-        speedtesting = false;
-        return;
-    }
-
-    if (speedtesting) {
+    if (!speedtestFuture.isFinished()) {
         MessageBoxWarning(software_name, "The last speed test did not exit completely, please wait. If it persists, please restart the program.");
         return;
     }
+
+    speedtestProfiles = get_selected_or_group();
+    if (speedtestProfiles.isEmpty()) return;
+    auto group = NekoGui::profileManager->CurrentGroup();
+    if (group->archive) return;
 
     int full_test_flags = 0;
     if (mode == 0) {
@@ -95,140 +80,109 @@ void MainWindow::speedtest_current_group(int mode) {
         //
         if (full_test_flags == 0) return;
     }
-    speedtesting = true;
 
-    runOnNewThread([this, profiles, full_test_flags] mutable {
-        QMutex threadListMutex;
-        QMutex profileListMutex;
-        QSemaphore doneSemaphore;
-        int threadN = qMin(NekoGui::dataStore->test_concurrent, profiles.count());
+    QThreadPool::globalInstance()->setMaxThreadCount(NekoGui::dataStore->test_concurrent);
+    speedtestFuture = QtConcurrent::map(speedtestProfiles, [=](std::shared_ptr<NekoGui::ProxyEntity> &profile) {
+        std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> extCs;
+        QSemaphore extSem;
 
-        // Threads
-        for (int i = 0; i < threadN; ++i) {
-            runOnNewThread([&] {
-                threadListMutex.lock();
-                speedtesting_threads << QThread::currentThread();
-                threadListMutex.unlock();
-
-                forever {
-                    std::shared_ptr<NekoGui::ProxyEntity> profile;
-                    {
-                        QMutexLocker locker(&profileListMutex);
-                        if (profiles.empty()) break;
-                        profile = profiles.takeFirst();
-                    }
-
-                    std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> extCs;
-                    QSemaphore extSem;
-
-                    QByteArray Address = profile->bean->DisplayAddress().toUtf8();
-                    QByteArray Url = NekoGui::dataStore->test_latency_url.toUtf8();
-                    int Timeout = 3000;
-                    QByteArray SpeedUrl = NekoGui::dataStore->test_download_url.toUtf8();
-                    int SpeedTimeout = NekoGui::dataStore->test_download_timeout;
-                    QByteArray CoreConfig;
-                    if (full_test_flags != TcpPing) {
-                        auto c = BuildConfig(profile, true, false);
-                        if (!c->error.isEmpty()) {
-                            profile->full_test_report = c->error;
-                            profile->Save();
-                            auto profileId = profile->id;
-                            runOnUiThread([this, profileId] {
-                                refresh_proxy_list(profileId);
-                            });
-                            continue;
-                        }
-                        //
-                        if (!c->extRs.empty()) {
-                            runOnUiThread(
-                                [&] {
-                                    extCs = CreateExtCFromExtR(c->extRs, true);
-                                    QThread::msleep(500);
-                                    extSem.release();
-                                },
-                                DS_cores);
-                            extSem.acquire();
-                        }
-                        //
-                        CoreConfig = QJsonObject2QString(c->coreConfig, false).toUtf8();
-                    }
-
-                    auto boxTestResult = BoxTest(full_test_flags, Address.data(), Url.data(), Timeout, SpeedUrl.data(), SpeedTimeout, CoreConfig.data());
-                    QStringList testResultList = QString::fromUtf8(boxTestResult).split("\n");
-                    free(boxTestResult);
-                    //
-                    if (!extCs.empty()) {
-                        runOnUiThread(
-                            [&] {
-                                for (const auto &extC: extCs) {
-                                    extC->Kill();
-                                }
-                                extSem.release();
-                            },
-                            DS_cores);
-                        extSem.acquire();
-                    }
-                    //
-                    bool testOK;
-                    QStringList full_test_result;
-                    if (full_test_flags == TcpPing || full_test_flags == UrlTest || full_test_flags == UdpTest) {
-                        auto testResult = testResultList.takeFirst();
-                        profile->full_test_report.clear();
-                        profile->latency = testResult.toInt(&testOK);
-                        if (profile->latency == 0) profile->latency = 1;
-                        if (!testOK) {
-                            profile->latency = -1;
-                            MW_show_log(tr("[%1] test error: %2").arg(profile->bean->DisplayTypeAndName(), testResult));
-                        }
-                    } else {
-                        if (full_test_flags & UrlTest) {
-                            auto testResult = testResultList.takeFirst();
-                            testResult.toInt(&testOK);
-                            if (testOK)
-                                full_test_result.append("Latency: " + testResult + " ms");
-                            else
-                                full_test_result.append("Latency: Error");
-                        }
-                        if (full_test_flags & UdpTest) {
-                            auto testResult = testResultList.takeFirst();
-                            testResult.toInt(&testOK);
-                            if (testOK)
-                                full_test_result.append("UDPLatency: " + testResult + " ms");
-                            else
-                                full_test_result.append("UDPLatency: Error");
-                        }
-                        if (full_test_flags & SpeedTest) {
-                            auto testResult = testResultList.takeFirst();
-                            testResult.toFloat(&testOK);
-                            if (testOK)
-                                full_test_result.append("Speed: " + testResult + " MiB/s");
-                            else
-                                full_test_result.append("Speed: Error");
-                        }
-                        if (full_test_flags & IpTest) {
-                            auto testResult = testResultList.takeFirst();
-                            full_test_result.append(testResult);
-                        }
-                    }
-
-                    if (!full_test_result.isEmpty()) profile->full_test_report = full_test_result.join("/"); // higher priority
-                    profile->Save();
-
-                    auto profileId = profile->id;
-                    runOnUiThread([this, profileId] {
-                        refresh_proxy_list(profileId);
-                    });
-                }
-
-                threadListMutex.lock();
-                speedtesting_threads.removeOne(QThread::currentThread());
-                threadListMutex.unlock();
-                doneSemaphore.release();
-            });
+        QByteArray Address = profile->bean->DisplayAddress().toUtf8();
+        QByteArray Url = NekoGui::dataStore->test_latency_url.toUtf8();
+        int Timeout = 3000;
+        QByteArray SpeedUrl = NekoGui::dataStore->test_download_url.toUtf8();
+        int SpeedTimeout = NekoGui::dataStore->test_download_timeout;
+        QByteArray CoreConfig;
+        if (full_test_flags != TcpPing) {
+            auto c = BuildConfig(profile, true, false);
+            if (!c->error.isEmpty()) {
+                profile->full_test_report = c->error;
+                profile->Save();
+                auto profileId = profile->id;
+                runOnUiThread([this, profileId] {
+                    refresh_proxy_list(profileId);
+                });
+                return;
+            }
+            //
+            if (!c->extRs.empty()) {
+                runOnUiThread(
+                    [&] {
+                        extCs = CreateExtCFromExtR(c->extRs, true);
+                        QThread::msleep(500);
+                        extSem.release();
+                    },
+                    DS_cores);
+                extSem.acquire();
+            }
+            //
+            CoreConfig = QJsonObject2QString(c->coreConfig, false).toUtf8();
         }
-        // Control
-        doneSemaphore.acquire(threadN);
-        speedtesting = false;
+
+        auto boxTestResult = BoxTest(full_test_flags, Address.data(), Url.data(), Timeout, SpeedUrl.data(), SpeedTimeout, CoreConfig.data());
+        QStringList testResultList = QString::fromUtf8(boxTestResult).split("\n");
+        free(boxTestResult);
+        //
+        if (!extCs.empty()) {
+            runOnUiThread(
+                [&] {
+                    for (const auto &extC: extCs) {
+                        extC->Kill();
+                    }
+                    extSem.release();
+                },
+                DS_cores);
+            extSem.acquire();
+        }
+        //
+        bool testOK;
+        QStringList full_test_result;
+        if (full_test_flags == TcpPing || full_test_flags == UrlTest || full_test_flags == UdpTest) {
+            auto testResult = testResultList.takeFirst();
+            profile->full_test_report.clear();
+            profile->latency = testResult.toInt(&testOK);
+            if (profile->latency == 0) profile->latency = 1;
+            if (!testOK) {
+                profile->latency = -1;
+                MW_show_log(tr("[%1] test error: %2").arg(profile->bean->DisplayTypeAndName(), testResult));
+            }
+        } else {
+            if (full_test_flags & UrlTest) {
+                auto testResult = testResultList.takeFirst();
+                testResult.toInt(&testOK);
+                if (testOK)
+                    full_test_result.append("Latency: " + testResult + " ms");
+                else
+                    full_test_result.append("Latency: Error");
+            }
+            if (full_test_flags & UdpTest) {
+                auto testResult = testResultList.takeFirst();
+                testResult.toInt(&testOK);
+                if (testOK)
+                    full_test_result.append("UDPLatency: " + testResult + " ms");
+                else
+                    full_test_result.append("UDPLatency: Error");
+            }
+            if (full_test_flags & SpeedTest) {
+                auto testResult = testResultList.takeFirst();
+                testResult.toFloat(&testOK);
+                if (testOK)
+                    full_test_result.append("Speed: " + testResult + " MiB/s");
+                else
+                    full_test_result.append("Speed: Error");
+            }
+            if (full_test_flags & IpTest) {
+                auto testResult = testResultList.takeFirst();
+                full_test_result.append(testResult);
+            }
+        }
+
+        if (!full_test_result.isEmpty()) profile->full_test_report = full_test_result.join("/"); // higher priority
+        profile->Save();
+
+        auto profileId = profile->id;
+        runOnUiThread([this, profileId] {
+            refresh_proxy_list(profileId);
+        });
     });
 }
 

@@ -15,7 +15,7 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 if (NOT QT_VERSION_MAJOR)
     set(QT_VERSION_MAJOR 6)
 endif ()
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network Svg LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network Svg LinguistTools Concurrent)
 
 if (NKR_CROSS)
     set_property(TARGET Qt6::moc PROPERTY IMPORTED_LOCATION /usr/bin/moc)
@@ -50,8 +50,6 @@ message("[CMAKE_FIND_ROOT_PATH] ${CMAKE_FIND_ROOT_PATH}")
 
 include("cmake/print.cmake")
 include("cmake/nkr.cmake")
-
-find_package(Threads)
 
 if (NKR_PACKAGE OR NKR_PACKAGE_MACOS)
     nkr_add_compile_definitions(NKR_CPP_USE_APPDATA)
@@ -264,10 +262,10 @@ target_include_directories(nekoray PRIVATE
 target_link_directories(nekoray PRIVATE ${CMAKE_BINARY_DIR})
 
 target_link_libraries(nekoray PRIVATE
-        Qt${QT_VERSION_MAJOR}::Widgets 
-        Qt${QT_VERSION_MAJOR}::Network 
+        Qt${QT_VERSION_MAJOR}::Widgets
+        Qt${QT_VERSION_MAJOR}::Network
         Qt${QT_VERSION_MAJOR}::Svg
-        Threads::Threads
+        Qt${QT_VERSION_MAJOR}::Concurrent
         ${PLATFORM_LIBRARIES}
         QJsonModel
         QHotkey::QHotkey 

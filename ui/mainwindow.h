@@ -4,6 +4,7 @@
 
 #include "main/NekoGui.hpp"
 
+#include <QFuture>
 #include <QTime>
 #include <QTableWidgetItem>
 #include <QKeyEvent>
@@ -150,6 +151,16 @@ private:
     //
     bool dialog_is_using = false;
     bool mw_sub_updating = false;
+    //
+    enum TestMode {
+        TcpPing = 1 << 0,
+        UrlTest = 1 << 1,
+        UdpTest = 1 << 2,
+        SpeedTest = 1 << 3,
+        IpTest = 1 << 4
+    };
+    QList<std::shared_ptr<NekoGui::ProxyEntity>> speedtestProfiles;
+    QFuture<void> speedtestFuture;
 
     QList<std::shared_ptr<NekoGui::ProxyEntity>> get_now_selected_list();
 
@@ -175,14 +186,6 @@ private:
     void speedtest_current();
 
     void CheckUpdate();
-
-    enum TestMode {
-        TcpPing = 1 << 0,
-        UrlTest = 1 << 1,
-        UdpTest = 1 << 2,
-        SpeedTest = 1 << 3,
-        IpTest = 1 << 4
-    };
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;

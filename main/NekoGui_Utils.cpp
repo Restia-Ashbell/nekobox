@@ -1,7 +1,5 @@
 #include "NekoGui_Utils.hpp"
 
-#include "3rdparty/QThreadCreateThread.hpp"
-
 #include <random>
 
 #include <QApplication>
@@ -244,26 +242,13 @@ void ActivateWindow(QWidget *w) {
     w->activateWindow();
 }
 
-void runOnUiThread(const std::function<void()> &callback, QObject *parent) {
-    // any thread
-    auto *timer = new QTimer();
-    auto thread = dynamic_cast<QThread *>(parent);
-    if (thread == nullptr) {
-        timer->moveToThread(parent == nullptr ? mainwindow->thread() : parent->thread());
-    } else {
-        timer->moveToThread(thread);
-    }
-    timer->setSingleShot(true);
-    QObject::connect(timer, &QTimer::timeout, [=]() {
-        // main thread
+void runOnUiThread(const std::function<void()> &callback, QObject *context) {
+    if (!context) context = mainwindow;
+    if (QThread::currentThread() == context->thread()) {
         callback();
-        timer->deleteLater();
-    });
-    QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection, Q_ARG(int, 0));
-}
-
-void runOnNewThread(const std::function<void()> &callback) {
-    createQThread(callback)->start();
+    } else {
+        QMetaObject::invokeMethod(context, [callback]() { callback(); }, Qt::QueuedConnection);
+    }
 }
 
 void setTimeout(const std::function<void()> &callback, QObject *obj, int timeout) {
