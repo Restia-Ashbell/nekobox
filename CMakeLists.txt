@@ -159,6 +159,9 @@ set(PROJECT_SOURCES
         ui/edit/edit_trojan_vless.h
         ui/edit/edit_trojan_vless.cpp
         ui/edit/edit_trojan_vless.ui
+        ui/edit/edit_anytls.h
+        ui/edit/edit_anytls.cpp
+        ui/edit/edit_anytls.ui
 
         ui/edit/edit_naive.h
         ui/edit/edit_naive.cpp

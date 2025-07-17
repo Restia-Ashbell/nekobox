@@ -19,6 +19,8 @@ namespace NekoGui_fmt {
 
     class QUICBean;
 
+    class AnyTLSBean;
+
     class SSHBean;
 
     class WireGuardBean;
@@ -77,6 +79,10 @@ namespace NekoGui {
 
         [[nodiscard]] NekoGui_fmt::QUICBean *QUICBean() const {
             return (NekoGui_fmt::QUICBean *) bean.get();
+        };
+
+        [[nodiscard]] NekoGui_fmt::AnyTLSBean *AnyTLSBean() const {
+            return (NekoGui_fmt::AnyTLSBean *) bean.get();
         };
 
         [[nodiscard]] NekoGui_fmt::SSHBean *SSHBean() const {

@@ -285,6 +285,20 @@ namespace NekoGui_fmt {
         return url.toString(QUrl::FullyEncoded);
     }
 
+    QString AnyTLSBean::ToShareLink() {
+        QUrl url;
+        url.setScheme("anytls");
+        url.setUserName(password);
+        url.setHost(serverAddress);
+        url.setPort(serverPort);
+        if (!name.isEmpty()) url.setFragment(name);
+        QUrlQuery query;
+        if (!stream->sni.isEmpty()) query.addQueryItem("sni", stream->sni);
+        if (stream->allow_insecure) query.addQueryItem("insecure", "1");
+        url.setQuery(query);
+        return url.toString(QUrl::FullyEncoded);
+    }
+
     QString SSHBean::ToShareLink() {
         QUrl url;
         url.setScheme("ssh");

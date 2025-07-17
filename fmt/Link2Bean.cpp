@@ -367,6 +367,21 @@ namespace NekoGui_fmt {
         return !serverAddress.isEmpty();
     }
 
+    bool AnyTLSBean::TryParseLink(const QString &link) {
+        auto url = QUrl(link);
+        if (!url.isValid()) return false;
+        auto query = GetQuery(url);
+
+        name = url.fragment(QUrl::FullyDecoded);
+        serverAddress = url.host();
+        serverPort = url.port();
+        password = url.userName();
+        stream->sni = query.queryItemValue("sni");
+        stream->allow_insecure = query.queryItemValue("insecure") == "1";
+
+        return !(password.isEmpty() || serverAddress.isEmpty());
+    }
+
     bool SSHBean::TryParseLink(const QString &link) {
         auto url = QUrl(link);
         if (!url.isValid()) return false;

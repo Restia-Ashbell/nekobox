@@ -264,6 +264,24 @@ namespace NekoGui_fmt {
         return result;
     }
 
+    CoreObjOutboundBuildResult AnyTLSBean::BuildCoreObjSingBox() {
+        CoreObjOutboundBuildResult result;
+
+        QJsonObject outbound{
+            {"type", "anytls"},
+            {"server", serverAddress},
+            {"server_port", serverPort},
+            {"password", password},
+            {"idle_session_check_interval", idleSessionCheckInterval},
+            {"idle_session_timeout", idleSessionTimeout},
+            {"min_idle_session", minIdleSession},
+        };
+
+        stream->BuildStreamSettingsSingBox(&outbound);
+        result.outbound = outbound;
+        return result;
+    }
+
     CoreObjOutboundBuildResult SSHBean::BuildCoreObjSingBox() {
         CoreObjOutboundBuildResult result;
 

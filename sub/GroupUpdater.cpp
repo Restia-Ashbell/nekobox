@@ -209,6 +209,12 @@ namespace NekoGui_sub {
             ok = ent->QUICBean()->TryParseLink(str);
         }
 
+        // AnyTLS
+        else if (str.startsWith("anytls://")) {
+            ent = NekoGui::ProfileManager::NewProxyEntity("anytls");
+            ok = ent->AnyTLSBean()->TryParseLink(str);
+        }
+
         // SSH
         else if (str.startsWith("ssh://")) {
             ent = NekoGui::ProfileManager::NewProxyEntity("ssh");
@@ -576,6 +582,11 @@ namespace NekoGui_sub {
                         if (bean->sni.isEmpty()) bean->sni = bean->serverAddress;
                         bean->serverAddress = Node2QString(proxy["ip"]);
                     }
+                } else if (type == "anytls") {
+                    auto bean = ent->AnyTLSBean();
+                    bean->password = Node2QString(proxy["password"]);
+                    bean->stream->sni = FIRST_OR_SECOND(Node2QString(proxy["sni"]), Node2QString(proxy["servername"]));
+                    bean->stream->allow_insecure = Node2Bool(proxy["skip-cert-verify"]);
                 } else if (type == "ssh") {
                     auto bean = ent->SSHBean();
                     bean->user = Node2QString(proxy["username"]);
