@@ -1,78 +1,48 @@
 #include "TrafficLooper.hpp"
 
+#include "libbox.h"
+
 #include "ui/mainwindow.h"
 
 #include <QThread>
 #include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QElapsedTimer>
 
 namespace NekoGui_traffic {
 
-    TrafficLooper *trafficLooper = new TrafficLooper;
-    QElapsedTimer elapsedTimer;
-
-    TrafficData *TrafficLooper::update_stats(TrafficData *item, libcore::QueryStatsResp &resp) {
-        if (NekoGui::dataStore->traffic_loop_interval == 0) {
-            return nullptr;
-        }
+    void TrafficLooper::update_stats(TrafficData *item, QJsonObject &stats) {
         // last update
         auto now = elapsedTimer.elapsed();
         auto interval = now - item->last_update;
         item->last_update = now;
-        if (interval <= 0) return nullptr;
+        if (interval <= 0) return;
 
         // query
-        auto uplink = resp.ups().contains(item->tag) ? resp.ups().at(item->tag) : 0;
-        auto downlink = resp.downs().contains(item->tag) ? resp.downs().at(item->tag) : 0;
+        QJsonObject ups = stats["ups"].toObject();
+        QJsonObject downs = stats["downs"].toObject();
+        QString tag = QString::fromStdString(item->tag);
+        auto uplink = ups[tag].toDouble();
+        auto downlink = downs[tag].toDouble();
 
         // add diff
-        item->downlink += downlink;
         item->uplink += uplink;
-        item->downlink_rate = downlink * 1000 / interval;
+        item->downlink += downlink;
         item->uplink_rate = uplink * 1000 / interval;
-
-        // return diff
-        auto ret = new TrafficData(item->tag);
-        ret->downlink = downlink;
-        ret->uplink = uplink;
-        ret->downlink_rate = item->downlink_rate;
-        ret->uplink_rate = item->uplink_rate;
-        return ret;
+        item->downlink_rate = downlink * 1000 / interval;
     }
 
     void TrafficLooper::UpdateAll() {
-        if (NekoGui::dataStore->traffic_loop_interval == 0) {
-            return;
-        }
-        auto resp = NekoGui_rpc::defaultClient->QueryStats();
-        std::map<std::string, TrafficData *> updated; // tag to diff
-        for (const auto &item: this->items) {
+        auto boxStatsResult = BoxStats();
+        auto stats = QString2QJsonObject(boxStatsResult);
+        free(boxStatsResult);
+
+        for (const auto &item: items) {
             auto data = item.get();
-            auto diff = updated[data->tag];
-            // 避免重复查询一个 outbound tag
-            if (diff == nullptr) {
-                diff = update_stats(data, resp);
-                updated[data->tag] = diff;
-            } else {
-                data->uplink += diff->uplink;
-                data->downlink += diff->downlink;
-                data->uplink_rate = diff->uplink_rate;
-                data->downlink_rate = diff->downlink_rate;
-            }
+            update_stats(data, stats);
         }
-        updated[direct->tag] = update_stats(direct, resp);
-        //
-        for (const auto &pair: updated) {
-            delete pair.second;
-        }
+        update_stats(direct, stats);
     }
 
     void TrafficLooper::Loop() {
-        if (NekoGui::dataStore->traffic_loop_interval == 0) {
-            return;
-        }
         elapsedTimer.start();
         while (true) {
             auto sleep_ms = NekoGui::dataStore->traffic_loop_interval;
@@ -112,8 +82,8 @@ namespace NekoGui_traffic {
                     m->refresh_status(QObject::tr("Proxy: %1\nDirect: %2").arg(proxy->DisplaySpeed(), direct->DisplaySpeed()));
                 }
                 for (const auto &item: items) {
-                    if (item->id < 0) continue;
-                    m->refresh_proxy_list(item->id);
+                    if (item->id >= 0)
+                        m->refresh_proxy_list(item->id);
                 }
             });
         }

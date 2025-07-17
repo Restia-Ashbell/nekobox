@@ -36,14 +36,6 @@ endif ()
 
 #### default prefix path ####
 
-if (NOT NKR_LIBS)
-    if (NKR_PACKAGE)
-        list(APPEND NKR_LIBS ${CMAKE_SOURCE_DIR}/libs/deps/package)
-    else ()
-        list(APPEND NKR_LIBS ${CMAKE_SOURCE_DIR}/libs/deps/built)
-    endif ()
-endif ()
-
 if (NOT NKR_DISABLE_LIBS)
     list(APPEND CMAKE_PREFIX_PATH ${NKR_LIBS})
 endif ()
@@ -64,8 +56,6 @@ find_package(Threads)
 if (NKR_PACKAGE OR NKR_PACKAGE_MACOS)
     nkr_add_compile_definitions(NKR_CPP_USE_APPDATA)
 endif ()
-
-include("cmake/myproto.cmake")
 
 set(BUILD_SHARED_LIBS OFF)
 set(QHOTKEY_INSTALL OFF)
@@ -120,8 +110,6 @@ set(PROJECT_SOURCES
         3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.cpp
         3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp
         3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.ui
-
-        rpc/gRPC.cpp
 
         db/Database.cpp
         db/traffic/TrafficLooper.cpp
@@ -273,6 +261,8 @@ target_include_directories(nekoray PRIVATE
     ${qrcodegen_SOURCE_DIR}/cpp
 )
 
+target_link_directories(nekoray PRIVATE ${CMAKE_BINARY_DIR})
+
 target_link_libraries(nekoray PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets 
         Qt${QT_VERSION_MAJOR}::Network 
@@ -283,7 +273,7 @@ target_link_libraries(nekoray PRIVATE
         QHotkey::QHotkey 
         yaml-cpp::yaml-cpp
         ZXing::ZXing
-        myproto
+        libbox
 )
 
 qt_finalize_executable(nekoray)

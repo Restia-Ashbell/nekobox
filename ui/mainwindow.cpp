@@ -1,9 +1,12 @@
 #include "./ui_mainwindow.h"
 #include "mainwindow.h"
 
+#include "libbox.h"
+
 #include "fmt/Preset.hpp"
 #include "db/ProfileFilter.hpp"
 #include "db/ConfigBuilder.hpp"
+#include "db/traffic/TrafficLooper.hpp"
 #include "sub/GroupUpdater.hpp"
 #include "sys/ExternalProcess.hpp"
 #include "sys/AutoRun.hpp"
@@ -107,7 +110,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->toolButton_server->setMenu(ui->menu_server);
     ui->menubar->setVisible(false);
     connect(ui->toolButton_dashboard, &QToolButton::clicked, this, [=] {
-        if (!NekoGui::dataStore->clash_api_external_controller.isEmpty() && NekoGui::dataStore->core_running) {
+        if (!NekoGui::dataStore->clash_api_external_controller.isEmpty() && NekoGui::dataStore->started_id >= 0) {
             QDesktopServices::openUrl(QUrl("http://" + NekoGui::dataStore->clash_api_external_controller));
         } else {
             QMessageBox::warning(this, tr("Unable to Open Dashboard"), tr("Please configure the Clash API and start the core first."));
@@ -332,7 +335,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->menu_qr, &QAction::triggered, this, [=]() { display_qr_link(false); });
     connect(ui->menu_tcp_ping, &QAction::triggered, this, [=]() { speedtest_current_group(0); });
     connect(ui->menu_url_test, &QAction::triggered, this, [=]() { speedtest_current_group(1); });
-    connect(ui->menu_full_test, &QAction::triggered, this, [=]() { speedtest_current_group(2); });
+    connect(ui->menu_full_test, &QAction::triggered, this, [=]() { speedtest_current_group(999); });
     connect(ui->menu_stop_testing, &QAction::triggered, this, [=]() { speedtest_current_group(114514); });
     //
     auto set_selected_or_group = [=](int mode) {
@@ -378,33 +381,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     });
     refresh_status();
 
-    // Prepare core
-    NekoGui::dataStore->core_token = GetRandomString(32);
-    NekoGui::dataStore->core_port = MkPort();
-    if (NekoGui::dataStore->core_port <= 0) NekoGui::dataStore->core_port = 19810;
-
-    auto core_path = QApplication::applicationDirPath() + "/";
-    core_path += "nekobox_core";
-
-    QStringList args;
-    args.push_back("nekobox");
-    args.push_back("-port");
-    args.push_back(Int2String(NekoGui::dataStore->core_port));
-    if (NekoGui::dataStore->flag_debug) args.push_back("-debug");
-
-    // Start core
-    runOnUiThread(
-        [=] {
-            core_process = new NekoGui_sys::CoreProcess(core_path, args);
-            // Remember last started
-            if (NekoGui::dataStore->remember_enable && NekoGui::dataStore->remember_id >= 0) {
-                core_process->start_profile_when_core_is_up = NekoGui::dataStore->remember_id;
-            }
-            // Setup
-            core_process->Start();
-            setup_grpc();
-        },
-        DS_cores);
+    BoxMain([](const char *log) { MW_show_log(log); });
+    runOnNewThread([=] { NekoGui_traffic::trafficLooper->Loop(); });
 
     // Remember system proxy
     if (NekoGui::dataStore->remember_enable || NekoGui::dataStore->flag_restart_tun_on) {
@@ -660,7 +638,6 @@ void MainWindow::on_menu_exit_triggered() {
         hide();
         runOnNewThread([=] {
             sem_stopped.acquire();
-            stop_core_daemon();
             runOnUiThread([=] {
                 on_menu_exit_triggered(); // continue exit progress
             });
@@ -1590,10 +1567,6 @@ void MainWindow::start_select_mode(QObject *context, const std::function<void(in
     refresh_status();
 }
 
-// 连接列表
-
-inline QJsonArray last_arr; // format is nekoray_connections_json
-
 // Hotkey
 
 #ifndef NKR_NO_QHOTKEY
@@ -1649,40 +1622,6 @@ void MainWindow::RegisterHotkey(bool unregister) {}
 void MainWindow::HotkeyEvent(const QString &key) {}
 
 #endif
-
-// VPN Launcher
-
-bool MainWindow::StopVPNProcess(bool unconditional) {
-    if (unconditional || vpn_pid != 0) {
-        bool ok;
-        core_process->processId();
-#ifdef Q_OS_WIN
-        auto ret = WinCommander::runProcessElevated("taskkill", {"/IM", "nekobox_core.exe",
-                                                                 "/FI",
-                                                                 "PID ne " + Int2String(core_process->processId())});
-        ok = ret == 0;
-#else
-        QProcess p;
-#ifdef Q_OS_MACOS
-        p.start("osascript", {"-e", QString("do shell script \"%1\" with administrator privileges")
-                                        .arg("pkill -2 -U 0 nekobox_core")});
-#else
-        if (unconditional) {
-            p.start("pkexec", {"killall", "-2", "nekobox_core"});
-        } else {
-            p.start("pkexec", {"pkill", "-2", "-P", Int2String(vpn_pid)});
-        }
-#endif
-        p.waitForFinished();
-        ok = p.exitCode() == 0;
-#endif
-        if (!unconditional) {
-            ok ? vpn_pid = 0 : MessageBoxWarning(tr("Error"), tr("Failed to stop Tun process"));
-        }
-        return ok;
-    }
-    return true;
-}
 
 void MainWindow::updateLogMaxLines() {
     qvLogDocument->setMaximumBlockCount(NekoGui::dataStore->max_log_line);

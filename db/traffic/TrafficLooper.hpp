@@ -3,9 +3,9 @@
 #include <QString>
 #include <QList>
 #include <QMutex>
+#include <QElapsedTimer>
 
 #include "TrafficData.hpp"
-#include "rpc/gRPC.h"
 
 namespace NekoGui_traffic {
     class TrafficLooper {
@@ -22,10 +22,12 @@ namespace NekoGui_traffic {
         void Loop();
 
     private:
+        QElapsedTimer elapsedTimer;
+
         TrafficData *direct = new TrafficData("direct");
 
-        [[nodiscard]] static TrafficData *update_stats(TrafficData *item, libcore::QueryStatsResp &resp);
+        void update_stats(TrafficData *item, QJsonObject &stats);
     };
 
-    extern TrafficLooper *trafficLooper;
+    inline TrafficLooper *trafficLooper = new TrafficLooper;
 } // namespace NekoGui_traffic

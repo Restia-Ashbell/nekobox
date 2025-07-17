@@ -19,10 +19,6 @@
 #include "db/ProxyEntity.hpp"
 #include "main/GuiUtils.hpp"
 
-namespace NekoGui_sys {
-    class CoreProcess;
-}
-
 QT_BEGIN_NAMESPACE
 namespace Ui {
     class MainWindow;
@@ -60,8 +56,6 @@ public:
     void start_select_mode(QObject *context, const std::function<void(int)> &callback);
 
     void RegisterHotkey(bool unregister);
-
-    bool StopVPNProcess(bool unconditional = false);
 
     void updateLogMaxLines();
 
@@ -129,16 +123,13 @@ private slots:
 
     void on_tabWidget_currentChanged(int index);
 
-    void on_tabWidget_customContextMenuRequested(const QPoint& p);
+    void on_tabWidget_customContextMenuRequested(const QPoint &p);
 
 private:
     Ui::MainWindow *ui;
     QSystemTrayIcon *tray;
     QShortcut *shortcut_ctrl_f = new QShortcut(QKeySequence("Ctrl+F"), this);
     QShortcut *shortcut_esc = new QShortcut(QKeySequence("Esc"), this);
-    //
-    NekoGui_sys::CoreProcess *core_process;
-    qint64 vpn_pid = 0;
     //
     bool qvLogAutoScoll = true;
     QTextDocument *qvLogDocument = new QTextDocument(this);
@@ -175,23 +166,23 @@ private:
     void closeEvent(QCloseEvent *event) override;
 
     template<typename DialogType, typename... Args>
-    void openDialog(Args&&... args);
-
-    //
+    void openDialog(Args &&...args);
 
     void HotkeyEvent(const QString &key);
-
-    // grpc and ...
-
-    static void setup_grpc();
 
     void speedtest_current_group(int mode);
 
     void speedtest_current();
 
-    static void stop_core_daemon();
-
     void CheckUpdate();
+
+    enum TestMode {
+        TcpPing = 1 << 0,
+        UrlTest = 1 << 1,
+        UdpTest = 1 << 2,
+        SpeedTest = 1 << 3,
+        IpTest = 1 << 4
+    };
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;

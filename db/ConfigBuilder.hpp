@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ProxyEntity.hpp"
-#include "sys/ExternalProcess.hpp"
 
 namespace NekoGui {
     class BuildConfigResult {

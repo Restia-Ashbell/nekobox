@@ -16,8 +16,6 @@ fi
 rm -rf $DEST
 mkdir -p $DEST
 
-export CGO_ENABLED=0
-
 #### Go: updater ####
 # pushd go/cmd/updater
 # [ "$GOOS" == "darwin" ] || go build -o $DEST -trimpath -ldflags "-w -s"
@@ -25,14 +23,4 @@ export CGO_ENABLED=0
 # popd
 
 #### Go: nekobox_core ####
-pushd CORE/cmd/sing-box
-COMMIT_HASH=$(git rev-parse --short HEAD)
-go build -v -trimpath -ldflags "-w -s -X 'github.com/sagernet/sing-box/constant.Version=$COMMIT_HASH'" -tags "with_clash_api,with_gvisor,with_quic,with_wireguard,with_utls,with_dhcp"
-
-
-if [ -f "sing-box.exe" ]; then
-  mv sing-box.exe $DEST/nekobox_core.exe
-elif [ -f "sing-box" ]; then
-  mv sing-box $DEST/nekobox_core
-fi
-popd
+go build -v -buildmode=c-shared -trimpath -ldflags "-w -s -X github.com/sagernet/sing-box/constant.Version=$(git rev-parse --short HEAD)" -tags "with_clash_api,with_gvisor,with_quic,with_wireguard,with_utls,with_dhcp" -o ./build/ ./cmd/sing-box
