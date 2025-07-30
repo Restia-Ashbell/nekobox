@@ -11,7 +11,7 @@ DialogEditGroup::DialogEditGroup(const std::shared_ptr<NekoGui::Group> &ent, QWi
     ui->setupUi(this);
     this->ent = ent;
 
-    connect(ui->type, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int index) {
+    connect(ui->type, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=, this](int index) {
         ui->cat_sub->setHidden(index == 0);
         ADJUST_SIZE
     });
@@ -38,12 +38,12 @@ DialogEditGroup::DialogEditGroup(const std::shared_ptr<NekoGui::Group> &ent, QWi
 
     CACHE.front_proxy = ent->front_proxy_id;
     refresh_front_proxy();
-    connect(ui->front_proxy_clear, &QPushButton::clicked, this, [=] {
+    connect(ui->front_proxy_clear, &QPushButton::clicked, this, [=, this] {
         CACHE.front_proxy = -1;
         refresh_front_proxy();
     });
 
-    connect(ui->copy_links, &QPushButton::clicked, this, [=] {
+    connect(ui->copy_links, &QPushButton::clicked, this, [=, this] {
         QStringList links;
         for (const auto &[_, profile]: NekoGui::profileManager->profiles) {
             if (profile->gid != ent->id) continue;
@@ -52,7 +52,7 @@ DialogEditGroup::DialogEditGroup(const std::shared_ptr<NekoGui::Group> &ent, QWi
         QApplication::clipboard()->setText(links.join("\n"));
         MessageBoxInfo(software_name, tr("Copied"));
     });
-    connect(ui->copy_links_nkr, &QPushButton::clicked, this, [=] {
+    connect(ui->copy_links_nkr, &QPushButton::clicked, this, [=, this] {
         QStringList links;
         for (const auto &[_, profile]: NekoGui::profileManager->profiles) {
             if (profile->gid != ent->id) continue;
@@ -94,7 +94,7 @@ void DialogEditGroup::on_front_proxy_clicked() {
     auto parent = dynamic_cast<QWidget *>(this->parent());
     parent->hide();
     this->hide();
-    GetMainWindow()->start_select_mode(this, [=](int id) {
+    GetMainWindow()->start_select_mode(this, [=, this](int id) {
         CACHE.front_proxy = id;
         refresh_front_proxy();
         parent->show();

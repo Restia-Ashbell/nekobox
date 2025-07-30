@@ -59,7 +59,7 @@ namespace NekoGui_fmt {
         }
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0) // TODO older QT
-        QHostInfo::lookupHost(serverAddress, QApplication::instance(), [=](const QHostInfo &host) {
+        QHostInfo::lookupHost(serverAddress, QApplication::instance(), [=, this](const QHostInfo &host) {
             auto addr = host.addresses();
             if (!addr.isEmpty()) {
                 auto domain = serverAddress;

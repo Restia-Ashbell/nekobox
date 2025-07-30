@@ -91,7 +91,7 @@ void EditCustom::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     }
 
     // Preview
-    connect(ui->preview, &QPushButton::clicked, this, [=] {
+    connect(ui->preview, &QPushButton::clicked, this, [=, this] {
         // CustomBean::BuildExternal
         QStringList th;
         auto mapping_port = ui->mapping_port->text().toInt();

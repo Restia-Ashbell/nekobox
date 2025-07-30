@@ -24,7 +24,7 @@ DialogManageRoutes::DialogManageRoutes(QWidget *parent) : QDialog(parent), ui(ne
     ui->direct_dns_strategy->addItems(Preset::SingBox::DomainStrategy);
     ui->remote_dns_strategy->addItems(Preset::SingBox::DomainStrategy);
     //
-    connect(ui->enable_custom, &QCheckBox::checkStateChanged, this, [=](int state) {
+    connect(ui->enable_custom, &QCheckBox::checkStateChanged, this, [=, this](int state) {
         auto useDNSObject = state == Qt::Checked;
         ui->custom_edit->setDisabled(!useDNSObject);
         ui->commonBox->setDisabled(useDNSObject);
@@ -33,7 +33,7 @@ DialogManageRoutes::DialogManageRoutes(QWidget *parent) : QDialog(parent), ui(ne
     });
     emit ui->enable_custom->checkStateChanged(Qt::Unchecked);
     //
-    connect(ui->custom_edit, &QPushButton::clicked, this, [=] {
+    connect(ui->custom_edit, &QPushButton::clicked, this, [=, this] {
         C_EDIT_JSON_ALLOW_EMPTY(custom)
     });
     //
@@ -150,7 +150,7 @@ void DialogManageRoutes::on_load_save_clicked() {
     auto cancel = new QPushButton;
     cancel->setText(tr("Cancel"));
     bottom->addWidget(cancel);
-    connect(load, &QPushButton::clicked, w, [=] {
+    connect(load, &QPushButton::clicked, w, [=, this] {
         auto fn = lineEdit->text();
         if (!fn.isEmpty()) {
             auto r = std::make_unique<NekoGui::Routing>();
@@ -164,7 +164,7 @@ void DialogManageRoutes::on_load_save_clicked() {
             }
         }
     });
-    connect(save, &QPushButton::clicked, w, [=] {
+    connect(save, &QPushButton::clicked, w, [=, this] {
         auto fn = lineEdit->text();
         if (!fn.isEmpty()) {
             auto r = std::make_unique<NekoGui::Routing>();
@@ -177,7 +177,7 @@ void DialogManageRoutes::on_load_save_clicked() {
             }
         }
     });
-    connect(remove, &QPushButton::clicked, w, [=] {
+    connect(remove, &QPushButton::clicked, w, [=, this] {
         auto fn = lineEdit->text();
         if (!fn.isEmpty() && NekoGui::Routing::List().length() > 1) {
             if (QMessageBox::question(nullptr, software_name, tr("Remove routing: %1").arg(fn)) == QMessageBox::Yes) {
@@ -192,7 +192,7 @@ void DialogManageRoutes::on_load_save_clicked() {
         }
     });
     connect(cancel, &QPushButton::clicked, w, &QDialog::accept);
-    connect(list, &QListWidget::itemDoubleClicked, this, [=](QListWidgetItem *item) {
+    connect(list, &QListWidget::itemDoubleClicked, this, [=, this](QListWidgetItem *item) {
         lineEdit->setText(item->text());
         emit load->clicked();
     });

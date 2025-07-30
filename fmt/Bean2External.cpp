@@ -36,7 +36,7 @@ namespace NekoGui_fmt {
     }
 
     int QUICBean::NeedExternal(bool isFirstProfile) {
-        auto hysteriaCore = [=] {
+        auto hysteriaCore = [=, this] {
             if (isFirstProfile) {
                 if (NekoGui::dataStore->spmode_vpn && hyProtocol != hysteria_protocol_facktcp && hopPort.trimmed().isEmpty()) {
                     return 1;
@@ -50,7 +50,7 @@ namespace NekoGui_fmt {
             return 1;
         };
 
-        auto hysteria2Core = [=] {
+        auto hysteria2Core = [=, this] {
             if (isFirstProfile) {
                 if (NekoGui::dataStore->spmode_vpn) {
                     return 1;
@@ -60,7 +60,7 @@ namespace NekoGui_fmt {
             return 1;
         };
 
-        auto tuicCore = [=] {
+        auto tuicCore = [=, this] {
             if (isFirstProfile) {
                 if (NekoGui::dataStore->spmode_vpn) {
                     return 1;

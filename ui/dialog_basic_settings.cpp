@@ -41,14 +41,14 @@ public:
         setLayout(layout);
         setContentsMargins(0, 0, 0, 0);
         //
-        connect(pushButton_pick, &QPushButton::clicked, this, [=] {
+        connect(pushButton_pick, &QPushButton::clicked, this, [=, this] {
             auto fn = QFileDialog::getOpenFileName(this, QObject::tr("Select"), QDir::currentPath(),
                                                    "", nullptr, QFileDialog::Option::ReadOnly);
             if (!fn.isEmpty()) {
                 lineEdit_path->setText(fn);
             }
         });
-        connect(lineEdit_path, &QLineEdit::textChanged, this, [=](const QString &newTxt) {
+        connect(lineEdit_path, &QLineEdit::textChanged, this, [=, this](const QString &newTxt) {
             extraCore->insert(coreName, newTxt);
         });
     }
@@ -67,7 +67,7 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     D_LOAD_STRING(test_download_url)
     D_LOAD_BOOL(old_share_link_format)
 
-    connect(ui->custom_inbound_edit, &QPushButton::clicked, this, [=] {
+    connect(ui->custom_inbound_edit, &QPushButton::clicked, this, [=, this] {
         C_EDIT_JSON_ALLOW_EMPTY(custom_inbound)
     });
 
@@ -98,13 +98,13 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     }
     //
     ui->language->setCurrentIndex(NekoGui::dataStore->language);
-    connect(ui->language, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int index) {
+    connect(ui->language, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=, this](int index) {
         CACHE.needRestart = true;
     });
     //
     ui->font->addItems(QFontDatabase::families());
     ui->font->setCurrentText(QApplication::font().family());
-    connect(ui->font, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged), this, [=](const QString &fontName) {
+    connect(ui->font, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged), this, [=, this](const QString &fontName) {
         QFont currentFont = QApplication::font();
         currentFont.setFamily(fontName);
         QApplication::setFont(currentFont);
@@ -124,7 +124,7 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
         ui->theme->setCurrentText(NekoGui::dataStore->theme);
     }
     //
-    connect(ui->theme, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int index) {
+    connect(ui->theme, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=, this](int index) {
         if (index + 1 <= built_in_len) {
             themeManager->ApplyTheme(Int2String(index));
             NekoGui::dataStore->theme = Int2String(index);
@@ -170,7 +170,7 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
         extra_core_layout->addWidget(new ExtraCoreWidget(&CACHE.extraCore, s));
     }
     //
-    connect(ui->extra_core_add, &QPushButton::clicked, this, [=] {
+    connect(ui->extra_core_add, &QPushButton::clicked, this, [=, this] {
         bool ok;
         auto s = QInputDialog::getText(nullptr, tr("Add"),
                                        tr("Please input the core name."),
@@ -181,7 +181,7 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
         extra_core_layout->addWidget(new ExtraCoreWidget(&CACHE.extraCore, s));
         CACHE.extraCore.insert(s, "");
     });
-    connect(ui->extra_core_del, &QPushButton::clicked, this, [=] {
+    connect(ui->extra_core_del, &QPushButton::clicked, this, [=, this] {
         bool ok;
         auto s = QInputDialog::getItem(nullptr, tr("Delete"),
                                        tr("Please select the core name."),
@@ -393,7 +393,7 @@ void DialogBasicSettings::on_inbound_auth_clicked() {
     auto box = new QDialogButtonBox;
     box->setOrientation(Qt::Horizontal);
     box->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
-    connect(box, &QDialogButtonBox::accepted, w, [=] {
+    connect(box, &QDialogButtonBox::accepted, w, [=, this] {
         NekoGui::dataStore->inbound_auth->username = user->text();
         NekoGui::dataStore->inbound_auth->password = pass->text();
         MW_dialog_message(Dialog_DialogBasicSettings, "UpdateDataStore");

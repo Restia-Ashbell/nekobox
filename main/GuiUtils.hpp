@@ -92,4 +92,4 @@
         }                                                            \
     }
 
-#define ADJUST_SIZE runOnUiThread([=] { adjustSize(); adjustPosition(mainwindow); }, this);
+#define ADJUST_SIZE runOnUiThread([this] { adjustSize(); adjustPosition(mainwindow); }, this);

@@ -82,7 +82,7 @@ void MainWindow::speedtest_current_group(int mode) {
     }
 
     QThreadPool::globalInstance()->setMaxThreadCount(NekoGui::dataStore->test_concurrent);
-    speedtestFuture = QtConcurrent::map(speedtestProfiles, [=](std::shared_ptr<NekoGui::ProxyEntity> &profile) {
+    speedtestFuture = QtConcurrent::map(speedtestProfiles, [=, this](std::shared_ptr<NekoGui::ProxyEntity> &profile) {
         std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> extCs;
         QSemaphore extSem;
 
@@ -190,14 +190,14 @@ void MainWindow::speedtest_current() {
     last_test_time = QTime::currentTime();
     ui->label_running->setText(tr("Testing"));
 
-    runOnNewThread([=] {
+    runOnNewThread([=, this] {
         auto Url = NekoGui::dataStore->test_latency_url.toUtf8();
         auto boxTestResult = BoxTest(UrlTest, nullptr, Url.data(), 3000, nullptr, -1, nullptr);
         QString testResult(boxTestResult);
         free(boxTestResult);
         last_test_time = QTime::currentTime();
 
-        runOnUiThread([=] {
+        runOnUiThread([=, this] {
             bool testOK;
             testResult.toInt(&testOK);
             if (testOK)
@@ -233,13 +233,13 @@ void MainWindow::neko_start(int _id) {
         return;
     }
 
-    auto neko_start_stage2 = [=] {
+    auto neko_start_stage2 = [=, this] {
         auto CoreConfig = QJsonObject2QString(result->coreConfig, false).toUtf8();
         auto BoxStartError = BoxStart(CoreConfig.data());
         if (BoxStartError != nullptr) {
             QString boxStartError(BoxStartError);
             free(BoxStartError);
-            runOnUiThread([=] { MessageBoxWarning("LoadConfig return error", boxStartError); });
+            runOnUiThread([=, this] { MessageBoxWarning("LoadConfig return error", boxStartError); });
             return false;
         }
         //
@@ -249,7 +249,7 @@ void MainWindow::neko_start(int _id) {
         NekoGui_traffic::trafficLooper->loop_enabled = true;
 
         runOnUiThread(
-            [=] {
+            [=, this] {
                 auto extCs = CreateExtCFromExtR(result->extRs, true);
                 NekoGui_sys::running_ext.splice(NekoGui_sys::running_ext.end(), extCs);
             },
@@ -258,7 +258,7 @@ void MainWindow::neko_start(int _id) {
         NekoGui::dataStore->UpdateStartedId(ent->id);
         running = ent;
 
-        runOnUiThread([=] {
+        runOnUiThread([=, this] {
             refresh_status();
             refresh_proxy_list(ent->id);
         });
@@ -280,13 +280,13 @@ void MainWindow::neko_start(int _id) {
     // timeout message
     auto restartMsgbox = new QMessageBox(QMessageBox::Question, software_name, tr("If there is no response for a long time, it is recommended to restart the software."),
                                          QMessageBox::Yes | QMessageBox::No, this);
-    connect(restartMsgbox, &QMessageBox::accepted, this, [=] { MW_dialog_message("", "RestartProgram"); });
+    connect(restartMsgbox, &QMessageBox::accepted, this, [=, this] { MW_dialog_message("", "RestartProgram"); });
     auto restartMsgboxTimer = new MessageBoxTimer(this, restartMsgbox, 5000);
 
-    runOnNewThread([=] {
+    runOnNewThread([=, this] {
         // stop current running
         if (NekoGui::dataStore->started_id >= 0) {
-            runOnUiThread([=] { neko_stop(false, true); });
+            runOnUiThread([=, this] { neko_stop(false, true); });
             sem_stopped.acquire();
         }
         // do start
@@ -296,7 +296,7 @@ void MainWindow::neko_start(int _id) {
         }
         mu_starting.unlock();
         // cancel timeout
-        runOnUiThread([=] {
+        runOnUiThread([=, this] {
             restartMsgboxTimer->cancel();
             restartMsgboxTimer->deleteLater();
             restartMsgbox->deleteLater();
@@ -317,9 +317,9 @@ void MainWindow::neko_stop(bool crash, bool sem) {
         return;
     }
 
-    auto neko_stop_stage2 = [=] {
+    auto neko_stop_stage2 = [=, this] {
         runOnUiThread(
-            [=] {
+            [=, this] {
                 while (!NekoGui_sys::running_ext.empty()) {
                     auto extC = NekoGui_sys::running_ext.front();
                     extC->Kill();
@@ -334,7 +334,7 @@ void MainWindow::neko_stop(bool crash, bool sem) {
             NekoGui_traffic::trafficLooper->UpdateAll();
             for (const auto &item: NekoGui_traffic::trafficLooper->items) {
                 NekoGui::profileManager->GetProfile(item->id)->Save();
-                runOnUiThread([=] { refresh_proxy_list(item->id); });
+                runOnUiThread([=, this] { refresh_proxy_list(item->id); });
             }
         }
         NekoGui_traffic::trafficLooper->loop_mutex.unlock();
@@ -347,7 +347,7 @@ void MainWindow::neko_stop(bool crash, bool sem) {
         NekoGui::dataStore->need_keep_vpn_off = false;
         running = nullptr;
 
-        runOnUiThread([=] {
+        runOnUiThread([=, this] {
             refresh_status();
             refresh_proxy_list(id);
         });
@@ -363,10 +363,10 @@ void MainWindow::neko_stop(bool crash, bool sem) {
     // timeout message
     auto restartMsgbox = new QMessageBox(QMessageBox::Question, software_name, tr("If there is no response for a long time, it is recommended to restart the software."),
                                          QMessageBox::Yes | QMessageBox::No, this);
-    connect(restartMsgbox, &QMessageBox::accepted, this, [=] { MW_dialog_message("", "RestartProgram"); });
+    connect(restartMsgbox, &QMessageBox::accepted, this, [=, this] { MW_dialog_message("", "RestartProgram"); });
     auto restartMsgboxTimer = new MessageBoxTimer(this, restartMsgbox, 5000);
 
-    runOnNewThread([=] {
+    runOnNewThread([=, this] {
         // do stop
         MW_show_log(">>>>>>>> " + tr("Stopping profile %1").arg(running->bean->DisplayTypeAndName()));
         if (!neko_stop_stage2()) {
@@ -375,7 +375,7 @@ void MainWindow::neko_stop(bool crash, bool sem) {
         mu_stopping.unlock();
         if (sem) sem_stopped.release();
         // cancel timeout
-        runOnUiThread([=] {
+        runOnUiThread([=, this] {
             restartMsgboxTimer->cancel();
             restartMsgboxTimer->deleteLater();
             restartMsgbox->deleteLater();

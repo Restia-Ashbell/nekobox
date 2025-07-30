@@ -56,8 +56,8 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     mainwindow = this;
-    MW_dialog_message = [=](const QString &a, const QString &b) {
-        runOnUiThread([=] { dialog_message_impl(a, b); });
+    MW_dialog_message = [=, this](const QString &a, const QString &b) {
+        runOnUiThread([=, this] { dialog_message_impl(a, b); });
     };
 
     // Load Manager
@@ -74,9 +74,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
     ui->setupUi(this);
     //
-    connect(ui->menu_start, &QAction::triggered, this, [=] { neko_start(); });
-    connect(ui->menu_stop, &QAction::triggered, this, [=] { neko_stop(); });
-    connect(ui->tabWidget->tabBar(), &QTabBar::tabMoved, this, [=](int from, int to) {
+    connect(ui->menu_start, &QAction::triggered, this, [=, this] { neko_start(); });
+    connect(ui->menu_stop, &QAction::triggered, this, [=, this] { neko_stop(); });
+    connect(ui->tabWidget->tabBar(), &QTabBar::tabMoved, this, [=, this](int from, int to) {
         // use tabData to track tab & gid
         NekoGui::profileManager->groupsTabOrder.clear();
         for (int i = 0; i < ui->tabWidget->tabBar()->count(); i++) {
@@ -109,15 +109,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->toolButton_preferences->setMenu(ui->menu_preferences);
     ui->toolButton_server->setMenu(ui->menu_server);
     ui->menubar->setVisible(false);
-    connect(ui->toolButton_dashboard, &QToolButton::clicked, this, [=] {
+    connect(ui->toolButton_dashboard, &QToolButton::clicked, this, [=, this] {
         if (!NekoGui::dataStore->clash_api_external_controller.isEmpty() && NekoGui::dataStore->started_id >= 0) {
             QDesktopServices::openUrl(QUrl("http://" + NekoGui::dataStore->clash_api_external_controller));
         } else {
             QMessageBox::warning(this, tr("Unable to Open Dashboard"), tr("Please configure the Clash API and start the core first."));
         }
     });
-    connect(ui->toolButton_document, &QToolButton::clicked, this, [=] { QDesktopServices::openUrl(QUrl("https://matsuridayo.github.io/")); });
-    connect(ui->toolButton_update, &QToolButton::clicked, this, [=] { runOnNewThread([=] { CheckUpdate(); }); });
+    connect(ui->toolButton_document, &QToolButton::clicked, this, [=, this] { QDesktopServices::openUrl(QUrl("https://matsuridayo.github.io/")); });
+    connect(ui->toolButton_update, &QToolButton::clicked, this, [=, this] { runOnNewThread([=, this] { CheckUpdate(); }); });
 
     // Setup log UI
     ui->splitter->restoreState(DecodeB64IfValid(NekoGui::dataStore->splitter_state));
@@ -133,37 +133,37 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         ui->masterLogBrowser->setFont(font);
         qvLogDocument->setDefaultFont(font);
     }
-    connect(ui->masterLogBrowser->verticalScrollBar(), &QSlider::valueChanged, this, [=](int value) {
+    connect(ui->masterLogBrowser->verticalScrollBar(), &QSlider::valueChanged, this, [=, this](int value) {
         qvLogAutoScoll = ui->masterLogBrowser->verticalScrollBar()->maximum() == value;
     });
-    connect(ui->masterLogBrowser, &QTextBrowser::textChanged, this, [=]() {
+    connect(ui->masterLogBrowser, &QTextBrowser::textChanged, this, [=, this]() {
         if (!qvLogAutoScoll)
             return;
         auto bar = ui->masterLogBrowser->verticalScrollBar();
         bar->setValue(bar->maximum());
     });
-    MW_show_log = [=](const QString &log) {
-        runOnUiThread([=] { show_log_impl(log); });
+    MW_show_log = [=, this](const QString &log) {
+        runOnUiThread([=, this] { show_log_impl(log); });
     };
-    MW_show_log_ext = [=](const QString &tag, const QString &log) {
-        runOnUiThread([=] { show_log_impl("[" + tag + "] " + log); });
+    MW_show_log_ext = [=, this](const QString &tag, const QString &log) {
+        runOnUiThread([=, this] { show_log_impl("[" + tag + "] " + log); });
     };
-    MW_show_log_ext_vt100 = [=](const QString &log) {
-        runOnUiThread([=] { show_log_impl(cleanVT100String(log)); });
+    MW_show_log_ext_vt100 = [=, this](const QString &log) {
+        runOnUiThread([=, this] { show_log_impl(cleanVT100String(log)); });
     };
 
     // table UI
-    ui->proxyListTable->callback_save_order = [=] {
+    ui->proxyListTable->callback_save_order = [=, this] {
         auto group = NekoGui::profileManager->CurrentGroup();
         group->order = ui->proxyListTable->order;
         group->Save();
     };
-    ui->proxyListTable->refresh_data = [=](int id) { refresh_proxy_list_impl_refresh_data(id); };
+    ui->proxyListTable->refresh_data = [=, this](int id) { refresh_proxy_list_impl_refresh_data(id); };
     if (auto button = ui->proxyListTable->findChild<QAbstractButton *>(QString(), Qt::FindDirectChildrenOnly)) {
         // Corner Button
-        connect(button, &QAbstractButton::clicked, this, [=] { refresh_proxy_list_impl(-1, {GroupSortMethod::ById}); });
+        connect(button, &QAbstractButton::clicked, this, [=, this] { refresh_proxy_list_impl(-1, {GroupSortMethod::ById}); });
     }
-    connect(ui->proxyListTable->horizontalHeader(), &QHeaderView::sectionClicked, this, [=](int logicalIndex) {
+    connect(ui->proxyListTable->horizontalHeader(), &QHeaderView::sectionClicked, this, [=, this](int logicalIndex) {
         GroupSortAction action;
         // 不正确的descending实现
         if (proxy_last_order == logicalIndex) {
@@ -187,7 +187,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         }
         refresh_proxy_list_impl(-1, action);
     });
-    connect(ui->proxyListTable->horizontalHeader(), &QHeaderView::sectionResized, this, [=](int logicalIndex, int oldSize, int newSize) {
+    connect(ui->proxyListTable->horizontalHeader(), &QHeaderView::sectionResized, this, [=, this](int logicalIndex, int oldSize, int newSize) {
         auto group = NekoGui::profileManager->CurrentGroup();
         if (NekoGui::dataStore->refreshing_group || group == nullptr || !group->manually_column_width) return;
         // save manually column width
@@ -203,11 +203,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // search box
     ui->search->setVisible(false);
-    connect(shortcut_ctrl_f, &QShortcut::activated, this, [=] {
+    connect(shortcut_ctrl_f, &QShortcut::activated, this, [=, this] {
         ui->search->setVisible(true);
         ui->search->setFocus();
     });
-    connect(shortcut_esc, &QShortcut::activated, this, [=] {
+    connect(shortcut_esc, &QShortcut::activated, this, [=, this] {
         if (ui->search->isVisible()) {
             ui->search->setText("");
             ui->search->textChanged("");
@@ -219,7 +219,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             refresh_status();
         }
     });
-    connect(ui->search, &QLineEdit::textChanged, this, [=](const QString &text) {
+    connect(ui->search, &QLineEdit::textChanged, this, [=, this](const QString &text) {
         for (int i = 0; i < ui->proxyListTable->rowCount(); ++i) {
             ui->proxyListTable->setRowHidden(i, !text.isEmpty());
         }
@@ -236,20 +236,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     tray->setIcon(Icon::GetTrayIcon(Icon::NONE));
     tray->setContextMenu(ui->menu_program); // 创建托盘菜单
     tray->show();                           // 让托盘图标显示在系统托盘上
-    connect(tray, &QSystemTrayIcon::activated, this, [=](QSystemTrayIcon::ActivationReason reason) {
+    connect(tray, &QSystemTrayIcon::activated, this, [=, this](QSystemTrayIcon::ActivationReason reason) {
         if (reason == QSystemTrayIcon::Trigger) {
             isVisible() ? hide() : ActivateWindow(this);
         }
     });
 
     // Misc menu
-    connect(ui->menu_open_config_folder, &QAction::triggered, this, [=] { QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath())); });
+    connect(ui->menu_open_config_folder, &QAction::triggered, this, [=, this] { QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath())); });
     ui->menu_program_preference->addActions(ui->menu_preferences->actions());
-    connect(ui->actionRestart_Proxy, &QAction::triggered, this, [=] { if (NekoGui::dataStore->started_id>=0) neko_start(NekoGui::dataStore->started_id); });
-    connect(ui->actionRestart_Program, &QAction::triggered, this, [=] { MW_dialog_message("", "RestartProgram"); });
-    connect(ui->actionShow_window, &QAction::triggered, this, [=] { tray->activated(QSystemTrayIcon::ActivationReason::Trigger); });
+    connect(ui->actionRestart_Proxy, &QAction::triggered, this, [=, this] { if (NekoGui::dataStore->started_id>=0) neko_start(NekoGui::dataStore->started_id); });
+    connect(ui->actionRestart_Program, &QAction::triggered, this, [=, this] { MW_dialog_message("", "RestartProgram"); });
+    connect(ui->actionShow_window, &QAction::triggered, this, [=, this] { tray->activated(QSystemTrayIcon::ActivationReason::Trigger); });
     //
-    connect(ui->menu_program, &QMenu::aboutToShow, this, [=]() {
+    connect(ui->menu_program, &QMenu::aboutToShow, this, [=, this]() {
         ui->actionRemember_last_proxy->setChecked(NekoGui::dataStore->remember_enable);
         ui->actionStart_with_system->setChecked(AutoRun_IsEnabled());
         ui->actionAllow_LAN->setChecked(QStringList{"::", "0.0.0.0"}.contains(NekoGui::dataStore->inbound_address));
@@ -279,7 +279,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             ui->menuActive_Routing->addAction(a);
         }
     });
-    connect(ui->menuActive_Server, &QMenu::triggered, this, [=](QAction *a) {
+    connect(ui->menuActive_Server, &QMenu::triggered, this, [=, this](QAction *a) {
         bool ok;
         auto id = a->property("id").toInt(&ok);
         if (!ok) return;
@@ -289,7 +289,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             neko_start(id);
         }
     });
-    connect(ui->menuActive_Routing, &QMenu::triggered, this, [=](QAction *a) {
+    connect(ui->menuActive_Routing, &QMenu::triggered, this, [=, this](QAction *a) {
         auto fn = a->text();
         if (!fn.isEmpty()) {
             NekoGui::Routing r;
@@ -307,43 +307,43 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             }
         }
     });
-    connect(ui->actionRemember_last_proxy, &QAction::triggered, this, [=](bool checked) {
+    connect(ui->actionRemember_last_proxy, &QAction::triggered, this, [=, this](bool checked) {
         NekoGui::dataStore->remember_enable = checked;
         NekoGui::dataStore->Save();
     });
-    connect(ui->actionStart_with_system, &QAction::triggered, this, [=](bool checked) {
+    connect(ui->actionStart_with_system, &QAction::triggered, this, [=, this](bool checked) {
         AutoRun_SetEnabled(checked);
     });
-    connect(ui->actionAllow_LAN, &QAction::triggered, this, [=](bool checked) {
+    connect(ui->actionAllow_LAN, &QAction::triggered, this, [=, this](bool checked) {
         NekoGui::dataStore->inbound_address = checked ? "::" : "127.0.0.1";
         MW_dialog_message("", "UpdateDataStore");
     });
     //
-    connect(ui->checkBox_VPN, &QCheckBox::clicked, this, [=](bool checked) { neko_set_spmode_vpn(checked); });
-    connect(ui->checkBox_SystemProxy, &QCheckBox::clicked, this, [=](bool checked) { neko_set_spmode_system_proxy(checked); });
-    connect(ui->menu_spmode, &QMenu::aboutToShow, this, [=]() {
+    connect(ui->checkBox_VPN, &QCheckBox::clicked, this, [=, this](bool checked) { neko_set_spmode_vpn(checked); });
+    connect(ui->checkBox_SystemProxy, &QCheckBox::clicked, this, [=, this](bool checked) { neko_set_spmode_system_proxy(checked); });
+    connect(ui->menu_spmode, &QMenu::aboutToShow, this, [=, this]() {
         ui->menu_spmode_disabled->setChecked(!(NekoGui::dataStore->spmode_system_proxy || NekoGui::dataStore->spmode_vpn));
         ui->menu_spmode_system_proxy->setChecked(NekoGui::dataStore->spmode_system_proxy);
         ui->menu_spmode_vpn->setChecked(NekoGui::dataStore->spmode_vpn);
     });
-    connect(ui->menu_spmode_system_proxy, &QAction::triggered, this, [=](bool checked) { neko_set_spmode_system_proxy(checked); });
-    connect(ui->menu_spmode_vpn, &QAction::triggered, this, [=](bool checked) { neko_set_spmode_vpn(checked); });
-    connect(ui->menu_spmode_disabled, &QAction::triggered, this, [=]() {
+    connect(ui->menu_spmode_system_proxy, &QAction::triggered, this, [=, this](bool checked) { neko_set_spmode_system_proxy(checked); });
+    connect(ui->menu_spmode_vpn, &QAction::triggered, this, [=, this](bool checked) { neko_set_spmode_vpn(checked); });
+    connect(ui->menu_spmode_disabled, &QAction::triggered, this, [=, this]() {
         neko_set_spmode_system_proxy(false);
         neko_set_spmode_vpn(false);
     });
-    connect(ui->menu_qr, &QAction::triggered, this, [=]() { display_qr_link(false); });
-    connect(ui->menu_tcp_ping, &QAction::triggered, this, [=]() { speedtest_current_group(0); });
-    connect(ui->menu_url_test, &QAction::triggered, this, [=]() { speedtest_current_group(1); });
-    connect(ui->menu_full_test, &QAction::triggered, this, [=]() { speedtest_current_group(999); });
-    connect(ui->menu_stop_testing, &QAction::triggered, this, [=]() { speedtestFuture.cancel(); });
+    connect(ui->menu_qr, &QAction::triggered, this, [=, this]() { display_qr_link(false); });
+    connect(ui->menu_tcp_ping, &QAction::triggered, this, [=, this]() { speedtest_current_group(0); });
+    connect(ui->menu_url_test, &QAction::triggered, this, [=, this]() { speedtest_current_group(1); });
+    connect(ui->menu_full_test, &QAction::triggered, this, [=, this]() { speedtest_current_group(999); });
+    connect(ui->menu_stop_testing, &QAction::triggered, this, [=, this]() { speedtestFuture.cancel(); });
     //
-    auto set_selected_or_group = [=](int mode) {
+    auto set_selected_or_group = [=, this](int mode) {
         // 0=group 1=select 2=unknown(menu is hide)
         ui->menu_server->setProperty("selected_or_group", mode);
     };
-    auto move_tests_to_menu = [=](bool menuCurrent_Select) {
-        return [=] {
+    auto move_tests_to_menu = [=, this](bool menuCurrent_Select) {
+        return [=, this] {
             if (menuCurrent_Select) {
                 ui->menuCurrent_Select->insertAction(ui->actionfake_4, ui->menu_tcp_ping);
                 ui->menuCurrent_Select->insertAction(ui->actionfake_4, ui->menu_url_test);
@@ -364,12 +364,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     };
     connect(ui->menuCurrent_Select, &QMenu::aboutToShow, this, move_tests_to_menu(true));
     connect(ui->menuCurrent_Group, &QMenu::aboutToShow, this, move_tests_to_menu(false));
-    connect(ui->menu_server, &QMenu::aboutToHide, this, [=] {
-        setTimeout([=] { set_selected_or_group(2); }, this, 200);
+    connect(ui->menu_server, &QMenu::aboutToHide, this, [=, this] {
+        setTimeout([=, this] { set_selected_or_group(2); }, this, 200);
     });
     set_selected_or_group(2);
     //
-    connect(ui->menu_share_item, &QMenu::aboutToShow, this, [=] {
+    connect(ui->menu_share_item, &QMenu::aboutToShow, this, [=, this] {
         QString name;
         auto selected = get_now_selected_list();
         if (!selected.isEmpty()) {
@@ -382,7 +382,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     refresh_status();
 
     BoxMain([](const char *log) { MW_show_log(log); });
-    runOnNewThread([=] { NekoGui_traffic::trafficLooper->Loop(); });
+    runOnNewThread([=, this] { NekoGui_traffic::trafficLooper->Loop(); });
 
     // Remember system proxy
     if (NekoGui::dataStore->remember_enable || NekoGui::dataStore->flag_restart_tun_on) {
@@ -397,7 +397,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(qApp, &QGuiApplication::commitDataRequest, this, &MainWindow::on_commitDataRequest);
 
     auto t = new QTimer;
-    connect(t, &QTimer::timeout, this, [=]() { refresh_status(); });
+    connect(t, &QTimer::timeout, this, [=, this]() { refresh_status(); });
     t->start(2000);
 
     t = new QTimer;
@@ -636,9 +636,9 @@ void MainWindow::on_menu_exit_triggered() {
         neko_stop(false, true);
         //
         hide();
-        runOnNewThread([=] {
+        runOnNewThread([=, this] {
             sem_stopped.acquire();
-            runOnUiThread([=] {
+            runOnUiThread([=, this] {
                 on_menu_exit_triggered(); // continue exit progress
             });
         });
@@ -761,7 +761,7 @@ void MainWindow::neko_set_spmode_vpn(bool enable, bool save) {
 }
 
 void MainWindow::refresh_status(const QString &traffic_update) {
-    auto refresh_speed_label = [=] {
+    auto refresh_speed_label = [=, this] {
         if (NekoGui::dataStore->traffic_loop_interval == 0) {
             ui->label_speed->setText("");
         } else if (traffic_update_cache == "") {
@@ -810,7 +810,7 @@ void MainWindow::refresh_status(const QString &traffic_update) {
         ui->label_running->setToolTip({});
     }
 
-    auto make_title = [=](bool isTray) {
+    auto make_title = [=, this](bool isTray) {
         QStringList tt;
         if (!isTray && NekoGui::IsAdmin()) tt << "[Admin]";
         if (select_mode) tt << "[" + tr("Select") + "]";
@@ -1369,7 +1369,7 @@ void MainWindow::on_menu_resolve_domain_triggered() {
     NekoGui::dataStore->resolve_count = profiles.count();
 
     for (const auto &profile: profiles) {
-        profile->bean->ResolveDomainToIP([=] {
+        profile->bean->ResolveDomainToIP([=, this] {
             profile->Save();
             if (--NekoGui::dataStore->resolve_count != 0) return;
             refresh_proxy_list();
@@ -1463,7 +1463,7 @@ void MainWindow::on_masterLogBrowser_customContextMenuRequested(const QPoint &po
 
     auto action_add_ignore = new QAction(this);
     action_add_ignore->setText(tr("Set ignore keyword"));
-    connect(action_add_ignore, &QAction::triggered, this, [=] {
+    connect(action_add_ignore, &QAction::triggered, this, [=, this] {
         auto list = NekoGui::dataStore->log_ignore;
         auto newStr = ui->masterLogBrowser->textCursor().selectedText().trimmed();
         if (!newStr.isEmpty()) list << newStr;
@@ -1478,7 +1478,7 @@ void MainWindow::on_masterLogBrowser_customContextMenuRequested(const QPoint &po
 
     auto action_clear = new QAction(this);
     action_clear->setText(tr("Clear"));
-    connect(action_clear, &QAction::triggered, this, [=] {
+    connect(action_clear, &QAction::triggered, this, [=, this] {
         qvLogDocument->clear();
         ui->masterLogBrowser->clear();
     });
@@ -1493,7 +1493,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &p) {
     QMenu menu(this);
 
     QAction *addAction = menu.addAction(tr("Add new Group"));
-    connect(addAction, &QAction::triggered, this, [=] {
+    connect(addAction, &QAction::triggered, this, [=, this] {
         auto ent = NekoGui::ProfileManager::NewGroup();
         DialogEditGroup dialog(ent, this);
         if (dialog.exec() == QDialog::Accepted) {
@@ -1504,11 +1504,11 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &p) {
 
     if (clickedIndex >= 0) {
         QAction *editAction = menu.addAction(tr("Edit selected Group"));
-        connect(editAction, &QAction::triggered, this, [=] {
+        connect(editAction, &QAction::triggered, this, [=, this] {
             auto id = NekoGui::profileManager->groupsTabOrder[clickedIndex];
             auto ent = NekoGui::profileManager->groups[id];
             auto dialog = new DialogEditGroup(ent, this);
-            connect(dialog, &QDialog::finished, this, [=] {
+            connect(dialog, &QDialog::finished, this, [=, this] {
                 if (dialog->result() == QDialog::Accepted) {
                     ent->Save();
                     MW_dialog_message(Dialog_DialogManageGroups, "refresh" + Int2String(ent->id));
@@ -1521,7 +1521,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &p) {
 
     if (clickedIndex > 0) {
         QAction *deleteAction = menu.addAction(tr("Delete selected Group"));
-        connect(deleteAction, &QAction::triggered, this, [=] {
+        connect(deleteAction, &QAction::triggered, this, [=, this] {
             auto id = NekoGui::profileManager->groupsTabOrder[clickedIndex];
             if (QMessageBox::question(this, tr("Confirmation"), tr("Remove %1?").arg(NekoGui::profileManager->groups[id]->name)) ==
                 QMessageBox::StandardButton::Yes) {
@@ -1594,7 +1594,7 @@ void MainWindow::RegisterHotkey(bool unregister) {
         auto hk = std::make_shared<QHotkey>(QKeySequence(key), true);
         if (hk->isRegistered()) {
             RegisteredHotkey += hk;
-            connect(hk.get(), &QHotkey::activated, this, [=] { HotkeyEvent(key); });
+            connect(hk.get(), &QHotkey::activated, this, [=, this] { HotkeyEvent(key); });
         } else {
             hk->deleteLater();
         }
@@ -1602,7 +1602,7 @@ void MainWindow::RegisterHotkey(bool unregister) {
 }
 
 void MainWindow::HotkeyEvent(const QString &key) {
-    runOnUiThread([=] {
+    runOnUiThread([=, this] {
         if (key == NekoGui::dataStore->hotkey_mainwindow) {
             tray->activated(QSystemTrayIcon::ActivationReason::Trigger);
         } else if (key == NekoGui::dataStore->hotkey_group) {

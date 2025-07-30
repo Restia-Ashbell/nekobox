@@ -32,7 +32,7 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
 
     // network changed
     network_title_base = ui->network_box->title();
-    connect(ui->network, &QComboBox::currentTextChanged, this, [=](const QString &txt) {
+    connect(ui->network, &QComboBox::currentTextChanged, this, [=, this](const QString &txt) {
         ui->network_box->setTitle(network_title_base.arg(txt));
         // 传输设置
         if (txt == "tcp") {
@@ -90,7 +90,7 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
     ui->network->addItems(Preset::SingBox::V2RayTransport);
 
     // security changed
-    connect(ui->security, &QComboBox::currentTextChanged, this, [=](const QString &txt) {
+    connect(ui->security, &QComboBox::currentTextChanged, this, [=, this](const QString &txt) {
         ui->security_box->setVisible(txt == "tls");
         ADJUST_SIZE
     });
@@ -98,7 +98,7 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
 
     // multiplex changed
     ui->multiplex_protocol->addItems(Preset::SingBox::MultiplexProtocol);
-    connect(ui->multiplex, &QComboBox::currentIndexChanged, this, [=](int index) {
+    connect(ui->multiplex, &QComboBox::currentIndexChanged, this, [=, this](int index) {
         ui->multiplex_box->setVisible(index == 1);
         ADJUST_SIZE
     });
@@ -131,7 +131,7 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
         LOAD_TYPE("chain")
 
         // type changed
-        connect(ui->type, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int index) {
+        connect(ui->type, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=, this](int index) {
             typeSelected(ui->type->itemData(index).toString());
         });
 
@@ -297,7 +297,7 @@ void DialogEditProfile::typeSelected(const QString &newType) {
     innerEditor->get_edit_text_name = [&]() { return ui->name->text(); };
     innerEditor->get_edit_text_serverAddress = [&]() { return ui->address->text(); };
     innerEditor->get_edit_text_serverPort = [&]() { return ui->port->text(); };
-    innerEditor->editor_cache_updated = [=] { editor_cache_updated_impl(); };
+    innerEditor->editor_cache_updated = [=, this] { editor_cache_updated_impl(); };
     innerEditor->onStart(ent);
 
     // 左边 common
@@ -358,7 +358,7 @@ void DialogEditProfile::typeSelected(const QString &newType) {
 
     // 第一次显示
     if (isHidden()) {
-        runOnUiThread([=] { show(); }, this);
+        runOnUiThread([=, this] { show(); }, this);
     }
 }
 
@@ -547,7 +547,7 @@ void DialogEditProfile::on_apply_to_group_clicked() {
 void DialogEditProfile::do_apply_to_group(const std::shared_ptr<NekoGui::Group> &group, QWidget *key) {
     auto stream = GetStreamSettings(ent->bean.get());
 
-    auto copyStream = [=](void *p) {
+    auto copyStream = [=, this](void *p) {
         for (const auto &profile: group->Profiles()) {
             auto newStream = GetStreamSettings(profile->bean.get());
             if (newStream == nullptr) continue;
@@ -558,7 +558,7 @@ void DialogEditProfile::do_apply_to_group(const std::shared_ptr<NekoGui::Group> 
         }
     };
 
-    auto copyBean = [=](void *p) {
+    auto copyBean = [=, this](void *p) {
         for (const auto &profile: group->Profiles()) {
             if (profile == ent) continue;
             profile->bean->_setValue(ent->bean->_name(p), p);

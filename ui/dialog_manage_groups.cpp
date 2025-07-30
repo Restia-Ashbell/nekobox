@@ -30,7 +30,7 @@ DialogManageGroups::DialogManageGroups(QWidget *parent, int index) : QDialog(par
 
     setWindowTitle(QString("%1 [%2]").arg(windowTitle()).arg(ui->listWidget->count()));
 
-    connect(ui->listWidget, &QListWidget::itemDoubleClicked, this, [=](QListWidgetItem *wI) {
+    connect(ui->listWidget, &QListWidget::itemDoubleClicked, this, [=, this](QListWidgetItem *wI) {
         auto w = dynamic_cast<GroupItem *>(ui->listWidget->itemWidget(wI));
         emit w->edit_clicked();
     });

@@ -55,7 +55,7 @@ namespace NekoGui_traffic {
                 // 停止
                 if (looping) {
                     looping = false;
-                    runOnUiThread([=] {
+                    runOnUiThread([=, this] {
                         auto m = GetMainWindow();
                         m->refresh_status("STOP");
                     });
@@ -76,7 +76,7 @@ namespace NekoGui_traffic {
             loop_mutex.unlock();
 
             // post to UI
-            runOnUiThread([=] {
+            runOnUiThread([=, this] {
                 auto m = GetMainWindow();
                 if (proxy != nullptr) {
                     m->refresh_status(QObject::tr("Proxy: %1\nDirect: %2").arg(proxy->DisplaySpeed(), direct->DisplaySpeed()));

@@ -112,7 +112,7 @@ namespace NekoGui_sys {
                 // Restart
                 start_profile_when_core_is_up = NekoGui::dataStore->started_id;
                 MW_show_log("[Error] " + QObject::tr("Core exited, restarting."));
-                setTimeout([=] { Restart(); }, this, 1000);
+                setTimeout([=, this] { Restart(); }, this, 1000);
             }
         });
     }
