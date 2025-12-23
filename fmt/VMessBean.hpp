@@ -1,7 +1,6 @@
 #pragma once
 
 #include "fmt/AbstractBean.hpp"
-#include "fmt/V2RayStreamSettings.hpp"
 
 namespace NekoGui_fmt {
     class VMessBean : public AbstractBean {
@@ -11,19 +10,21 @@ namespace NekoGui_fmt {
         QString security = "auto";
 
         std::shared_ptr<V2rayStreamSettings> stream = std::make_shared<V2rayStreamSettings>();
+        MultiplexSettings multiplex;
 
         VMessBean() : AbstractBean(0) {
             _add(new configItem("id", &uuid, itemType::string));
             _add(new configItem("aid", &aid, itemType::integer));
             _add(new configItem("sec", &security, itemType::string));
             _add(new configItem("stream", dynamic_cast<JsonStore *>(stream.get()), itemType::jsonStore));
+            _add(new configItem("multiplex", &multiplex, itemType::jsonStore));
         };
 
         QString DisplayType() override { return "VMess"; };
 
         CoreObjOutboundBuildResult BuildCoreObjSingBox() override;
 
-        bool TryParseLink(const QString &link);
+        bool TryParseLink(const QString &link) override;
 
         QString ToShareLink() override;
     };

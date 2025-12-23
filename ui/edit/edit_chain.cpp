@@ -4,7 +4,7 @@
 #include "ui/mainwindow.h"
 #include "ui/widget/ProxyItem.h"
 
-#include "db/Database.hpp"
+#include "db/ProfileManager.hpp"
 #include "fmt/ChainBean.hpp"
 
 EditChain::EditChain(QWidget *parent) : QWidget(parent), ui(new Ui::EditChain) {
@@ -25,11 +25,6 @@ void EditChain::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
 }
 
 bool EditChain::onEnd() {
-    if (get_edit_text_name().isEmpty()) {
-        MessageBoxWarning(software_name, tr("Name cannot be empty."));
-        return false;
-    }
-
     auto bean = this->ent->ChainBean();
 
     QList<int> idList;
@@ -43,7 +38,7 @@ bool EditChain::onEnd() {
 
 void EditChain::on_select_profile_clicked() {
     get_edit_dialog()->hide();
-    GetMainWindow()->start_select_mode(this, [=, this](int id) {
+    MainWindow::instance()->start_select_mode(this, [=, this](int id) {
         get_edit_dialog()->show();
         AddProfileToListIfExist(id);
     });
@@ -60,7 +55,7 @@ void EditChain::AddProfileToListIfExist(int profileId) {
         // change button
         connect(w->get_change_button(), &QPushButton::clicked, w, [=, this] {
             get_edit_dialog()->hide();
-            GetMainWindow()->start_select_mode(w, [=, this](int newId) {
+            MainWindow::instance()->start_select_mode(w, [=, this](int newId) {
                 get_edit_dialog()->show();
                 ReplaceProfile(w, newId);
             });

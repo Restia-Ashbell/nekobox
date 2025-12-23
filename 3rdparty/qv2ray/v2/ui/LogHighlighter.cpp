@@ -15,14 +15,13 @@ namespace Qv2ray::ui {
             tcpudpFormat.setForeground(QColor(0, 200, 230));
             ipHostFormat.setForeground(Qt::yellow);
             warningFormat.setForeground(QColor(255, 160, 15));
-            warningFormat2.setForeground(Qt::cyan);
         } else {
             ipHostFormat.setForeground(QColor(30, 144, 255));
             tcpudpFormat.setForeground(QColor(0, 52, 130));
             warningFormat.setBackground(QColor(255, 160, 15));
             warningFormat.setForeground(Qt::white);
-            warningFormat2.setForeground(Qt::darkCyan);
         }
+        warningFormat.setFontWeight(QFont::Bold);
         const static QColor darkGreenColor(10, 180, 0);
 
         acceptedFormat.setForeground(darkGreenColor);
@@ -47,18 +46,17 @@ namespace Qv2ray::ui {
         rule.format = debugFormat;
         highlightingRules.append(rule);
         //
-        infoFormat.setForeground(QColorConstants::Svg::royalblue);
+        infoFormat.setForeground(Qt::darkCyan);
         rule.pattern = QRegularExpression("(?<![A-Za-z])INFO(?![A-Za-z])");
         rule.format = infoFormat;
         highlightingRules.append(rule);
         //
-        warningFormat.setFontWeight(QFont::Bold);
-        warningFormat2.setFontWeight(QFont::Bold);
+        warnFormat.setForeground(Qt::darkYellow);
         rule.pattern = QRegularExpression("(?<![A-Za-z])WARN(?![A-Za-z])");
-        rule.format = warningFormat2;
+        rule.format = warnFormat;
         highlightingRules.append(rule);
         //
-        errorFormat.setForeground(QColorConstants::Svg::crimson);
+        errorFormat.setForeground(Qt::darkRed);
         rule.pattern = QRegularExpression("(?<![A-Za-z])ERROR(?![A-Za-z])");
         rule.format = errorFormat;
         highlightingRules.append(rule);
@@ -77,10 +75,6 @@ namespace Qv2ray::ui {
         highlightingRules.append(rule);
         //
         rule.pattern = QRegularExpression("error");
-        rule.format = failedFormat;
-        highlightingRules.append(rule);
-        //
-        rule.pattern = QRegularExpression("rejected");
         rule.format = failedFormat;
         highlightingRules.append(rule);
         //

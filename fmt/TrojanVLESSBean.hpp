@@ -1,7 +1,6 @@
 #pragma once
 
 #include "fmt/AbstractBean.hpp"
-#include "fmt/V2RayStreamSettings.hpp"
 
 namespace NekoGui_fmt {
     class TrojanVLESSBean : public AbstractBean {
@@ -14,19 +13,21 @@ namespace NekoGui_fmt {
         QString flow = "";
 
         std::shared_ptr<V2rayStreamSettings> stream = std::make_shared<V2rayStreamSettings>();
+        MultiplexSettings multiplex;
 
         explicit TrojanVLESSBean(int _proxy_type) : AbstractBean(0) {
             proxy_type = _proxy_type;
             _add(new configItem("pass", &password, itemType::string));
             _add(new configItem("flow", &flow, itemType::string));
             _add(new configItem("stream", dynamic_cast<JsonStore *>(stream.get()), itemType::jsonStore));
+            _add(new configItem("multiplex", &multiplex, itemType::jsonStore));
         };
 
         QString DisplayType() override { return proxy_type == proxy_VLESS ? "VLESS" : "Trojan"; };
 
         CoreObjOutboundBuildResult BuildCoreObjSingBox() override;
 
-        bool TryParseLink(const QString &link);
+        bool TryParseLink(const QString &link) override;
 
         QString ToShareLink() override;
     };

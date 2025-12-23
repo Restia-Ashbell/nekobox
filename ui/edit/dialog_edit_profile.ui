@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1000</width>
-    <height>802</height>
+    <height>800</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -145,6 +145,11 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
           </widget>
          </item>
          <item row="0" column="0">
@@ -328,93 +333,45 @@
          <string>Network Settings (%1)</string>
         </property>
         <layout class="QGridLayout" name="gridLayout">
-         <item row="1" column="0">
-          <widget class="QLabel" name="path_l">
-           <property name="toolTip">
-            <string notr="true">http path (ws/http/伪装http)
-serviceName (gRPC)
-key (QUIC)</string>
-           </property>
+         <item row="0" column="1">
+          <widget class="MyLineEdit" name="path"/>
+         </item>
+         <item row="3" column="1">
+          <widget class="MyLineEdit" name="ws_early_data_name"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="ws_early_data_name_l">
            <property name="text">
-            <string notr="true">Path</string>
+            <string notr="true">EarlyData Name</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="1" column="1">
           <widget class="MyLineEdit" name="host"/>
          </item>
-         <item row="2" column="0">
+         <item row="1" column="0">
           <widget class="QLabel" name="host_l">
-           <property name="toolTip">
-            <string notr="true">http host (ws/http/伪装http)
-security (QUIC)</string>
-           </property>
            <property name="text">
             <string notr="true">Host</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="header_type_l">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string notr="true">伪装头部类型 (tcp/quic)</string>
-           </property>
-           <property name="text">
-            <string notr="true">header</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="MyLineEdit" name="path"/>
-         </item>
-         <item row="0" column="1">
-          <widget class="QComboBox" name="header_type">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="editable">
-            <bool>true</bool>
-           </property>
-           <item>
-            <property name="text">
-             <string notr="true"/>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string notr="true">http</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="MyLineEdit" name="ws_early_data_length"/>
-         </item>
-         <item row="3" column="0">
+         <item row="2" column="0">
           <widget class="QLabel" name="ws_early_data_length_l">
            <property name="text">
             <string notr="true">EarlyData Length</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
-          <widget class="MyLineEdit" name="ws_early_data_name"/>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="ws_early_data_name_l">
+         <item row="0" column="0">
+          <widget class="QLabel" name="path_l">
            <property name="text">
-            <string notr="true">EarlyData Name</string>
+            <string notr="true">Path</string>
            </property>
           </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="MyLineEdit" name="ws_early_data_length"/>
          </item>
         </layout>
        </widget>
@@ -665,7 +622,6 @@ security (QUIC)</string>
   <tabstop>network</tabstop>
   <tabstop>security</tabstop>
   <tabstop>packet_encoding</tabstop>
-  <tabstop>header_type</tabstop>
   <tabstop>path</tabstop>
   <tabstop>host</tabstop>
   <tabstop>ws_early_data_length</tabstop>

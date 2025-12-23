@@ -8,7 +8,7 @@
 
 EditQUIC::EditQUIC(QWidget *parent) : QWidget(parent), ui(new Ui::EditQUIC) {
     ui->setupUi(this);
-    connect(ui->uuidgen, &QPushButton::clicked, this, [=, this] { ui->uuid->setText(QUuid::createUuid().toString().remove("{").remove("}")); });
+    connect(ui->uuidgen, &QPushButton::clicked, this, [=, this] { ui->uuid->setText(QUuid::createUuid().toString(QUuid::WithoutBraces)); });
 }
 
 EditQUIC::~EditQUIC() {

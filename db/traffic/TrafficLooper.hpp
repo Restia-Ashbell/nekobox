@@ -2,7 +2,6 @@
 
 #include <QString>
 #include <QList>
-#include <QMutex>
 #include <QElapsedTimer>
 
 #include "TrafficData.hpp"
@@ -12,7 +11,6 @@ namespace NekoGui_traffic {
     public:
         bool loop_enabled = false;
         bool looping = false;
-        QMutex loop_mutex;
 
         QList<std::shared_ptr<TrafficData>> items;
         TrafficData *proxy = nullptr;

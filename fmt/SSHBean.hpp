@@ -15,6 +15,7 @@ namespace NekoGui_fmt {
         QString clientVersion;
 
         SSHBean() : AbstractBean(0) {
+            serverPort = 22;
             _add(new configItem("user", &user, itemType::string));
             _add(new configItem("password", &password, itemType::string));
             _add(new configItem("private_key", &privateKey, itemType::string));
@@ -29,7 +30,7 @@ namespace NekoGui_fmt {
 
         CoreObjOutboundBuildResult BuildCoreObjSingBox() override;
 
-        bool TryParseLink(const QString &link);
+        bool TryParseLink(const QString &link) override;
 
         QString ToShareLink() override;
     };

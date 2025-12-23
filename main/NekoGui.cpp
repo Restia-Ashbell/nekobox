@@ -1,227 +1,6 @@
 #include "NekoGui.hpp"
 #include "fmt/Preset.hpp"
 
-#include <QFile>
-#include <QDir>
-#include <QApplication>
-#include <QFileInfo>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonDocument>
-
-#ifdef Q_OS_WIN
-#include "sys/windows/guihelper.h"
-#else
-#ifdef Q_OS_LINUX
-#include <sys/linux/LinuxCap.h>
-#endif
-#include <unistd.h>
-#endif
-
-namespace NekoGui_ConfigItem {
-
-    // 添加关联
-    void JsonStore::_add(configItem *item) {
-        _map.insert(item->name, std::shared_ptr<configItem>(item));
-    }
-
-    QString JsonStore::_name(void *p) {
-        for (const auto &_item: _map) {
-            if (_item->ptr == p) return _item->name;
-        }
-        return {};
-    }
-
-    std::shared_ptr<configItem> JsonStore::_get(const QString &name) {
-        // 直接 [] 会设置一个 nullptr ，所以先判断是否存在
-        if (_map.contains(name)) {
-            return _map[name];
-        }
-        return nullptr;
-    }
-
-    void JsonStore::_setValue(const QString &name, void *p) {
-        auto item = _get(name);
-        if (item == nullptr) return;
-
-        switch (item->type) {
-            case itemType::string:
-                *(QString *) item->ptr = *(QString *) p;
-                break;
-            case itemType::boolean:
-                *(bool *) item->ptr = *(bool *) p;
-                break;
-            case itemType::integer:
-                *(int *) item->ptr = *(int *) p;
-                break;
-            case itemType::integer64:
-                *(long long *) item->ptr = *(long long *) p;
-                break;
-            // others...
-            case stringList:
-            case integerList:
-            case jsonStore:
-                break;
-        }
-    }
-
-    QJsonObject JsonStore::ToJson(const QStringList &without) {
-        QJsonObject object;
-        for (const auto &_item: _map) {
-            auto item = _item.get();
-            if (without.contains(item->name)) continue;
-            switch (item->type) {
-                case itemType::string:
-                    // Allow Empty
-                    if (!((QString *) item->ptr)->isEmpty()) {
-                        object.insert(item->name, *(QString *) item->ptr);
-                    }
-                    break;
-                case itemType::integer:
-                    object.insert(item->name, *(int *) item->ptr);
-                    break;
-                case itemType::integer64:
-                    object.insert(item->name, *(long long *) item->ptr);
-                    break;
-                case itemType::boolean:
-                    object.insert(item->name, *(bool *) item->ptr);
-                    break;
-                case itemType::stringList:
-                    object.insert(item->name, QList2QJsonArray<QString>(*(QList<QString> *) item->ptr));
-                    break;
-                case itemType::integerList:
-                    object.insert(item->name, QList2QJsonArray<int>(*(QList<int> *) item->ptr));
-                    break;
-                case itemType::jsonStore:
-                    // _add 时应关联对应 JsonStore 的指针
-                    object.insert(item->name, ((JsonStore *) item->ptr)->ToJson());
-                    break;
-            }
-        }
-        return object;
-    }
-
-    QByteArray JsonStore::ToJsonBytes() {
-        QJsonDocument document;
-        document.setObject(ToJson());
-        return document.toJson(save_control_compact ? QJsonDocument::Compact : QJsonDocument::Indented);
-    }
-
-    void JsonStore::FromJson(QJsonObject object) {
-        for (const auto &key: object.keys()) {
-            if (!_map.contains(key)) {
-                continue;
-            }
-
-            auto value = object[key];
-            auto item = _map[key].get();
-
-            if (item == nullptr)
-                continue; // 故意忽略
-
-            // 根据类型修改ptr的内容
-            switch (item->type) {
-                case itemType::string:
-                    if (value.type() != QJsonValue::String) {
-                        continue;
-                    }
-                    *(QString *) item->ptr = value.toString();
-                    break;
-                case itemType::integer:
-                    if (value.type() != QJsonValue::Double) {
-                        continue;
-                    }
-                    *(int *) item->ptr = value.toInt();
-                    break;
-                case itemType::integer64:
-                    if (value.type() != QJsonValue::Double) {
-                        continue;
-                    }
-                    *(long long *) item->ptr = value.toDouble();
-                    break;
-                case itemType::boolean:
-                    if (value.type() != QJsonValue::Bool) {
-                        continue;
-                    }
-                    *(bool *) item->ptr = value.toBool();
-                    break;
-                case itemType::stringList:
-                    if (value.type() != QJsonValue::Array) {
-                        continue;
-                    }
-                    *(QList<QString> *) item->ptr = QJsonArray2QListString(value.toArray());
-                    break;
-                case itemType::integerList:
-                    if (value.type() != QJsonValue::Array) {
-                        continue;
-                    }
-                    *(QList<int> *) item->ptr = QJsonArray2QListInt(value.toArray());
-                    break;
-                case itemType::jsonStore:
-                    if (value.type() != QJsonValue::Object) {
-                        continue;
-                    }
-                    ((JsonStore *) item->ptr)->FromJson(value.toObject());
-                    break;
-            }
-        }
-
-        if (callback_after_load != nullptr) callback_after_load();
-    }
-
-    void JsonStore::FromJsonBytes(const QByteArray &data) {
-        QJsonParseError error{};
-        auto document = QJsonDocument::fromJson(data, &error);
-
-        if (error.error != error.NoError) {
-            qDebug() << "QJsonParseError" << error.errorString();
-            return;
-        }
-
-        FromJson(document.object());
-    }
-
-    bool JsonStore::Save() {
-        if (callback_before_save != nullptr) callback_before_save();
-        if (save_control_no_save) return false;
-
-        auto save_content = ToJsonBytes();
-        auto changed = last_save_content != save_content;
-        last_save_content = save_content;
-
-        QFile file(fn);
-        file.open(QIODevice::ReadWrite | QIODevice::Truncate);
-        file.write(save_content);
-        file.close();
-
-        return changed;
-    }
-
-    bool JsonStore::Load() {
-        if (!last_save_content.isEmpty()) {
-            FromJsonBytes(last_save_content);
-            return true;
-        }
-
-        QFile file(fn);
-        if (!file.exists() && !load_control_must) {
-            return false;
-        }
-
-        bool ok = file.open(QIODevice::ReadOnly);
-        if (!ok) {
-            MessageBoxWarning("error", "can not open config " + fn + "\n" + file.errorString());
-        } else {
-            last_save_content = file.readAll();
-            FromJsonBytes(last_save_content);
-        }
-
-        file.close();
-        return ok;
-    }
-
-} // namespace NekoGui_ConfigItem
-
 namespace NekoGui {
 
     DataStore *dataStore = new DataStore();
@@ -231,7 +10,7 @@ namespace NekoGui {
     DataStore::DataStore() : JsonStore() {
         _add(new configItem("extraCore", dynamic_cast<JsonStore *>(extraCore), itemType::jsonStore));
         _add(new configItem("inbound_auth", dynamic_cast<JsonStore *>(inbound_auth), itemType::jsonStore));
-        _add(new configItem("user_agent2", &user_agent, itemType::string));
+        _add(new configItem("user_agent", &user_agent, itemType::string));
         _add(new configItem("test_url", &test_latency_url, itemType::string));
         _add(new configItem("test_url_dl", &test_download_url, itemType::string));
         _add(new configItem("test_dl_timeout", &test_download_timeout, itemType::integer));
@@ -245,9 +24,9 @@ namespace NekoGui {
         _add(new configItem("sub_use_proxy", &sub_use_proxy, itemType::boolean));
         _add(new configItem("remember_id", &remember_id, itemType::integer));
         _add(new configItem("remember_enable", &remember_enable, itemType::boolean));
-        _add(new configItem("language", &language, itemType::integer));
+        _add(new configItem("remember_spmode", &remember_spmode, itemType::stringList));
+        _add(new configItem("language", &language, itemType::string));
         _add(new configItem("font", &font, itemType::string));
-        _add(new configItem("spmode2", &remember_spmode, itemType::stringList));
         _add(new configItem("skip_cert", &skip_cert, itemType::boolean));
         _add(new configItem("hk_mw", &hotkey_mainwindow, itemType::string));
         _add(new configItem("hk_group", &hotkey_group, itemType::string));
@@ -297,10 +76,7 @@ namespace NekoGui {
     }
 
     QString DataStore::GetUserAgent(bool isDefault) const {
-        if (user_agent.isEmpty()) {
-            isDefault = true;
-        }
-        if (isDefault) {
+        if (user_agent.isEmpty() || isDefault) {
             QString version = SubStrBefore(NKR_VERSION, "-");
             if (!version.contains(".")) version = "Unknown";
             return "NekoBox/PC/" + version + " (Prefer ClashMeta Format)";
@@ -405,52 +181,6 @@ namespace NekoGui {
 
     bool InboundAuthorization::NeedAuth() const {
         return !username.trimmed().isEmpty() && !password.trimmed().isEmpty();
-    }
-
-    // System Utils
-
-    QString FindCoreAsset(const QString &name) {
-        QStringList search{NekoGui::dataStore->v2ray_asset_dir};
-        search << QApplication::applicationDirPath();
-        search << "/usr/share/sing-geoip";
-        search << "/usr/share/sing-geosite";
-        search << "/usr/lib/nekobox";
-        search << "/usr/share/nekobox";
-        for (const auto &dir: search) {
-            if (dir.isEmpty()) continue;
-            QFileInfo asset(dir + "/" + name);
-            if (asset.exists()) {
-                return asset.absoluteFilePath();
-            }
-        }
-        return {};
-    }
-
-    QString FindNekoBoxCoreRealPath() {
-        auto fn = QApplication::applicationDirPath() + "/nekobox_core";
-        auto fi = QFileInfo(fn);
-        if (fi.isSymLink()) return fi.symLinkTarget();
-        return fn;
-    }
-
-    short isAdminCache = -1;
-
-    // IsAdmin 主要判断：有无权限启动 Tun
-    bool IsAdmin() {
-        if (isAdminCache >= 0) return isAdminCache;
-
-        bool admin = false;
-#ifdef Q_OS_WIN
-        admin = Windows_IsInAdmin();
-#else
-#ifdef Q_OS_LINUX
-        admin |= Linux_GetCapString(FindNekoBoxCoreRealPath()).contains("cap_net_admin");
-#endif
-        admin |= geteuid() == 0;
-#endif
-
-        isAdminCache = admin;
-        return admin;
     }
 
 } // namespace NekoGui

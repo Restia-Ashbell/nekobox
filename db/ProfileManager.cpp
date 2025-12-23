@@ -1,4 +1,4 @@
-#include "Database.hpp"
+#include "ProfileManager.hpp"
 
 #include "fmt/includes.h"
 
@@ -44,7 +44,7 @@ namespace NekoGui {
         for (auto id: profilesIdOrder) {
             auto ent = LoadProxyEntity(QString("profiles/%1.json").arg(id));
             // Corrupted profile?
-            if (ent == nullptr || ent->bean == nullptr || ent->bean->version == -114514) {
+            if (ent == nullptr || ent->bean == nullptr) {
                 delProfile << id;
                 continue;
             }
@@ -79,7 +79,7 @@ namespace NekoGui {
         if (groups.empty()) {
             auto defaultGroup = NekoGui::ProfileManager::NewGroup();
             defaultGroup->name = QObject::tr("Default");
-            NekoGui::profileManager->AddGroup(defaultGroup);
+            profileManager->AddGroup(defaultGroup);
         }
         //
         if (dataStore->flag_reorder) {
@@ -141,19 +141,21 @@ namespace NekoGui {
 
     std::shared_ptr<ProxyEntity> ProfileManager::LoadProxyEntity(const QString &jsonPath) {
         // Load type
-        ProxyEntity ent0(nullptr, nullptr);
-        ent0.fn = jsonPath;
+        QFile file(jsonPath);
+        if (!file.open(QIODevice::ReadOnly)) return nullptr;
+        QByteArray data = file.readAll();
+        QJsonParseError err;
+        QJsonObject obj = QJsonDocument::fromJson(data, &err).object();
+        if (err.error != QJsonParseError::NoError) return nullptr;
+        QString type = obj.value("type").toString();
 
         // Load content
-        std::shared_ptr<ProxyEntity> ent;
-        if (ent0.Load()) {
-            ent = NewProxyEntity(ent0.type);
-            if (ent->bean->version != -114514) {
-                ent->load_control_must = true;
-                ent->fn = jsonPath;
-                ent->last_save_content = std::move(ent0.last_save_content);
-                ent->Load();
-            }
+        auto ent = NewProxyEntity(type);
+        if (ent->bean) {
+            ent->load_control_must = true;
+            ent->fn = jsonPath;
+            ent->last_save_content = data;
+            ent->FromJson(obj);
         }
 
         return ent;
@@ -197,23 +199,19 @@ namespace NekoGui {
         } else if (type == "custom") {
             bean = new NekoGui_fmt::CustomBean();
         } else {
-            bean = new NekoGui_fmt::AbstractBean(-114514);
+            bean = nullptr;
         }
 
-        auto ent = std::make_shared<ProxyEntity>(bean, type);
-        return ent;
+        return std::make_shared<ProxyEntity>(bean, type);
     }
 
     std::shared_ptr<Group> ProfileManager::NewGroup() {
-        auto ent = std::make_shared<Group>();
-        return ent;
+        return std::make_shared<Group>();
     }
 
     // ProxyEntity
 
-    ProxyEntity::ProxyEntity(NekoGui_fmt::AbstractBean *bean, const QString &type_) {
-        if (type_ != nullptr) this->type = type_;
-
+    ProxyEntity::ProxyEntity(NekoGui_fmt::AbstractBean *bean_, const QString &type_) : type(type_) {
         _add(new configItem("type", &type, itemType::string));
         _add(new configItem("id", &id, itemType::integer));
         _add(new configItem("gid", &gid, itemType::integer));
@@ -221,10 +219,11 @@ namespace NekoGui {
         _add(new configItem("report", &full_test_report, itemType::string));
 
         // 可以不关联 bean，只加载 ProxyEntity 的信息
-        if (bean != nullptr) {
-            this->bean = std::shared_ptr<NekoGui_fmt::AbstractBean>(bean);
+        if (bean_) {
+            bean = std::shared_ptr<NekoGui_fmt::AbstractBean>(bean_);
+            traffic_data = std::make_shared<NekoGui_traffic::TrafficData>("");
             // 有虚函数就要在这里 dynamic_cast
-            _add(new configItem("bean", dynamic_cast<JsonStore *>(bean), itemType::jsonStore));
+            _add(new configItem("bean", dynamic_cast<JsonStore *>(bean.get()), itemType::jsonStore));
             _add(new configItem("traffic", dynamic_cast<JsonStore *>(traffic_data.get()), itemType::jsonStore));
         }
     };

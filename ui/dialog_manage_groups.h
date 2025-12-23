@@ -24,6 +24,10 @@ public:
 private:
     Ui::DialogManageGroups *ui;
 
+    void addGroupToList(int id);
+
+    void updateWindowTitle();
+
 private slots:
 
     void on_add_clicked();

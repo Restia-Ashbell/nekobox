@@ -1,9 +1,9 @@
 #pragma once
 
+#include "ChainBean.hpp"
 #include "SocksHttpBean.hpp"
 #include "ShadowSocksBean.hpp"
 #include "ShadowSocksRBean.hpp"
-#include "ChainBean.hpp"
 #include "VMessBean.hpp"
 #include "TrojanVLESSBean.hpp"
 #include "NaiveBean.hpp"

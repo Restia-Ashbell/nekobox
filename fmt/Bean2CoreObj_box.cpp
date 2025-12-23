@@ -2,10 +2,11 @@
 #include "fmt/includes.h"
 
 namespace NekoGui_fmt {
-    void V2rayStreamSettings::BuildStreamSettingsSingBox(QJsonObject *outbound) {
+    void V2rayStreamSettings::BuildStreamSettingsSingBox(QJsonObject* outbound) {
         // https://sing-box.sagernet.org/configuration/shared/v2ray-transport
 
-        if (network != "tcp") {
+        if (network == "tcp") network.clear();
+        if (!network.isEmpty()) {
             QJsonObject transport{{"type", network}};
             if (network == "ws") {
                 if (!host.isEmpty()) transport["headers"] = QJsonObject{{"Host", host}};
@@ -24,6 +25,7 @@ namespace NekoGui_fmt {
                     transport["early_data_header_name"] = ws_early_data_name;
                 }
             } else if (network == "http") {
+                if (security != "tls") transport["method"] = "GET";
                 if (!path.isEmpty()) transport["path"] = path;
                 if (!host.isEmpty()) transport["host"] = QList2QJsonArray(host.split(","));
             } else if (network == "grpc") {
@@ -32,15 +34,6 @@ namespace NekoGui_fmt {
                 if (!path.isEmpty()) transport["path"] = path;
                 if (!host.isEmpty()) transport["host"] = host;
             }
-            outbound->insert("transport", transport);
-        } else if (header_type == "http") {
-            // TCP + headerType
-            QJsonObject transport{
-                {"type", "http"},
-                {"method", "GET"},
-                {"path", path},
-                {"headers", QJsonObject{{"Host", QList2QJsonArray(host.split(","))}}},
-            };
             outbound->insert("transport", transport);
         }
 
@@ -79,6 +72,26 @@ namespace NekoGui_fmt {
 
         if (outbound->value("type").toString() == "vmess" || outbound->value("type").toString() == "vless") {
             outbound->insert("packet_encoding", packet_encoding);
+        }
+    }
+
+    void MultiplexSettings::BuildMultiplexSettingsSingBox(QJsonObject* outbound) {
+        if (enabled) {
+            auto muxObj = QJsonObject{
+                {"enabled", enabled},
+                {"protocol", protocol},
+                {"padding", padding},
+                {"max_streams", max_streams},
+            };
+            if (brutal_up > 0 && brutal_down > 0) {
+                muxObj["max_connections"] = 1;
+                muxObj["brutal"] = QJsonObject{
+                    {"enabled", true},
+                    {"up_mbps", brutal_up},
+                    {"down_mbps", brutal_down},
+                };
+            }
+            outbound->insert("multiplex", muxObj);
         }
     }
 
@@ -126,6 +139,7 @@ namespace NekoGui_fmt {
             outbound["plugin_opts"] = SubStrAfter(plugin, ";");
         }
 
+        multiplex.BuildMultiplexSettingsSingBox(&outbound);
         result.outbound = outbound;
         return result;
     }
@@ -161,6 +175,7 @@ namespace NekoGui_fmt {
         };
 
         stream->BuildStreamSettingsSingBox(&outbound);
+        multiplex.BuildMultiplexSettingsSingBox(&outbound);
         result.outbound = outbound;
         return result;
     }
@@ -190,6 +205,7 @@ namespace NekoGui_fmt {
         }
 
         stream->BuildStreamSettingsSingBox(&outbound);
+        multiplex.BuildMultiplexSettingsSingBox(&outbound);
         result.outbound = outbound;
         return result;
     }

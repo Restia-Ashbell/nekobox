@@ -1,7 +1,7 @@
 #include "dialog_manage_groups.h"
 #include "ui_dialog_manage_groups.h"
 
-#include "db/Database.hpp"
+#include "db/ProfileManager.hpp"
 #include "sub/GroupUpdater.hpp"
 #include "main/GuiUtils.hpp"
 #include "ui/widget/GroupItem.h"
@@ -11,24 +11,16 @@
 #include <QListWidgetItem>
 #include <QMessageBox>
 
-#define AddGroupToListIfExist(_id)                       \
-    auto __ent = NekoGui::profileManager->GetGroup(_id); \
-    if (__ent != nullptr) {                              \
-        auto wI = new QListWidgetItem();                 \
-        auto w = new GroupItem(this, __ent, wI);         \
-        wI->setData(114514, _id);                        \
-        ui->listWidget->addItem(wI);                     \
-        ui->listWidget->setItemWidget(wI, w);            \
-    }
-
 DialogManageGroups::DialogManageGroups(QWidget *parent, int index) : QDialog(parent), ui(new Ui::DialogManageGroups) {
     ui->setupUi(this);
 
     for (auto id: NekoGui::profileManager->groupsTabOrder) {
-        AddGroupToListIfExist(id)
+        addGroupToList(id);
     }
 
-    setWindowTitle(QString("%1 [%2]").arg(windowTitle()).arg(ui->listWidget->count()));
+    updateWindowTitle();
+    connect(ui->listWidget->model(), &QAbstractItemModel::rowsInserted, this, &DialogManageGroups::updateWindowTitle);
+    connect(ui->listWidget->model(), &QAbstractItemModel::rowsRemoved, this, &DialogManageGroups::updateWindowTitle);
 
     connect(ui->listWidget, &QListWidget::itemDoubleClicked, this, [=, this](QListWidgetItem *wI) {
         auto w = dynamic_cast<GroupItem *>(ui->listWidget->itemWidget(wI));
@@ -44,21 +36,32 @@ DialogManageGroups::~DialogManageGroups() {
     delete ui;
 }
 
+void DialogManageGroups::addGroupToList(int id) {
+    if (auto ent = NekoGui::profileManager->GetGroup(id)) {
+        auto item = new QListWidgetItem();
+        auto w = new GroupItem(this, ent, item);
+        item->setData(114514, id);
+        ui->listWidget->addItem(item);
+        ui->listWidget->setItemWidget(item, w);
+    }
+}
+
+void DialogManageGroups::updateWindowTitle() {
+    setWindowTitle(QString("%1 [%2]").arg(tr("Groups")).arg(ui->listWidget->count()));
+}
+
 void DialogManageGroups::on_add_clicked() {
     auto ent = NekoGui::ProfileManager::NewGroup();
-    auto dialog = new DialogEditGroup(ent, this);
-    int ret = dialog->exec();
-    dialog->deleteLater();
-
-    if (ret == QDialog::Accepted) {
+    DialogEditGroup dialog(ent, this);
+    if (dialog.exec() == QDialog::Accepted) {
         NekoGui::profileManager->AddGroup(ent);
-        AddGroupToListIfExist(ent->id);
+        addGroupToList(ent->id);
         MW_dialog_message(Dialog_DialogManageGroups, "refresh-1");
     }
 }
 
 void DialogManageGroups::on_update_all_clicked() {
     if (QMessageBox::question(this, tr("Confirmation"), tr("Update all subscriptions?")) == QMessageBox::StandardButton::Yes) {
-        UI_update_all_groups();
+        UI_update_all_groups(false);
     }
 }

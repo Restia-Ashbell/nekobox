@@ -16,7 +16,6 @@
 #include <QStandardPaths>
 #include <QProcess>
 
-#include "3rdparty/fix_old_qt.h"
 #include "3rdparty/qv2ray/wrapper.hpp"
 #include "fmt/Preset.hpp"
 #include "main/NekoGui.hpp"

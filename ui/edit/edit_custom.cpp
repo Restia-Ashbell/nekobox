@@ -5,7 +5,7 @@
 #include "fmt/CustomBean.hpp"
 #include "fmt/Preset.hpp"
 #include "db/ConfigBuilder.hpp"
-#include "db/Database.hpp"
+#include "db/ProfileManager.hpp"
 
 #include <QMessageBox>
 #include <QClipboard>
@@ -118,21 +118,12 @@ void EditCustom::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
         for (const auto &extR: result->extRs) {
             auto command = QStringList{extR->program};
             command += extR->arguments;
-            auto btn = QMessageBox::information(this, tr("Preview config"),
-                                                QString("Command: %1\n\n%2").arg(QStringList2Command(command), extR->config_export),
-                                                "OK", "Copy", "", 0, 0);
-            if (btn == 1) {
-                QApplication::clipboard()->setText(extR->config_export);
-            }
+            MessageBoxInfo(tr("Preview config"), QString("Command: %1\n\n%2").arg(QStringList2Command(command), extR->config_export));
         }
     });
 }
 
 bool EditCustom::onEnd() {
-    if (get_edit_text_name().isEmpty()) {
-        MessageBoxWarning(software_name, tr("Name cannot be empty."));
-        return false;
-    }
     if (ui->core->currentText().isEmpty()) {
         MessageBoxWarning(software_name, tr("Please pick a core."));
         return false;

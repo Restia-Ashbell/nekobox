@@ -97,7 +97,15 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
         ui->rfsh_r->setCurrentIndex(5);
     }
     //
-    ui->language->setCurrentIndex(NekoGui::dataStore->language);
+    if (NekoGui::dataStore->language == "zh_CN") {
+        ui->language->setCurrentIndex(1);
+    } else if (NekoGui::dataStore->language == "fa_IR") {
+        ui->language->setCurrentIndex(2);
+    } else if (NekoGui::dataStore->language == "ru_RU") {
+        ui->language->setCurrentIndex(3);
+    } else {
+        ui->language->setCurrentIndex(0);
+    }
     connect(ui->language, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=, this](int index) {
         CACHE.needRestart = true;
     });
@@ -108,9 +116,7 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
         QFont currentFont = QApplication::font();
         currentFont.setFamily(fontName);
         QApplication::setFont(currentFont);
-        foreach (QWidget *widget, QApplication::allWidgets()) {
-            widget->setFont(currentFont);
-        }
+        // 使用非内置主题时由于样式表的存在，改变字体不会刷新已有窗口部件
     });
     //
     int built_in_len = ui->theme->count();
@@ -172,10 +178,7 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     //
     connect(ui->extra_core_add, &QPushButton::clicked, this, [=, this] {
         bool ok;
-        auto s = QInputDialog::getText(nullptr, tr("Add"),
-                                       tr("Please input the core name."),
-                                       QLineEdit::Normal, "", &ok)
-                     .trimmed();
+        auto s = QInputDialog::getText(nullptr, tr("Add"), tr("Please input the core name."), QLineEdit::Normal, "", &ok).trimmed();
         if (s.isEmpty() || !ok) return;
         if (CACHE.extraCore.contains(s)) return;
         extra_core_layout->addWidget(new ExtraCoreWidget(&CACHE.extraCore, s));
@@ -183,9 +186,7 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     });
     connect(ui->extra_core_del, &QPushButton::clicked, this, [=, this] {
         bool ok;
-        auto s = QInputDialog::getItem(nullptr, tr("Delete"),
-                                       tr("Please select the core name."),
-                                       CACHE.extraCore.keys(), 0, false, &ok);
+        auto s = QInputDialog::getItem(nullptr, tr("Delete"), tr("Please select the core name."), CACHE.extraCore.keys(), 0, false, &ok);
         if (s.isEmpty() || !ok) return;
         for (int i = 0; i < extra_core_layout->count(); i++) {
             auto item = extra_core_layout->itemAt(i);
@@ -249,18 +250,20 @@ void DialogBasicSettings::accept() {
 
     // Style
 
-    NekoGui::dataStore->language = ui->language->currentIndex();
+    switch (ui->language->currentIndex()) {
+        case 1: NekoGui::dataStore->language = "zh_CN"; break;
+        case 2: NekoGui::dataStore->language = "fa_IR"; break;
+        case 3: NekoGui::dataStore->language = "ru_RU"; break;
+        default: NekoGui::dataStore->language = "en";
+    }
     NekoGui::dataStore->font = ui->font->currentText();
     D_SAVE_BOOL(check_include_pre)
     D_SAVE_BOOL(start_minimal)
 
     int oldValue = NekoGui::dataStore->max_log_line;
     D_SAVE_INT(max_log_line)
-    if (NekoGui::dataStore->max_log_line <= 0) {
-        NekoGui::dataStore->max_log_line = 200;
-    }
     if (NekoGui::dataStore->max_log_line != oldValue) {
-        GetMainWindow()->updateLogMaxLines();
+        MainWindow::instance()->updateLogMaxLines();
     }
 
     if (ui->rfsh_r->currentIndex() == 0) {
@@ -279,17 +282,12 @@ void DialogBasicSettings::accept() {
 
     // Subscription
 
-    if (ui->sub_auto_update_enable->isChecked()) {
-        TM_auto_update_subsctiption_Reset_Minute(ui->sub_auto_update->text().toInt());
-    } else {
-        TM_auto_update_subsctiption_Reset_Minute(0);
-    }
-
     NekoGui::dataStore->user_agent = ui->user_agent->text();
     D_SAVE_BOOL(sub_use_proxy)
     D_SAVE_BOOL(sub_clear)
     D_SAVE_BOOL(sub_insecure)
     D_SAVE_INT_ENABLE(sub_auto_update, sub_auto_update_enable)
+    MainWindow::instance()->resetAutoUpdateSubscription(NekoGui::dataStore->sub_auto_update);
 
     // Inbound
     D_SAVE_STRING(inbound_address)
@@ -354,8 +352,8 @@ void DialogBasicSettings::on_set_custom_icon_clicked() {
     auto title = ui->set_custom_icon->text();
     QString user_icon_path = "./" + software_name.toLower() + ".png";
     auto c = QMessageBox::question(this, title, tr("Please select a PNG file."),
-                                   tr("Select"), tr("Reset"), tr("Cancel"), 2, 2);
-    if (c == 0) {
+                                   QMessageBox::Open | QMessageBox::Reset | QMessageBox::Cancel, QMessageBox::Cancel);
+    if (c == QMessageBox::Open) {
         auto fn = QFileDialog::getOpenFileName(this, QObject::tr("Select"), QDir::currentPath(),
                                                "*.png", nullptr, QFileDialog::Option::ReadOnly);
         QImage img(fn);
@@ -365,7 +363,7 @@ void DialogBasicSettings::on_set_custom_icon_clicked() {
         }
         QFile::remove(user_icon_path);
         QFile::copy(fn, user_icon_path);
-    } else if (c == 1) {
+    } else if (c == QMessageBox::Reset) {
         QFile::remove(user_icon_path);
     } else {
         return;

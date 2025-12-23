@@ -1,8 +1,8 @@
-// DO NOT INCLUDE THIS
+#include "NekoGui_Utils.hpp"
 
 namespace NekoGui_ConfigItem {
     // config 工具
-    enum itemType {
+    enum class itemType {
         string,
         integer,
         integer64,
@@ -18,11 +18,7 @@ namespace NekoGui_ConfigItem {
         void *ptr;
         itemType type;
 
-        configItem(QString n, void *p, itemType t) {
-            name = std::move(n);
-            ptr = p;
-            type = t;
-        }
+        configItem(const QString &n, void *p, itemType t) : name(n), ptr(p), type(t) {}
     };
 
     // 可格式化对象
@@ -41,9 +37,7 @@ namespace NekoGui_ConfigItem {
 
         JsonStore() = default;
 
-        explicit JsonStore(QString fileName) {
-            fn = std::move(fileName);
-        }
+        explicit JsonStore(const QString &fileName) : fn(fileName) {}
 
         void _add(configItem *item);
 
@@ -57,7 +51,7 @@ namespace NekoGui_ConfigItem {
 
         QByteArray ToJsonBytes();
 
-        void FromJson(QJsonObject object);
+        void FromJson(const QJsonObject &object);
 
         void FromJsonBytes(const QByteArray &data);
 

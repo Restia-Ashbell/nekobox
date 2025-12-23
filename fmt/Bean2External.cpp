@@ -1,23 +1,7 @@
 #include "db/ProxyEntity.hpp"
 #include "fmt/includes.h"
 
-#include <QFile>
-#include <QDir>
-#include <QFileInfo>
 #include <QUrl>
-
-#define WriteTempFile(fn, data)                                   \
-    QDir dir;                                                     \
-    if (!dir.exists("temp")) dir.mkdir("temp");                   \
-    QFile f(QString("temp/") + fn);                               \
-    bool ok = f.open(QIODevice::WriteOnly | QIODevice::Truncate); \
-    if (ok) {                                                     \
-        f.write(data);                                            \
-    } else {                                                      \
-        result.error = f.errorString();                           \
-    }                                                             \
-    f.close();                                                    \
-    auto TempFile = QFileInfo(f).absoluteFilePath();
 
 namespace NekoGui_fmt {
     // -1: Cannot use this config
@@ -109,8 +93,7 @@ namespace NekoGui_fmt {
         if (insecure_concurrency > 0) result.arguments += "--insecure-concurrency=" + Int2String(insecure_concurrency);
         if (!extra_headers.trimmed().isEmpty()) result.arguments += "--extra-headers=" + extra_headers;
         if (!certificate.trimmed().isEmpty()) {
-            WriteTempFile("naive_" + GetRandomString(10) + ".crt", certificate.toUtf8());
-            result.env += "SSL_CERT_FILE=" + TempFile;
+            result.env += "SSL_CERT_FILE=" + WriteTempFile("naive_XXXXXXXXXX.crt", certificate, result.error);
         }
 
         auto config_export = QStringList{result.program};
@@ -136,9 +119,8 @@ namespace NekoGui_fmt {
             if (!alpn.trimmed().isEmpty()) relay["alpn"] = QList2QJsonArray(alpn.split(","));
 
             if (!caText.trimmed().isEmpty()) {
-                WriteTempFile("tuic_" + GetRandomString(10) + ".crt", caText.toUtf8());
                 QJsonArray certificate;
-                certificate.append(TempFile);
+                certificate.append(WriteTempFile("tuic_XXXXXXXXXX.crt", caText, result.error));
                 relay["certificates"] = certificate;
             }
 
@@ -162,8 +144,7 @@ namespace NekoGui_fmt {
             //
 
             result.config_export = QJsonObject2QString(config, false);
-            WriteTempFile("tuic_" + GetRandomString(10) + ".json", result.config_export.toUtf8());
-            result.arguments = QStringList{"-c", TempFile};
+            result.arguments = QStringList{"-c", WriteTempFile("tuic_XXXXXXXXXX.json", result.config_export, result.error)};
 
             return result;
         } else if (proxy_type == proxy_Hysteria2) {
@@ -222,16 +203,14 @@ namespace NekoGui_fmt {
             tls["sni"] = sniGen;
             if (allowInsecure) tls["insecure"] = true;
             if (!caText.trimmed().isEmpty()) {
-                WriteTempFile("hysteria2_" + GetRandomString(10) + ".crt", caText.toUtf8());
                 QJsonArray certificate;
-                certificate.append(TempFile);
+                certificate.append(WriteTempFile("hysteria2_XXXXXXXXXX.crt", caText, result.error));
                 tls["certificates"] = certificate;
             }
             config["tls"] = tls;
 
             result.config_export = QJsonObject2QString(config, false);
-            WriteTempFile("hysteria2_" + GetRandomString(10) + ".json", result.config_export.toUtf8());
-            result.arguments = QStringList{"-c", TempFile};
+            result.arguments = QStringList{"-c", WriteTempFile("hysteria2_XXXXXXXXXX.json", result.config_export, result.error)};
 
             return result;
 
@@ -277,8 +256,7 @@ namespace NekoGui_fmt {
             if (!alpn.isEmpty()) config["alpn"] = alpn;
 
             if (!caText.trimmed().isEmpty()) {
-                WriteTempFile("hysteria_" + GetRandomString(10) + ".crt", caText.toUtf8());
-                config["ca"] = TempFile;
+                config["ca"] = WriteTempFile("hysteria_XXXXXXXXXX.crt", caText, result.error);
             }
 
             if (allowInsecure) config["insecure"] = true;
@@ -290,8 +268,7 @@ namespace NekoGui_fmt {
             //
 
             result.config_export = QJsonObject2QString(config, false);
-            WriteTempFile("hysteria_" + GetRandomString(10) + ".json", result.config_export.toUtf8());
-            result.arguments = QStringList{"--no-check", "-c", TempFile};
+            result.arguments = QStringList{"--no-check", "-c", WriteTempFile("hysteria_XXXXXXXXXX.json", result.config_export, result.error)};
 
             return result;
         }
@@ -328,7 +305,7 @@ namespace NekoGui_fmt {
             }
 
             // write config
-            WriteTempFile("custom_" + GetRandomString(10) + suffix, config.toUtf8());
+            auto TempFile = WriteTempFile("custom_XXXXXXXXXX" + suffix, config, result.error);
             for (int i = 0; i < result.arguments.count(); i++) {
                 result.arguments[i] = result.arguments[i].replace("%config%", TempFile);
             }

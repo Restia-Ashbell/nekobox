@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
@@ -9,13 +9,13 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+
+if (CMAKE_BUILD_TYPE MATCHES "Release")
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+endif ()
 
 # Find Qt
-if (NOT QT_VERSION_MAJOR)
-    set(QT_VERSION_MAJOR 6)
-endif ()
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network Svg LinguistTools Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Network Svg LinguistTools Concurrent)
 
 if (NKR_CROSS)
     set_property(TARGET Qt6::moc PROPERTY IMPORTED_LOCATION /usr/bin/moc)
@@ -55,6 +55,42 @@ if (NKR_PACKAGE OR NKR_PACKAGE_MACOS)
     nkr_add_compile_definitions(NKR_CPP_USE_APPDATA)
 endif ()
 
+if (WIN32)
+    set(LIBBOX_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/libbox.dll)
+elseif (APPLE)
+    set(LIBBOX_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/libbox.dylib)
+else ()
+    set(LIBBOX_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/libbox.so)
+endif ()
+set(LIBBOX_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sing-box)
+
+if (NOT EXISTS ${LIBBOX_SRC_DIR})
+    execute_process(
+            COMMAND git clone https://github.com/Restia-Ashbell/sing-box.git ${LIBBOX_SRC_DIR}
+    )
+endif ()
+
+execute_process(
+        COMMAND git rev-parse --short HEAD
+        WORKING_DIRECTORY ${LIBBOX_SRC_DIR}
+        OUTPUT_VARIABLE LIBBOX_GIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+file(GLOB_RECURSE LIBBOX_SOURCES "${LIBBOX_SRC_DIR}/*.go")
+add_custom_command(
+        OUTPUT ${LIBBOX_OUTPUT}
+        COMMAND go build -v -buildmode=c-shared -trimpath
+        -ldflags "-w -s -X github.com/sagernet/sing-box/constant.Version=${LIBBOX_GIT_HASH} -checklinkname=0"
+        -tags "with_clash_api,with_gvisor,with_quic,with_wireguard,with_utls,with_dhcp,badlinkname,tfogo_checklinkname0"
+        -o ${LIBBOX_OUTPUT} ./cmd/sing-box
+        WORKING_DIRECTORY ${LIBBOX_SRC_DIR}
+        DEPENDS ${LIBBOX_SOURCES}
+        COMMENT "Building Go shared library"
+)
+
+add_custom_target(BuildCore ALL DEPENDS ${LIBBOX_OUTPUT})
+
 set(BUILD_SHARED_LIBS OFF)
 set(QHOTKEY_INSTALL OFF)
 set(YAML_CPP_BUILD_TOOLS OFF)
@@ -62,31 +98,26 @@ set(ZXING_EXAMPLES OFF)
 
 include(FetchContent)
 FetchContent_Declare(
-    QJsonModel
-    GIT_REPOSITORY https://github.com/dridk/QJsonModel.git
-    GIT_TAG master
+        QJsonModel
+        GIT_REPOSITORY https://github.com/dridk/QJsonModel.git
+        GIT_TAG master
 )
 FetchContent_Declare(
-    QHotkey
-    GIT_REPOSITORY https://github.com/Skycoder42/QHotkey.git
-    GIT_TAG master
+        QHotkey
+        GIT_REPOSITORY https://github.com/Skycoder42/QHotkey.git
+        GIT_TAG master
 )
 FetchContent_Declare(
-    yaml-cpp
-    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
-    GIT_TAG master
+        yaml-cpp
+        GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+        GIT_TAG master
 )
 FetchContent_Declare(
-    zxing-cpp
-    GIT_REPOSITORY https://github.com/zxing-cpp/zxing-cpp.git
-    GIT_TAG master
+        zxing-cpp
+        GIT_REPOSITORY https://github.com/zxing-cpp/zxing-cpp.git
+        GIT_TAG v2.3.0
 )
-FetchContent_Declare(
-    qrcodegen
-    GIT_REPOSITORY https://github.com/nayuki/QR-Code-generator.git
-    GIT_TAG master
-)
-FetchContent_MakeAvailable(QJsonModel QHotkey yaml-cpp zxing-cpp qrcodegen)
+FetchContent_MakeAvailable(QJsonModel QHotkey yaml-cpp zxing-cpp)
 
 set_target_properties(ZXing PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
 
@@ -96,12 +127,8 @@ set(PROJECT_SOURCES
 
         main/main.cpp
         main/NekoGui.cpp
-        main/NekoGui_Utils.cpp
+        main/NekoGui_ConfigItem.cpp
         main/HTTPRequestHelper.cpp
-
-        ${qrcodegen_SOURCE_DIR}/cpp/qrcodegen.cpp
-
-        3rdparty/QtExtKeySequenceEdit.cpp
 
         3rdparty/qv2ray/v2/ui/LogHighlighter.cpp
         3rdparty/qv2ray/v2/components/proxy/QvProxyConfigurator.cpp
@@ -109,21 +136,20 @@ set(PROJECT_SOURCES
         3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp
         3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.ui
 
-        db/Database.cpp
+        db/ProfileManager.cpp
         db/traffic/TrafficLooper.cpp
         db/ProfileFilter.cpp
         db/ConfigBuilder.cpp
 
-        fmt/AbstractBean.cpp
         fmt/Bean2CoreObj_box.cpp
         fmt/Bean2External.cpp
         fmt/Bean2Link.cpp
         fmt/Link2Bean.cpp
-        fmt/ChainBean.hpp # translate
 
         sub/GroupUpdater.cpp
 
         sys/ExternalProcess.cpp
+        sys/AdminHelper.cpp
         sys/AutoRun.cpp
 
         ui/ThemeManager.cpp
@@ -216,6 +242,7 @@ qt_add_executable(nekoray
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
 )
+add_dependencies(nekoray BuildCore)
 
 # Target
 
@@ -223,21 +250,21 @@ set_property(TARGET nekoray PROPERTY AUTOUIC ON)
 set_property(TARGET nekoray PROPERTY AUTOMOC ON)
 set_property(TARGET nekoray PROPERTY AUTORCC ON)
 
-if(APPLE)
+if (APPLE)
     set(MACOSX_ICON ${CMAKE_SOURCE_DIR}/res/nekoray.icns)
     target_sources(nekoray PRIVATE ${MACOSX_ICON})
     set_target_properties(nekoray PROPERTIES
-        MACOSX_BUNDLE_ICON_FILE "nekoray.icns"
-        RESOURCE ${MACOSX_ICON}
-        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/MacOSXBundleInfo.plist
-        MACOSX_BUNDLE_GUI_IDENTIFIER moe.nekoray.macosx
-        MACOSX_BUNDLE TRUE
+            MACOSX_BUNDLE_ICON_FILE "nekoray.icns"
+            RESOURCE ${MACOSX_ICON}
+            MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/MacOSXBundleInfo.plist
+            MACOSX_BUNDLE_GUI_IDENTIFIER moe.nekoray.macosx
+            MACOSX_BUNDLE TRUE
     )
-endif()
+endif ()
 
-if(WIN32)
+if (WIN32)
     set_target_properties(nekoray PROPERTIES WIN32_EXECUTABLE TRUE)
-endif()
+endif ()
 
 # Target Source Translations
 
@@ -246,35 +273,25 @@ set(TS_FILES
         translations/fa_IR.ts
         translations/ru_RU.ts
 )
-set(LUPDATE_OPTIONS
-        -locations none -no-obsolete
-)
-qt_add_lupdate(nekoray TS_FILES ${TS_FILES} OPTIONS ${LUPDATE_OPTIONS})
-qt_add_lrelease(nekoray TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
-
-configure_file(translations/translations.qrc ${CMAKE_BINARY_DIR} COPYONLY)
-target_sources(nekoray PRIVATE ${CMAKE_BINARY_DIR}/translations.qrc)
+qt_add_translations(nekoray TS_FILES ${TS_FILES} MERGE_QT_TRANSLATIONS)
 
 # Target Link
 
 target_include_directories(nekoray PRIVATE
-    ${zxing-cpp_SOURCE_DIR}/example
-    ${qrcodegen_SOURCE_DIR}/cpp
+        ${zxing-cpp_SOURCE_DIR}/example
 )
 
-target_link_directories(nekoray PRIVATE ${CMAKE_BINARY_DIR})
-
 target_link_libraries(nekoray PRIVATE
-        Qt${QT_VERSION_MAJOR}::Widgets
-        Qt${QT_VERSION_MAJOR}::Network
-        Qt${QT_VERSION_MAJOR}::Svg
-        Qt${QT_VERSION_MAJOR}::Concurrent
+        Qt::Widgets
+        Qt::Network
+        Qt::Svg
+        Qt::Concurrent
         ${PLATFORM_LIBRARIES}
         QJsonModel
-        QHotkey::QHotkey 
+        QHotkey::QHotkey
         yaml-cpp::yaml-cpp
         ZXing::ZXing
-        libbox
+        ${LIBBOX_OUTPUT}
 )
 
 qt_finalize_executable(nekoray)

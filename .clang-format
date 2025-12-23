@@ -8,3 +8,5 @@ AccessModifierOffset: -4
 SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false
 SpaceBeforeRangeBasedForLoopColon: false
+PointerBindsToType: false
+AllowShortCaseLabelsOnASingleLine: true

@@ -31,34 +31,21 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
     ui->dialog_layout->setAlignment(ui->left, Qt::AlignTop);
 
     // network changed
-    network_title_base = ui->network_box->title();
-    connect(ui->network, &QComboBox::currentTextChanged, this, [=, this](const QString &txt) {
-        ui->network_box->setTitle(network_title_base.arg(txt));
+    ui->network->addItems(Preset::SingBox::V2RayTransport);
+    connect(ui->network, &QComboBox::currentTextChanged, this, [base = ui->network_box->title(), this](const QString &txt) {
+        ui->network_box->setTitle(base.arg(txt));
         // 传输设置
-        if (txt == "tcp") {
-            ui->header_type->setVisible(true);
-            ui->header_type_l->setVisible(true);
+        if (txt == "ws" || txt == "http" || txt == "httpupgrade") {
             ui->path->setVisible(true);
             ui->path_l->setVisible(true);
             ui->host->setVisible(true);
             ui->host_l->setVisible(true);
         } else if (txt == "grpc") {
-            ui->header_type->setVisible(false);
-            ui->header_type_l->setVisible(false);
             ui->path->setVisible(true);
             ui->path_l->setVisible(true);
             ui->host->setVisible(false);
             ui->host_l->setVisible(false);
-        } else if (txt == "ws" || txt == "http" || txt == "httpupgrade") {
-            ui->header_type->setVisible(false);
-            ui->header_type_l->setVisible(false);
-            ui->path->setVisible(true);
-            ui->path_l->setVisible(true);
-            ui->host->setVisible(true);
-            ui->host_l->setVisible(true);
         } else {
-            ui->header_type->setVisible(false);
-            ui->header_type_l->setVisible(false);
             ui->path->setVisible(false);
             ui->path_l->setVisible(false);
             ui->host->setVisible(false);
@@ -76,22 +63,22 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
             ui->ws_early_data_name->setVisible(false);
             ui->ws_early_data_name_l->setVisible(false);
         }
-        // 传输设置 for NekoBox
-        if (!ui->utlsFingerprint->count()) ui->utlsFingerprint->addItems(Preset::SingBox::UtlsFingerPrint);
         // 传输设置 是否可见
         int networkBoxVisible = 0;
         for (auto label: ui->network_box->findChildren<QLabel *>()) {
             if (!label->isHidden()) networkBoxVisible++;
         }
         ui->network_box->setVisible(networkBoxVisible);
+        ui->right_all_w->setVisible(!(ui->network_box->isHidden() && ui->security_box->isHidden() && ui->multiplex_box->isHidden()));
         ADJUST_SIZE
     });
-    ui->network->addItem("tcp");
-    ui->network->addItems(Preset::SingBox::V2RayTransport);
+    emit ui->network->currentTextChanged(ui->network->currentText());
 
     // security changed
+    ui->utlsFingerprint->addItems(Preset::SingBox::UtlsFingerPrint);
     connect(ui->security, &QComboBox::currentTextChanged, this, [=, this](const QString &txt) {
         ui->security_box->setVisible(txt == "tls");
+        ui->right_all_w->setVisible(!(ui->network_box->isHidden() && ui->security_box->isHidden() && ui->multiplex_box->isHidden()));
         ADJUST_SIZE
     });
     emit ui->security->currentTextChanged(ui->security->currentText());
@@ -100,6 +87,7 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
     ui->multiplex_protocol->addItems(Preset::SingBox::MultiplexProtocol);
     connect(ui->multiplex, &QComboBox::currentIndexChanged, this, [=, this](int index) {
         ui->multiplex_box->setVisible(index == 1);
+        ui->right_all_w->setVisible(!(ui->network_box->isHidden() && ui->security_box->isHidden() && ui->multiplex_box->isHidden()));
         ADJUST_SIZE
     });
     emit ui->multiplex->currentIndexChanged(ui->multiplex->currentIndex());
@@ -131,8 +119,9 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
         LOAD_TYPE("chain")
 
         // type changed
-        connect(ui->type, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=, this](int index) {
-            typeSelected(ui->type->itemData(index).toString());
+        connect(ui->type, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int index) {
+            this->type = ui->type->itemData(index).toString();
+            typeSelected();
         });
 
         ui->apply_to_group->hide();
@@ -144,17 +133,16 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
         ui->type_l->setVisible(false);
     }
 
-    typeSelected(this->type);
+    typeSelected();
+    show();
 }
 
 DialogEditProfile::~DialogEditProfile() {
     delete ui;
 }
 
-void DialogEditProfile::typeSelected(const QString &newType) {
+void DialogEditProfile::typeSelected() {
     QString customType;
-    type = newType;
-    bool validType = true;
 
     if (type == "socks" || type == "http") {
         auto _innerWidget = new EditSocksHttp(this);
@@ -208,11 +196,7 @@ void DialogEditProfile::typeSelected(const QString &newType) {
         if (customType != "custom") _innerWidget->preset_core = customType;
         type = "custom";
     } else {
-        validType = false;
-    }
-
-    if (!validType) {
-        MessageBoxWarning(newType, "Wrong type");
+        MessageBoxWarning(type, "Wrong type");
         return;
     }
 
@@ -229,9 +213,7 @@ void DialogEditProfile::typeSelected(const QString &newType) {
     ui->port_l->setVisible(showAddressPort);
 
     // 右边 stream
-    auto stream = GetStreamSettings(ent->bean.get());
-    if (stream != nullptr) {
-        ui->right_all_w->setVisible(true);
+    if (auto stream = ent->bean->GetConfigItemPtr<NekoGui_fmt::V2rayStreamSettings>("stream")) {
         ui->network->setCurrentText(stream->network);
         ui->security->setCurrentText(stream->security);
         ui->packet_encoding->setCurrentText(stream->packet_encoding);
@@ -247,7 +229,6 @@ void DialogEditProfile::typeSelected(const QString &newType) {
         ui->insecure->setChecked(stream->allow_insecure);
         ui->ech_enabled->setChecked(stream->ech_enabled);
         ui->disable_sni->setChecked(stream->disable_sni);
-        ui->header_type->setCurrentText(stream->header_type);
         ui->ws_early_data_name->setText(stream->ws_early_data_name);
         ui->ws_early_data_length->setText(Int2String(stream->ws_early_data_length));
         ui->reality_pbk->setText(stream->reality_pbk);
@@ -256,14 +237,20 @@ void DialogEditProfile::typeSelected(const QString &newType) {
         ui->tls_record_fragment->setChecked(stream->tls_record_fragment);
         CACHE.certificate = stream->certificate;
         CACHE.ech = stream->ech;
-        ui->multiplex->setCurrentIndex(ent->bean->mux_state);
-        ui->multiplex_padding->setChecked(ent->bean->multiplex_padding);
-        ui->multiplex_protocol->setCurrentText(ent->bean->multiplex_protocol);
-        ui->multiplex_max_streams->setText(Int2String(ent->bean->multiplex_max_streams));
-        ui->brutal_up->setText(Int2String(ent->bean->brutal_up));
-        ui->brutal_down->setText(Int2String(ent->bean->brutal_down));
     } else {
-        ui->right_all_w->setVisible(false);
+        ui->network_box->setVisible(false);
+        ui->security_box->setVisible(false);
+    }
+
+    if (auto multiplex = ent->bean->GetConfigItemPtr<NekoGui_fmt::MultiplexSettings>("multiplex")) {
+        ui->multiplex->setCurrentIndex(multiplex->enabled ? 1 : 0);
+        ui->multiplex_padding->setChecked(multiplex->padding);
+        ui->multiplex_protocol->setCurrentText(multiplex->protocol);
+        ui->multiplex_max_streams->setText(Int2String(multiplex->max_streams));
+        ui->brutal_up->setText(Int2String(multiplex->brutal_up));
+        ui->brutal_down->setText(Int2String(multiplex->brutal_down));
+    } else {
+        ui->multiplex_box->setVisible(false);
     }
 
     // left: custom
@@ -320,11 +307,9 @@ void DialogEditProfile::typeSelected(const QString &newType) {
     if (type == "vmess" || type == "vless" || type == "trojan") {
         ui->network_l->setVisible(true);
         ui->network->setVisible(true);
-        ui->network_box->setVisible(true);
     } else {
         ui->network_l->setVisible(false);
         ui->network->setVisible(false);
-        ui->network_box->setVisible(false);
     }
     if (type == "vmess" || type == "vless" || type == "trojan" || type == "http") {
         ui->security->setVisible(true);
@@ -347,19 +332,10 @@ void DialogEditProfile::typeSelected(const QString &newType) {
     }
     ui->stream_box->setVisible(streamBoxVisible);
 
-    // 载入 type 之后，有些类型没有右边的设置
-    auto rightNoBox = (ui->stream_box->isHidden() && ui->network_box->isHidden() && ui->security_box->isHidden());
-    if (rightNoBox && !ui->right_all_w->isHidden()) {
-        ui->right_all_w->setVisible(false);
-    }
+    ui->right_all_w->setVisible(!(ui->network_box->isHidden() && ui->security_box->isHidden() && ui->multiplex_box->isHidden()));
 
     editor_cache_updated_impl();
     ADJUST_SIZE
-
-    // 第一次显示
-    if (isHidden()) {
-        runOnUiThread([=, this] { show(); }, this);
-    }
 }
 
 bool DialogEditProfile::onEnd() {
@@ -370,12 +346,11 @@ bool DialogEditProfile::onEnd() {
 
     // 左边
     ent->bean->name = ui->name->text();
-    ent->bean->serverAddress = ui->address->text().remove(' ');
+    ent->bean->serverAddress = ui->address->text().trimmed();
     ent->bean->serverPort = ui->port->text().toInt();
 
     // 右边 stream
-    auto stream = GetStreamSettings(ent->bean.get());
-    if (stream != nullptr) {
+    if (auto stream = ent->bean->GetConfigItemPtr<NekoGui_fmt::V2rayStreamSettings>("stream")) {
         stream->network = ui->network->currentText();
         stream->security = ui->security->currentText();
         stream->packet_encoding = ui->packet_encoding->currentText();
@@ -387,7 +362,6 @@ bool DialogEditProfile::onEnd() {
         stream->allow_insecure = ui->insecure->isChecked();
         stream->ech_enabled = ui->ech_enabled->isChecked();
         stream->disable_sni = ui->disable_sni->isChecked();
-        stream->header_type = ui->header_type->currentText();
         stream->ws_early_data_name = ui->ws_early_data_name->text();
         stream->ws_early_data_length = ui->ws_early_data_length->text().toInt();
         stream->reality_pbk = ui->reality_pbk->text();
@@ -396,12 +370,15 @@ bool DialogEditProfile::onEnd() {
         stream->tls_record_fragment = ui->tls_record_fragment->isChecked();
         stream->certificate = CACHE.certificate;
         stream->ech = CACHE.ech;
-        ent->bean->mux_state = ui->multiplex->currentIndex();
-        ent->bean->multiplex_padding = ui->multiplex_padding->isChecked();
-        ent->bean->multiplex_protocol = ui->multiplex_protocol->currentText();
-        ent->bean->multiplex_max_streams = ui->multiplex_max_streams->text().toInt();
-        ent->bean->brutal_up = ui->brutal_up->text().toInt();
-        ent->bean->brutal_down = ui->brutal_down->text().toInt();
+    }
+
+    if (auto multiplex = ent->bean->GetConfigItemPtr<NekoGui_fmt::MultiplexSettings>("multiplex")) {
+        multiplex->enabled = ui->multiplex->currentIndex() == 1;
+        multiplex->padding = ui->multiplex_padding->isChecked();
+        multiplex->protocol = ui->multiplex_protocol->currentText();
+        multiplex->max_streams = ui->multiplex_max_streams->text().toInt();
+        multiplex->brutal_up = ui->brutal_up->text().toInt();
+        multiplex->brutal_down = ui->brutal_down->text().toInt();
     }
 
     // cached custom
@@ -545,11 +522,11 @@ void DialogEditProfile::on_apply_to_group_clicked() {
 }
 
 void DialogEditProfile::do_apply_to_group(const std::shared_ptr<NekoGui::Group> &group, QWidget *key) {
-    auto stream = GetStreamSettings(ent->bean.get());
+    auto stream = ent->bean->GetConfigItemPtr<NekoGui_fmt::V2rayStreamSettings>("stream");
 
     auto copyStream = [=, this](void *p) {
         for (const auto &profile: group->Profiles()) {
-            auto newStream = GetStreamSettings(profile->bean.get());
+            auto newStream = profile->bean->GetConfigItemPtr<NekoGui_fmt::V2rayStreamSettings>("stream");
             if (newStream == nullptr) continue;
             if (stream == newStream) continue;
             newStream->_setValue(stream->_name(p), p);
@@ -567,19 +544,7 @@ void DialogEditProfile::do_apply_to_group(const std::shared_ptr<NekoGui::Group> 
         }
     };
 
-    if (key == ui->multiplex) {
-        copyStream(&ent->bean->mux_state);
-    } else if (key == ui->multiplex_padding) {
-        copyStream(&ent->bean->multiplex_padding);
-    } else if (key == ui->multiplex_protocol) {
-        copyStream(&ent->bean->multiplex_protocol);
-    } else if (key == ui->multiplex_max_streams) {
-        copyStream(&ent->bean->multiplex_max_streams);
-    } else if (key == ui->brutal_up) {
-        copyStream(&ent->bean->brutal_up);
-    } else if (key == ui->brutal_down) {
-        copyStream(&ent->bean->brutal_down);
-    } else if (key == ui->alpn) {
+    if (key == ui->alpn) {
         copyStream(&stream->alpn);
     } else if (key == ui->host) {
         copyStream(&stream->host);

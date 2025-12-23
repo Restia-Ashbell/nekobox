@@ -16,6 +16,7 @@ namespace NekoGui_fmt {
         bool disable_log = false;
 
         NaiveBean() : AbstractBean(0) {
+            serverPort = 443;
             _add(new configItem("username", &username, itemType::string));
             _add(new configItem("password", &password, itemType::string));
             _add(new configItem("protocol", &protocol, itemType::string));
@@ -34,7 +35,7 @@ namespace NekoGui_fmt {
 
         ExternalBuildResult BuildExternal(int mapping_port, int socks_port, int external_stat) override;
 
-        bool TryParseLink(const QString &link);
+        bool TryParseLink(const QString &link) override;
 
         QString ToShareLink() override;
     };

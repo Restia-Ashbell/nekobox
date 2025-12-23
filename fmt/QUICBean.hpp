@@ -60,8 +60,8 @@ namespace NekoGui_fmt {
         QString caText = "";
         bool disableSni = false;
 
-        explicit QUICBean(int _proxy_type) : AbstractBean(0) {
-            proxy_type = _proxy_type;
+        explicit QUICBean(int _proxy_type) : AbstractBean(0), proxy_type(_proxy_type) {
+            serverPort = 443;
             if (proxy_type == proxy_Hysteria || proxy_type == proxy_Hysteria2) {
                 _add(new configItem("authPayload", &authPayload, itemType::string));
                 _add(new configItem("obfsPassword", &obfsPassword, itemType::string));
@@ -131,7 +131,7 @@ namespace NekoGui_fmt {
 
         CoreObjOutboundBuildResult BuildCoreObjSingBox() override;
 
-        bool TryParseLink(const QString &link);
+        bool TryParseLink(const QString &link) override;
 
         QString ToShareLink() override;
     };

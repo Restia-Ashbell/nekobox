@@ -1,13 +1,15 @@
 #pragma once
 
-#include "db/Database.hpp"
+#include "db/ProfileManager.hpp"
 
 namespace NekoGui_sub {
     class RawUpdater {
     public:
-        void updateClash(const QString &str);
+        void update(const QString &str);
 
-        void update(const QString &str, bool needParse, int index);
+        void updateLink(const QString &str, int index);
+
+        void updateClash(const QString &str);
 
         int gid_add_to = -1; // 导入到指定组 -1 为当前选中组
 
@@ -20,7 +22,7 @@ namespace NekoGui_sub {
     public:
         void AsyncUpdate(const QString &str, int _sub_gid = -1, const std::function<void()> &finish = nullptr);
 
-        void Update(const QString &_str, int _sub_gid = -1, bool _not_sub_as_url = false);
+        void Update(QString content, int _sub_gid = -1, bool asURL = false);
 
     signals:
 
@@ -31,4 +33,4 @@ namespace NekoGui_sub {
 } // namespace NekoGui_sub
 
 // 更新所有订阅 关闭分组窗口时 更新动作继续执行
-void UI_update_all_groups(bool onlyAllowed = false);
+void UI_update_all_groups(bool isAutoUpdate);

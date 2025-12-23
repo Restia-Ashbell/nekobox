@@ -3,13 +3,12 @@
 
 #include "libbox.h"
 
-#include "db/Database.hpp"
+#include "db/ProfileManager.hpp"
 #include "db/ConfigBuilder.hpp"
 #include "db/traffic/TrafficLooper.hpp"
 #include "sys/ExternalProcess.hpp"
 #include "ui/widget/MessageBoxTimer.h"
 
-#include <QTimer>
 #include <QThread>
 #include <QInputDialog>
 #include <QPushButton>
@@ -22,18 +21,17 @@
 
 std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> CreateExtCFromExtR(const std::list<std::shared_ptr<NekoGui_fmt::ExternalBuildResult>> &extRs, bool start) {
     // plz run and start in same thread
-    std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> l;
+    std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> processes;
     for (const auto &extR: extRs) {
-        std::shared_ptr<NekoGui_sys::ExternalProcess> extC(new NekoGui_sys::ExternalProcess());
+        auto extC = std::make_shared<NekoGui_sys::ExternalProcess>();
         extC->tag = extR->tag;
         extC->program = extR->program;
         extC->arguments = extR->arguments;
         extC->env = extR->env;
-        l.emplace_back(extC);
-        //
         if (start) extC->Start();
+        processes.emplace_back(extC);
     }
-    return l;
+    return processes;
 }
 
 void MainWindow::speedtest_current_group(int mode) {
@@ -119,7 +117,7 @@ void MainWindow::speedtest_current_group(int mode) {
         }
 
         auto boxTestResult = BoxTest(full_test_flags, Address.data(), Url.data(), Timeout, SpeedUrl.data(), SpeedTimeout, CoreConfig.data());
-        QStringList testResultList = QString::fromUtf8(boxTestResult).split("\n");
+        QStringList testResultList = QString(boxTestResult).split("\n");
         free(boxTestResult);
         //
         if (!extCs.empty()) {
@@ -187,7 +185,7 @@ void MainWindow::speedtest_current_group(int mode) {
 }
 
 void MainWindow::speedtest_current() {
-    last_test_time = QTime::currentTime();
+    last_test_time = QDateTime::currentSecsSinceEpoch();
     ui->label_running->setText(tr("Testing"));
 
     runOnNewThread([=, this] {
@@ -195,7 +193,7 @@ void MainWindow::speedtest_current() {
         auto boxTestResult = BoxTest(UrlTest, nullptr, Url.data(), 3000, nullptr, -1, nullptr);
         QString testResult(boxTestResult);
         free(boxTestResult);
-        last_test_time = QTime::currentTime();
+        last_test_time = QDateTime::currentSecsSinceEpoch();
 
         runOnUiThread([=, this] {
             bool testOK;
@@ -233,14 +231,29 @@ void MainWindow::neko_start(int _id) {
         return;
     }
 
+    if (!mu_state.tryLock()) {
+        MessageBoxWarning(software_name, "Another profile is starting/stopping...");
+        return;
+    }
+
     auto neko_start_stage2 = [=, this] {
+        // stop current running
+        if (NekoGui::dataStore->started_id >= 0) {
+            mu_state.unlock();
+            neko_stop();
+            mu_state.lock();
+        }
+
+        MW_show_log(">>>>>>>> " + tr("Starting profile %1").arg(ent->bean->DisplayTypeAndName()));
+
         auto CoreConfig = QJsonObject2QString(result->coreConfig, false).toUtf8();
         auto BoxStartError = BoxStart(CoreConfig.data());
         if (BoxStartError != nullptr) {
             QString boxStartError(BoxStartError);
             free(BoxStartError);
-            runOnUiThread([=, this] { MessageBoxWarning("LoadConfig return error", boxStartError); });
-            return false;
+            runOnUiThread([=, this] { MessageBoxWarning("Start failed", boxStartError); });
+            MW_show_log("<<<<<<<< " + tr("Failed to start profile %1").arg(ent->bean->DisplayTypeAndName()));
+            return;
         }
         //
         NekoGui_traffic::trafficLooper->proxy = result->outboundStat.get();
@@ -248,12 +261,7 @@ void MainWindow::neko_start(int _id) {
         NekoGui::dataStore->ignoreConnTag = result->ignoreConnTag;
         NekoGui_traffic::trafficLooper->loop_enabled = true;
 
-        runOnUiThread(
-            [=, this] {
-                auto extCs = CreateExtCFromExtR(result->extRs, true);
-                NekoGui_sys::running_ext.splice(NekoGui_sys::running_ext.end(), extCs);
-            },
-            DS_cores);
+        runOnUiThread([result] { NekoGui_sys::running_ext = CreateExtCFromExtR(result->extRs, true); }, DS_cores);
 
         NekoGui::dataStore->UpdateStartedId(ent->id);
         running = ent;
@@ -262,20 +270,7 @@ void MainWindow::neko_start(int _id) {
             refresh_status();
             refresh_proxy_list(ent->id);
         });
-
-        return true;
     };
-
-    if (!mu_starting.tryLock()) {
-        MessageBoxWarning(software_name, "Another profile is starting...");
-        return;
-    }
-    if (!mu_stopping.tryLock()) {
-        MessageBoxWarning(software_name, "Another profile is stopping...");
-        mu_starting.unlock();
-        return;
-    }
-    mu_stopping.unlock();
 
     // timeout message
     auto restartMsgbox = new QMessageBox(QMessageBox::Question, software_name, tr("If there is no response for a long time, it is recommended to restart the software."),
@@ -284,17 +279,9 @@ void MainWindow::neko_start(int _id) {
     auto restartMsgboxTimer = new MessageBoxTimer(this, restartMsgbox, 5000);
 
     runOnNewThread([=, this] {
-        // stop current running
-        if (NekoGui::dataStore->started_id >= 0) {
-            runOnUiThread([=, this] { neko_stop(false, true); });
-            sem_stopped.acquire();
-        }
         // do start
-        MW_show_log(">>>>>>>> " + tr("Starting profile %1").arg(ent->bean->DisplayTypeAndName()));
-        if (!neko_start_stage2()) {
-            MW_show_log("<<<<<<<< " + tr("Failed to start profile %1").arg(ent->bean->DisplayTypeAndName()));
-        }
-        mu_starting.unlock();
+        neko_start_stage2();
+        mu_state.unlock();
         // cancel timeout
         runOnUiThread([=, this] {
             restartMsgboxTimer->cancel();
@@ -310,37 +297,33 @@ void MainWindow::neko_start(int _id) {
     });
 }
 
-void MainWindow::neko_stop(bool crash, bool sem) {
-    auto id = NekoGui::dataStore->started_id;
-    if (id < 0) {
-        if (sem) sem_stopped.release();
-        return;
-    }
+void MainWindow::neko_stop(bool crash) {
+    mu_state.lock();
 
     auto neko_stop_stage2 = [=, this] {
+        auto id = NekoGui::dataStore->started_id;
+        if (id < 0) return;
+
+        MW_show_log(">>>>>>>> " + tr("Stopping profile %1").arg(running->bean->DisplayTypeAndName()));
+
         runOnUiThread(
-            [=, this] {
-                while (!NekoGui_sys::running_ext.empty()) {
-                    auto extC = NekoGui_sys::running_ext.front();
-                    extC->Kill();
-                    NekoGui_sys::running_ext.pop_front();
-                }
+            [] {
+                for (const auto &extC: NekoGui_sys::running_ext) extC->Kill();
+                NekoGui_sys::running_ext.clear();
             },
             DS_cores);
 
         NekoGui_traffic::trafficLooper->loop_enabled = false;
-        NekoGui_traffic::trafficLooper->loop_mutex.lock();
-        if (NekoGui::dataStore->traffic_loop_interval > 0) {
-            NekoGui_traffic::trafficLooper->UpdateAll();
-            for (const auto &item: NekoGui_traffic::trafficLooper->items) {
-                NekoGui::profileManager->GetProfile(item->id)->Save();
-                runOnUiThread([=, this] { refresh_proxy_list(item->id); });
-            }
-        }
-        NekoGui_traffic::trafficLooper->loop_mutex.unlock();
 
         if (!crash) {
-            BoxStop();
+            auto BoxStopError = BoxStop();
+            if (BoxStopError != nullptr) {
+                QString boxStopError(BoxStopError);
+                free(BoxStopError);
+                runOnUiThread([=, this] { MessageBoxWarning("Stop failed", boxStopError); });
+                MW_show_log("<<<<<<<< " + tr("Failed to stop profile %1").arg(running->bean->DisplayTypeAndName()));
+                return;
+            }
         }
 
         NekoGui::dataStore->UpdateStartedId(-1919);
@@ -351,14 +334,7 @@ void MainWindow::neko_stop(bool crash, bool sem) {
             refresh_status();
             refresh_proxy_list(id);
         });
-
-        return true;
     };
-
-    if (!mu_stopping.tryLock()) {
-        if (sem) sem_stopped.release();
-        return;
-    }
 
     // timeout message
     auto restartMsgbox = new QMessageBox(QMessageBox::Question, software_name, tr("If there is no response for a long time, it is recommended to restart the software."),
@@ -368,12 +344,8 @@ void MainWindow::neko_stop(bool crash, bool sem) {
 
     runOnNewThread([=, this] {
         // do stop
-        MW_show_log(">>>>>>>> " + tr("Stopping profile %1").arg(running->bean->DisplayTypeAndName()));
-        if (!neko_stop_stage2()) {
-            MW_show_log("<<<<<<<< " + tr("Failed to stop, please restart the program."));
-        }
-        mu_stopping.unlock();
-        if (sem) sem_stopped.release();
+        neko_stop_stage2();
+        mu_state.unlock();
         // cancel timeout
         runOnUiThread([=, this] {
             restartMsgboxTimer->cancel();

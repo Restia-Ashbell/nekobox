@@ -163,11 +163,6 @@
              <widget class="QComboBox" name="theme">
               <item>
                <property name="text">
-                <string notr="true">System</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
                 <string notr="true">flatgray</string>
                </property>
               </item>
@@ -211,11 +206,6 @@
             </item>
             <item>
              <widget class="QComboBox" name="language">
-              <item>
-               <property name="text">
-                <string notr="true">System</string>
-               </property>
-              </item>
               <item>
                <property name="text">
                 <string notr="true">English</string>
@@ -873,8 +863,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>192</width>
-            <height>60</height>
+            <width>200</width>
+            <height>59</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">

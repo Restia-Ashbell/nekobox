@@ -2,7 +2,7 @@
 #define DIALOG_EDIT_PROFILE_H
 
 #include <QDialog>
-#include "db/Database.hpp"
+#include "db/ProfileManager.hpp"
 #include "profile_editor.h"
 
 #include "ui/widget/FloatCheckBox.h"
@@ -48,8 +48,6 @@ private:
     bool newEnt = false;
     std::shared_ptr<NekoGui::ProxyEntity> ent;
 
-    QString network_title_base;
-
     struct {
         QString custom_outbound;
         QString custom_config;
@@ -57,7 +55,7 @@ private:
         QString ech;
     } CACHE;
 
-    void typeSelected(const QString &newType);
+    void typeSelected();
 
     bool onEnd();
 

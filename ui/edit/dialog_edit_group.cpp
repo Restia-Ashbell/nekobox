@@ -1,7 +1,7 @@
 #include "dialog_edit_group.h"
 #include "ui_dialog_edit_group.h"
 
-#include "db/Database.hpp"
+#include "db/ProfileManager.hpp"
 #include "main/GuiUtils.hpp"
 #include "ui/mainwindow.h"
 
@@ -94,7 +94,7 @@ void DialogEditGroup::on_front_proxy_clicked() {
     auto parent = dynamic_cast<QWidget *>(this->parent());
     parent->hide();
     this->hide();
-    GetMainWindow()->start_select_mode(this, [=, this](int id) {
+    MainWindow::instance()->start_select_mode(this, [=, this](int id) {
         CACHE.front_proxy = id;
         refresh_front_proxy();
         parent->show();

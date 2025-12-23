@@ -1,18 +1,14 @@
 #pragma once
 
-#include "AbstractBean.hpp"
-
 namespace NekoGui_fmt {
     class V2rayStreamSettings : public JsonStore {
     public:
-        QString network = "tcp";
+        QString network = "";
         QString security = "";
         QString packet_encoding = "";
-        // ws/http/grpc/tcp-http/httpupgrade
+        // ws/http/grpc/httpupgrade
         QString path = "";
         QString host = "";
-        // kcp/quic/tcp-http
-        QString header_type = "";
         // tls
         QString sni = "";
         QString alpn = "";
@@ -46,7 +42,6 @@ namespace NekoGui_fmt {
             _add(new configItem("insecure", &allow_insecure, itemType::boolean));
             _add(new configItem("ech_enabled", &ech_enabled, itemType::boolean));
             _add(new configItem("disable_sni", &disable_sni, itemType::boolean));
-            _add(new configItem("h_type", &header_type, itemType::string));
             _add(new configItem("ed_name", &ws_early_data_name, itemType::string));
             _add(new configItem("ed_len", &ws_early_data_length, itemType::integer));
             _add(new configItem("utls", &utlsFingerprint, itemType::string));
@@ -59,15 +54,4 @@ namespace NekoGui_fmt {
 
         void BuildStreamSettingsSingBox(QJsonObject *outbound);
     };
-
-    inline V2rayStreamSettings *GetStreamSettings(AbstractBean *bean) {
-        if (bean == nullptr) return nullptr;
-        auto stream_item = bean->_get("stream");
-        if (stream_item != nullptr) {
-            auto stream_store = (JsonStore *) stream_item->ptr;
-            auto stream = (NekoGui_fmt::V2rayStreamSettings *) stream_store;
-            return stream;
-        }
-        return nullptr;
-    }
 } // namespace NekoGui_fmt

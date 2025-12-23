@@ -5,14 +5,10 @@
 #include "main/NekoGui.hpp"
 
 #include <QFuture>
-#include <QTime>
 #include <QTableWidgetItem>
 #include <QKeyEvent>
 #include <QSystemTrayIcon>
-#include <QProcess>
-#include <QTextDocument>
 #include <QShortcut>
-#include <QSemaphore>
 #include <QMutex>
 
 #include "GroupSort.hpp"
@@ -44,7 +40,7 @@ public:
 
     void neko_start(int _id = -1);
 
-    void neko_stop(bool crash = false, bool sem = false);
+    void neko_stop(bool crash = false);
 
     void neko_set_spmode_system_proxy(bool enable, bool save = true);
 
@@ -59,6 +55,10 @@ public:
     void RegisterHotkey(bool unregister);
 
     void updateLogMaxLines();
+
+    void resetAutoUpdateSubscription(int minutes);
+
+    static MainWindow *instance();
 
 signals:
 
@@ -82,7 +82,7 @@ private slots:
 
     void on_menu_add_from_input_triggered();
 
-    static void on_menu_add_from_clipboard_triggered();
+    void on_menu_add_from_clipboard_triggered();
 
     void on_menu_clone_triggered();
 
@@ -133,24 +133,21 @@ private:
     QShortcut *shortcut_esc = new QShortcut(QKeySequence("Esc"), this);
     //
     bool qvLogAutoScoll = true;
-    QTextDocument *qvLogDocument = new QTextDocument(this);
     //
     QString title_error;
     int icon_status = -1;
     std::shared_ptr<NekoGui::ProxyEntity> running;
     QString traffic_update_cache;
-    QTime last_test_time;
+    qint64 last_test_time = 0;
     //
-    int proxy_last_order = -1;
     bool select_mode = false;
-    QMutex mu_starting;
-    QMutex mu_stopping;
+    QMutex mu_state;
     QMutex mu_exit;
-    QSemaphore sem_stopped;
     int exit_reason = 0;
     //
     bool dialog_is_using = false;
     bool mw_sub_updating = false;
+    QTimer *autoUpdateSubscriptionTimer;
     //
     enum TestMode {
         TcpPing = 1 << 0,
@@ -179,8 +176,6 @@ private:
     template<typename DialogType, typename... Args>
     void openDialog(Args &&...args);
 
-    void HotkeyEvent(const QString &key);
-
     void speedtest_current_group(int mode);
 
     void speedtest_current();
@@ -190,7 +185,3 @@ private:
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 };
-
-inline MainWindow *GetMainWindow() {
-    return (MainWindow *) mainwindow;
-}

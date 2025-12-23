@@ -6,7 +6,7 @@ namespace NekoGui_traffic {
     class TrafficData : public JsonStore {
     public:
         int id = -1; // ent id
-        std::string tag;
+        QString tag;
 
         long long downlink = 0;
         long long uplink = 0;
@@ -15,7 +15,7 @@ namespace NekoGui_traffic {
 
         long long last_update = 0;
 
-        explicit TrafficData(std::string tag) : tag(std::move(tag)) {
+        explicit TrafficData(const QString &tag_) : tag(tag_) {
             _add(new configItem("dl", &downlink, itemType::integer64));
             _add(new configItem("ul", &uplink, itemType::integer64));
         };

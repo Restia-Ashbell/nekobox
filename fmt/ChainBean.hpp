@@ -1,6 +1,6 @@
 #pragma once
 
-#include "main/NekoGui.hpp"
+#include "fmt/AbstractBean.hpp"
 
 namespace NekoGui_fmt {
     class ChainBean : public AbstractBean {

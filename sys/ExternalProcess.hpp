@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <QProcess>
 
 namespace NekoGui_sys {
@@ -28,25 +27,6 @@ namespace NekoGui_sys {
         bool crashed = false;
     };
 
-    class CoreProcess : public ExternalProcess {
-    public:
-        CoreProcess(const QString &core_path, const QStringList &args);
-
-        void handleCoreProcessOutput(const QString &log, bool isError);
-
-        void Start() override;
-
-        void Restart();
-
-        int start_profile_when_core_is_up = -1;
-
-    private:
-        bool failed_to_start = false;
-        bool restarting = false;
-    };
-
     // 手动管理
     inline std::list<std::shared_ptr<ExternalProcess>> running_ext;
-
-    inline QAtomicInt logCounter;
 } // namespace NekoGui_sys

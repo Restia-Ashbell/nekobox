@@ -7,7 +7,7 @@
 
 EditVMess::EditVMess(QWidget *parent) : QWidget(parent), ui(new Ui::EditVMess) {
     ui->setupUi(this);
-    connect(ui->uuidgen, &QPushButton::clicked, this, [=, this] { ui->uuid->setText(QUuid::createUuid().toString().remove("{").remove("}")); });
+    connect(ui->uuidgen, &QPushButton::clicked, this, [=, this] { ui->uuid->setText(QUuid::createUuid().toString(QUuid::WithoutBraces)); });
 }
 
 EditVMess::~EditVMess() {

@@ -2,6 +2,7 @@
 
 #include "libbox.h"
 
+#include "db/ProfileManager.hpp"
 #include "ui/mainwindow.h"
 
 #include <QThread>
@@ -19,9 +20,8 @@ namespace NekoGui_traffic {
         // query
         QJsonObject ups = stats["ups"].toObject();
         QJsonObject downs = stats["downs"].toObject();
-        QString tag = QString::fromStdString(item->tag);
-        auto uplink = ups[tag].toDouble();
-        auto downlink = downs[tag].toDouble();
+        auto uplink = ups[item->tag].toDouble();
+        auto downlink = downs[item->tag].toDouble();
 
         // add diff
         item->uplink += uplink;
@@ -56,8 +56,12 @@ namespace NekoGui_traffic {
                 if (looping) {
                     looping = false;
                     runOnUiThread([=, this] {
-                        auto m = GetMainWindow();
+                        auto m = MainWindow::instance();
                         m->refresh_status("STOP");
+                        for (const auto &item: items) {
+                            NekoGui::profileManager->GetProfile(item->id)->Save();
+                            m->refresh_proxy_list(item->id);
+                        }
                     });
                 }
                 continue;
@@ -69,15 +73,11 @@ namespace NekoGui_traffic {
             }
 
             // do update
-            loop_mutex.lock();
-
             UpdateAll();
-
-            loop_mutex.unlock();
 
             // post to UI
             runOnUiThread([=, this] {
-                auto m = GetMainWindow();
+                auto m = MainWindow::instance();
                 if (proxy != nullptr) {
                     m->refresh_status(QObject::tr("Proxy: %1\nDirect: %2").arg(proxy->DisplaySpeed(), direct->DisplaySpeed()));
                 }

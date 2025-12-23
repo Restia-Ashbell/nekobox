@@ -1,7 +1,6 @@
 #pragma once
 
 #include "fmt/AbstractBean.hpp"
-#include "fmt/V2RayStreamSettings.hpp"
 
 namespace NekoGui_fmt {
     class AnyTLSBean : public AbstractBean {
@@ -14,6 +13,7 @@ namespace NekoGui_fmt {
         std::shared_ptr<V2rayStreamSettings> stream = std::make_shared<V2rayStreamSettings>();
 
         AnyTLSBean() : AbstractBean(0) {
+            serverPort = 443;
             stream->security = "tls";
             _add(new configItem("password", &password, itemType::string));
             _add(new configItem("idleSessionCheckInterval", &idleSessionCheckInterval, itemType::string));
@@ -26,7 +26,7 @@ namespace NekoGui_fmt {
 
         CoreObjOutboundBuildResult BuildCoreObjSingBox() override;
 
-        bool TryParseLink(const QString &link);
+        bool TryParseLink(const QString &link) override;
 
         QString ToShareLink() override;
     };

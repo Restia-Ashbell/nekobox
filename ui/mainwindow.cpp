@@ -10,6 +10,7 @@
 #include "sub/GroupUpdater.hpp"
 #include "sys/ExternalProcess.hpp"
 #include "sys/AutoRun.hpp"
+#include "sys/AdminHelper.hpp"
 
 #include "ui/ThemeManager.hpp"
 #include "ui/Icon.hpp"
@@ -20,25 +21,16 @@
 #include "ui/dialog_manage_routes.h"
 #include "ui/dialog_hotkey.h"
 
-#include "qrcodegen.hpp"
-
-#include "3rdparty/fix_old_qt.h"
 #include "3rdparty/VT100Parser.hpp"
 #include "3rdparty/qv2ray/v2/components/proxy/QvProxyConfigurator.hpp"
 #include "3rdparty/qv2ray/v2/ui/LogHighlighter.hpp"
 
-#ifndef NKR_NO_ZXING
 #include "ZxingQtReader.h"
-#endif
+#include "MultiFormatWriter.h"
+#include "BarcodeFormat.h"
+#include "BitMatrix.h"
 
-#ifdef Q_OS_WIN
-#include "3rdparty/WinCommander.hpp"
-#else
-#ifdef Q_OS_LINUX
-#include "sys/linux/LinuxCap.h"
-#endif
-#include <unistd.h>
-#endif
+#include <QHotkey>
 
 #include <QClipboard>
 #include <QLabel>
@@ -56,7 +48,7 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     mainwindow = this;
-    MW_dialog_message = [=, this](const QString &a, const QString &b) {
+    MW_dialog_message = [this](const QString &a, const QString &b) {
         runOnUiThread([=, this] { dialog_message_impl(a, b); });
     };
 
@@ -64,14 +56,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     NekoGui::profileManager->LoadManager();
 
     // Setup misc UI
+    if (NekoGui::dataStore->theme.isEmpty()) NekoGui::dataStore->theme = QApplication::style()->name();
     themeManager->ApplyTheme(NekoGui::dataStore->theme);
-    // font
-    // 字体设置不放在这不会对菜单栏和标签栏生效，原因不明
-    if (!NekoGui::dataStore->font.isEmpty()) {
-        QFont currentFont = QApplication::font();
-        currentFont.setFamily(NekoGui::dataStore->font);
-        QApplication::setFont(currentFont);
-    }
     ui->setupUi(this);
     //
     connect(ui->menu_start, &QAction::triggered, this, [=, this] { neko_start(); });
@@ -85,9 +71,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         NekoGui::profileManager->SaveManager();
     });
     ui->label_running->installEventFilter(this);
-    ui->label_inbound->installEventFilter(this);
-    ui->splitter->installEventFilter(this);
-    ui->tabWidget->installEventFilter(this);
     //
     RegisterHotkey(false);
     //
@@ -100,10 +83,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         }
     }
 
-    // software_name
-    software_name = "NekoBox";
-    software_core_name = "sing-box";
-
     // top bar
     ui->toolButton_program->setMenu(ui->menu_program);
     ui->toolButton_preferences->setMenu(ui->menu_preferences);
@@ -113,7 +92,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         if (!NekoGui::dataStore->clash_api_external_controller.isEmpty() && NekoGui::dataStore->started_id >= 0) {
             QDesktopServices::openUrl(QUrl("http://" + NekoGui::dataStore->clash_api_external_controller));
         } else {
-            QMessageBox::warning(this, tr("Unable to Open Dashboard"), tr("Please configure the Clash API and start the core first."));
+            QMessageBox::warning(this, tr("Unable to Open Dashboard"), tr("Please configure the Clash API and start first."));
         }
     });
     connect(ui->toolButton_document, &QToolButton::clicked, this, [=, this] { QDesktopServices::openUrl(QUrl("https://matsuridayo.github.io/")); });
@@ -121,34 +100,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // Setup log UI
     ui->splitter->restoreState(DecodeB64IfValid(NekoGui::dataStore->splitter_state));
-    new SyntaxHighlighter(false, qvLogDocument);
-    qvLogDocument->setUndoRedoEnabled(false);
-    qvLogDocument->setMaximumBlockCount(NekoGui::dataStore->max_log_line);
+    auto *doc = ui->masterLogBrowser->document();
+    doc->setMaximumBlockCount(NekoGui::dataStore->max_log_line);
+    new SyntaxHighlighter(false, doc);
     ui->masterLogBrowser->setUndoRedoEnabled(false);
-    ui->masterLogBrowser->setDocument(qvLogDocument);
     ui->masterLogBrowser->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    {
-        auto font = ui->masterLogBrowser->font();
-        font.setPointSize(9);
-        ui->masterLogBrowser->setFont(font);
-        qvLogDocument->setDefaultFont(font);
-    }
-    connect(ui->masterLogBrowser->verticalScrollBar(), &QSlider::valueChanged, this, [=, this](int value) {
-        qvLogAutoScoll = ui->masterLogBrowser->verticalScrollBar()->maximum() == value;
+    auto *vBar = ui->masterLogBrowser->verticalScrollBar();
+    connect(vBar, &QScrollBar::valueChanged, this, [vBar, this](int value) {
+        qvLogAutoScoll = vBar->maximum() == value;
     });
-    connect(ui->masterLogBrowser, &QTextBrowser::textChanged, this, [=, this]() {
-        if (!qvLogAutoScoll)
-            return;
-        auto bar = ui->masterLogBrowser->verticalScrollBar();
-        bar->setValue(bar->maximum());
+    connect(ui->masterLogBrowser, &QTextBrowser::textChanged, this, [vBar, this]() {
+        if (qvLogAutoScoll) vBar->setValue(vBar->maximum());
     });
-    MW_show_log = [=, this](const QString &log) {
+    MW_show_log = [this](const QString &log) {
         runOnUiThread([=, this] { show_log_impl(log); });
     };
-    MW_show_log_ext = [=, this](const QString &tag, const QString &log) {
+    MW_show_log_ext = [this](const QString &tag, const QString &log) {
         runOnUiThread([=, this] { show_log_impl("[" + tag + "] " + log); });
     };
-    MW_show_log_ext_vt100 = [=, this](const QString &log) {
+    MW_show_log_ext_vt100 = [this](const QString &log) {
         runOnUiThread([=, this] { show_log_impl(cleanVT100String(log)); });
     };
 
@@ -163,28 +133,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         // Corner Button
         connect(button, &QAbstractButton::clicked, this, [=, this] { refresh_proxy_list_impl(-1, {GroupSortMethod::ById}); });
     }
-    connect(ui->proxyListTable->horizontalHeader(), &QHeaderView::sectionClicked, this, [=, this](int logicalIndex) {
+    connect(ui->proxyListTable->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, [this](int logicalIndex, Qt::SortOrder order) {
+        if (logicalIndex < 0 || logicalIndex > 3) return;
         GroupSortAction action;
-        // 不正确的descending实现
-        if (proxy_last_order == logicalIndex) {
-            action.descending = true;
-            proxy_last_order = -1;
-        } else {
-            proxy_last_order = logicalIndex;
-        }
+        action.method = static_cast<GroupSortMethod>(logicalIndex);
+        action.descending = order == Qt::DescendingOrder;
         action.save_sort = true;
-        // 表头
-        if (logicalIndex == 0) {
-            action.method = GroupSortMethod::ByType;
-        } else if (logicalIndex == 1) {
-            action.method = GroupSortMethod::ByAddress;
-        } else if (logicalIndex == 2) {
-            action.method = GroupSortMethod::ByName;
-        } else if (logicalIndex == 3) {
-            action.method = GroupSortMethod::ByLatency;
-        } else {
-            return;
-        }
         refresh_proxy_list_impl(-1, action);
     });
     connect(ui->proxyListTable->horizontalHeader(), &QHeaderView::sectionResized, this, [=, this](int logicalIndex, int oldSize, int newSize) {
@@ -236,9 +190,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     tray->setIcon(Icon::GetTrayIcon(Icon::NONE));
     tray->setContextMenu(ui->menu_program); // 创建托盘菜单
     tray->show();                           // 让托盘图标显示在系统托盘上
-    connect(tray, &QSystemTrayIcon::activated, this, [=, this](QSystemTrayIcon::ActivationReason reason) {
+    connect(tray, &QSystemTrayIcon::activated, this, [this](QSystemTrayIcon::ActivationReason reason) {
         if (reason == QSystemTrayIcon::Trigger) {
-            isVisible() ? hide() : ActivateWindow(this);
+            !isVisible() || isMinimized() ? ActivateWindow(this) : hide();
         }
     });
 
@@ -396,21 +350,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     connect(qApp, &QGuiApplication::commitDataRequest, this, &MainWindow::on_commitDataRequest);
 
-    auto t = new QTimer;
+    auto t = new QTimer(this);
     connect(t, &QTimer::timeout, this, [=, this]() { refresh_status(); });
     t->start(2000);
 
-    t = new QTimer;
-    connect(t, &QTimer::timeout, this, [&] { NekoGui_sys::logCounter.fetchAndStoreRelaxed(0); });
-    t->start(1000);
-
-    TM_auto_update_subsctiption = new QTimer;
-    TM_auto_update_subsctiption_Reset_Minute = [&](int m) {
-        TM_auto_update_subsctiption->stop();
-        if (m >= 30) TM_auto_update_subsctiption->start(m * 60 * 1000);
-    };
-    connect(TM_auto_update_subsctiption, &QTimer::timeout, this, [&] { UI_update_all_groups(true); });
-    TM_auto_update_subsctiption_Reset_Minute(NekoGui::dataStore->sub_auto_update);
+    autoUpdateSubscriptionTimer = new QTimer(this);
+    connect(autoUpdateSubscriptionTimer, &QTimer::timeout, this, [this] { UI_update_all_groups(true); });
+    resetAutoUpdateSubscription(NekoGui::dataStore->sub_auto_update);
 
     if (!NekoGui::dataStore->flag_tray) show();
 }
@@ -466,10 +412,9 @@ void MainWindow::show_group(int gid) {
     // 列宽是否可调
     if (group->manually_column_width) {
         for (int i = 0; i <= 4; i++) {
-            ui->proxyListTable->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Interactive);
-            auto size = group->column_width.value(i);
-            if (size <= 0) size = ui->proxyListTable->horizontalHeader()->defaultSectionSize();
+            int size = group->column_width.value(i, ui->proxyListTable->horizontalHeader()->defaultSectionSize());
             ui->proxyListTable->horizontalHeader()->resizeSection(i, size);
+            ui->proxyListTable->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Interactive);
         }
     } else {
         ui->proxyListTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
@@ -633,11 +578,11 @@ void MainWindow::on_menu_exit_triggered() {
         on_commitDataRequest();
         //
         NekoGui::dataStore->save_control_no_save = true; // don't change datastore after this line
-        neko_stop(false, true);
+        neko_stop();
         //
         hide();
         runOnNewThread([=, this] {
-            sem_stopped.acquire();
+            mu_state.lock();
             runOnUiThread([=, this] {
                 on_menu_exit_triggered(); // continue exit progress
             });
@@ -645,7 +590,6 @@ void MainWindow::on_menu_exit_triggered() {
         return;
     }
     //
-    MF_release_runguard();
     if (exit_reason == 1) {
         QDir::setCurrent(QApplication::applicationDirPath());
         QProcess::startDetached("./updater", QStringList{});
@@ -666,17 +610,13 @@ void MainWindow::on_menu_exit_triggered() {
         if (exit_reason == 3) {
             // Tun restart as admin
             arguments << "-flag_restart_tun_on";
-#ifdef Q_OS_WIN
-            WinCommander::runProcessElevated(program, arguments, "", WinCommander::SW_NORMAL, false);
-#else
-            QProcess::startDetached(program, arguments);
-#endif
+            runAsAdmin(program, arguments);
         } else {
             QProcess::startDetached(program, arguments);
         }
     }
     tray->hide();
-    QCoreApplication::quit();
+    QApplication::quit();
 }
 
 void MainWindow::neko_set_spmode_system_proxy(bool enable, bool save) {
@@ -702,12 +642,12 @@ void MainWindow::neko_set_spmode_system_proxy(bool enable, bool save) {
 }
 
 bool MainWindow::get_elevated_permissions() {
-    if (NekoGui::IsAdmin()) return true;
+    if (isRunningAsAdmin()) return true;
 #ifdef Q_OS_LINUX
     if (!Linux_HavePkexec()) {
         MessageBoxWarning(software_name, "Please install \"pkexec\" first.");
     } else {
-        auto ret = Linux_Pkexec_SetCapString(NekoGui::FindNekoBoxCoreRealPath(), "cap_net_admin=ep");
+        auto ret = Linux_Pkexec_SetCapString(QApplication::applicationFilePath(), "cap_net_admin=ep");
         if (ret == 0) {
             this->exit_reason = 3;
             on_menu_exit_triggered();
@@ -736,7 +676,7 @@ bool MainWindow::get_elevated_permissions() {
 void MainWindow::neko_set_spmode_vpn(bool enable, bool save) {
     if (enable != NekoGui::dataStore->spmode_vpn) {
         if (enable) {
-            bool requestPermission = !NekoGui::IsAdmin();
+            bool requestPermission = !isRunningAsAdmin();
             if (requestPermission) {
                 if (!get_elevated_permissions()) {
                     refresh_status();
@@ -744,6 +684,8 @@ void MainWindow::neko_set_spmode_vpn(bool enable, bool save) {
                 }
             }
         }
+        NekoGui::dataStore->spmode_vpn = enable;
+        if (NekoGui::dataStore->started_id >= 0) neko_start(NekoGui::dataStore->started_id);
     }
 
     if (save) {
@@ -754,10 +696,7 @@ void MainWindow::neko_set_spmode_vpn(bool enable, bool save) {
         NekoGui::dataStore->Save();
     }
 
-    NekoGui::dataStore->spmode_vpn = enable;
     refresh_status();
-
-    if (NekoGui::dataStore->started_id >= 0) neko_start(NekoGui::dataStore->started_id);
 }
 
 void MainWindow::refresh_status(const QString &traffic_update) {
@@ -791,10 +730,8 @@ void MainWindow::refresh_status(const QString &traffic_update) {
         if (group != nullptr) group_name = group->name;
     }
 
-    if (last_test_time.addSecs(2) < QTime::currentTime()) {
-        auto txt = running == nullptr ? tr("Not Running")
-                                      : QString("[%1] %2").arg(group_name, running->bean->DisplayName()).left(30);
-        ui->label_running->setText(txt);
+    if (QDateTime::currentSecsSinceEpoch() - last_test_time > 2) {
+        ui->label_running->setText(running ? QString("[%1] %2").arg(group_name, running->bean->DisplayName()).left(30) : tr("Not Running"));
     }
     //
     auto display_socks = DisplayAddress(NekoGui::dataStore->inbound_address, NekoGui::dataStore->inbound_port);
@@ -812,7 +749,7 @@ void MainWindow::refresh_status(const QString &traffic_update) {
 
     auto make_title = [=, this](bool isTray) {
         QStringList tt;
-        if (!isTray && NekoGui::IsAdmin()) tt << "[Admin]";
+        if (!isTray && isRunningAsAdmin()) tt << "[Admin]";
         if (select_mode) tt << "[" + tr("Select") + "]";
         if (!title_error.isEmpty()) tt << "[" + title_error + "]";
         if (NekoGui::dataStore->spmode_vpn && !NekoGui::dataStore->spmode_system_proxy) tt << "[Tun]";
@@ -931,8 +868,7 @@ void MainWindow::refresh_proxy_list_impl(const int &id, GroupSortAction groupSor
             case GroupSortMethod::ByLatency:
             case GroupSortMethod::ByType: {
                 std::sort(ui->proxyListTable->order.begin(), ui->proxyListTable->order.end(), [&](int a, int b) {
-                    QString ms_a;
-                    QString ms_b;
+                    QString ms_a, ms_b;
                     if (groupSortAction.method == GroupSortMethod::ByType) {
                         ms_a = NekoGui::profileManager->GetProfile(a)->bean->DisplayType();
                         ms_b = NekoGui::profileManager->GetProfile(b)->bean->DisplayType();
@@ -948,8 +884,10 @@ void MainWindow::refresh_proxy_list_impl(const int &id, GroupSortAction groupSor
                         if (ms_a.isEmpty() && ms_b.isEmpty()) {
                             auto get_latency_for_sort = [](int id) {
                                 auto i = NekoGui::profileManager->GetProfile(id)->latency;
-                                if (i == 0) i = 100000;
-                                if (i < 0) i = 99999;
+                                if (i == 0)
+                                    i = INT_MAX;
+                                else if (i < 0)
+                                    i = INT_MAX - 1;
                                 return i;
                             };
                             return groupSortAction.descending
@@ -973,7 +911,7 @@ void MainWindow::refresh_proxy_list_impl_refresh_data(const int &id) {
     auto updateRow = [&](int row, int profileId) {
         auto profile = NekoGui::profileManager->GetProfile(profileId);
         if (!profile) return;
-        const bool isRunning = id == NekoGui::dataStore->started_id;
+        const bool isRunning = profileId == NekoGui::dataStore->started_id;
         const QColor itemColor = isRunning ? palette().link().color() : QColor();
 
         auto makeItem = [&](const QString &text, const QColor &color = QColor()) {
@@ -1028,8 +966,7 @@ void MainWindow::on_menu_add_from_input_triggered() {
 }
 
 void MainWindow::on_menu_add_from_clipboard_triggered() {
-    auto clipboard = QApplication::clipboard()->text();
-    NekoGui_sub::groupUpdater->AsyncUpdate(clipboard);
+    NekoGui_sub::groupUpdater->AsyncUpdate(QApplication::clipboard()->text());
 }
 
 void MainWindow::on_menu_clone_triggered() {
@@ -1170,94 +1107,74 @@ void MainWindow::display_qr_link(bool nkrFormat) {
 
     class W : public QDialog {
     public:
-        QLabel *l = nullptr;
+        QLabel *qrLabel = nullptr;
         QCheckBox *cb = nullptr;
-        //
-        QPlainTextEdit *l2 = nullptr;
-        QImage im;
-        //
-        QString link;
-        QString link_nk;
+        QPlainTextEdit *textEdit = nullptr;
+        QImage qrImage;
+        QString link, link_nk;
 
-        void show_qr(const QSize &size) const {
-            auto side = size.height() - 20 - l2->size().height() - cb->size().height();
-            l->setPixmap(QPixmap::fromImage(im.scaled(side, side, Qt::KeepAspectRatio, Qt::FastTransformation),
-                                            Qt::MonoOnly));
-            l->resize(side, side);
+        W(const QString &link_, const QString &link_nk_, bool nkrFormat)
+            : link(link_), link_nk(link_nk_) {
+            auto *layout = new QVBoxLayout(this);
+
+            qrLabel = new QLabel();
+            qrLabel->setMinimumSize(256, 256);
+            qrLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+            qrLabel->setAlignment(Qt::AlignCenter);
+            layout->addWidget(qrLabel);
+
+            cb = new QCheckBox("Neko Links");
+            cb->setChecked(nkrFormat);
+            layout->addWidget(cb);
+
+            textEdit = new QPlainTextEdit();
+            textEdit->setReadOnly(true);
+            layout->addWidget(textEdit);
+
+            connect(cb, &QCheckBox::toggled, this, &W::refresh);
+            refresh();
         }
 
-        void refresh(bool is_nk) {
-            auto link_display = is_nk ? link_nk : link;
-            l2->setPlainText(link_display);
-            constexpr qint32 qr_padding = 2;
-            //
+        void refresh() {
+            const QString &link_display = cb->isChecked() ? link_nk : link;
+            textEdit->setPlainText(link_display);
+
             try {
-                qrcodegen::QrCode qr = qrcodegen::QrCode::encodeText(link_display.toUtf8().data(), qrcodegen::QrCode::Ecc::MEDIUM);
-                qint32 sz = qr.getSize();
-                im = QImage(sz + qr_padding * 2, sz + qr_padding * 2, QImage::Format_RGB32);
-                QRgb black = qRgb(0, 0, 0);
-                QRgb white = qRgb(255, 255, 255);
-                im.fill(white);
-                for (int y = 0; y < sz; y++)
-                    for (int x = 0; x < sz; x++)
-                        if (qr.getModule(x, y))
-                            im.setPixel(x + qr_padding, y + qr_padding, black);
-                show_qr(size());
+                auto writer = ZXing::MultiFormatWriter(ZXing::BarcodeFormat::QRCode);
+                auto matrix = writer.encode(link_display.toStdString(), 0, 0);
+                auto bitmap = ZXing::ToMatrix<uint8_t>(matrix);
+                qrImage = QImage(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.width(), QImage::Format_Grayscale8).copy();
+                showQR();
             } catch (const std::exception &ex) {
-                QMessageBox::warning(nullptr, "error", ex.what());
+                QMessageBox::warning(this, "QR generation error", ex.what());
             }
         }
 
-        W(const QString &link_, const QString &link_nk_) {
-            link = link_;
-            link_nk = link_nk_;
-            //
-            setLayout(new QVBoxLayout);
-            setMinimumSize(256, 256);
-            QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-            sizePolicy.setHeightForWidth(true);
-            setSizePolicy(sizePolicy);
-            //
-            l = new QLabel();
-            l->setMinimumSize(256, 256);
-            l->setMargin(6);
-            l->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-            l->setScaledContents(true);
-            layout()->addWidget(l);
-            cb = new QCheckBox;
-            cb->setText("Neko Links");
-            layout()->addWidget(cb);
-            l2 = new QPlainTextEdit();
-            l2->setReadOnly(true);
-            layout()->addWidget(l2);
-            //
-            connect(cb, &QCheckBox::toggled, this, &W::refresh);
-            refresh(false);
+        void showQR() {
+            qrLabel->setPixmap(QPixmap::fromImage(qrImage.scaled(qrLabel->size(), Qt::KeepAspectRatio, Qt::FastTransformation)));
         }
 
-        void resizeEvent(QResizeEvent *resizeEvent) override {
-            show_qr(resizeEvent->size());
+        void resizeEvent(QResizeEvent *event) override {
+            QDialog::resizeEvent(event);
+            showQR();
         }
     };
 
-    auto link = ents.first()->bean->ToShareLink();
-    auto link_nk = ents.first()->bean->ToNekorayShareLink(ents.first()->type);
-    auto w = new W(link, link_nk);
-    w->setWindowTitle(ents.first()->bean->DisplayTypeAndName());
-    w->exec();
-    w->deleteLater();
+    QString link = ents.first()->bean->ToShareLink();
+    QString link_nk = ents.first()->bean->ToNekorayShareLink(ents.first()->type);
+    W w(link, link_nk, nkrFormat);
+    w.setWindowTitle(ents.first()->bean->DisplayTypeAndName());
+    w.exec();
 }
 
 void MainWindow::on_menu_scan_qr_triggered() {
-#ifndef NKR_NO_ZXING
     using namespace ZXingQt;
 
     hide();
-    QThread::sleep(1);
 
+    QTimer::singleShot(200, this, [this] {
     auto screen = QGuiApplication::primaryScreen();
-    auto geom = screen->geometry();
-    auto qpx = screen->grabWindow(0, geom.x(), geom.y(), geom.width(), geom.height());
+        auto qpx = screen->grabWindow();
 
     show();
 
@@ -1274,7 +1191,7 @@ void MainWindow::on_menu_scan_qr_triggered() {
         show_log_impl("QR Code Result:\n" + text);
         NekoGui_sub::groupUpdater->AsyncUpdate(text);
     }
-#endif
+    });
 }
 
 void MainWindow::on_menu_clear_test_result_triggered() {
@@ -1407,9 +1324,6 @@ QList<std::shared_ptr<NekoGui::ProxyEntity>> MainWindow::get_selected_or_group()
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     switch (event->key()) {
-        case Qt::Key_Escape:
-            // take over by shortcut_esc
-            break;
         case Qt::Key_Enter:
             neko_start();
             break;
@@ -1420,25 +1334,15 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 
 // Log
 
-inline void FastAppendTextDocument(const QString &message, QTextDocument *doc) {
-    QTextCursor cursor(doc);
-    cursor.movePosition(QTextCursor::End);
-    cursor.beginEditBlock();
-    cursor.insertBlock();
-    cursor.insertText(message);
-    cursor.endEditBlock();
-}
-
 void MainWindow::show_log_impl(const QString &log) {
     auto logText = log.trimmed();
     if (logText.isEmpty()) return;
 
-    auto log_ignore = NekoGui::dataStore->log_ignore;
-    if (!log_ignore.isEmpty()) {
+    if (!NekoGui::dataStore->log_ignore.isEmpty()) {
         QStringList newLines;
         for (const auto &line: SplitLines(logText)) {
             bool showThisLine = true;
-            for (const auto &str: log_ignore) {
+            for (const auto &str: NekoGui::dataStore->log_ignore) {
                 if (line.contains(str)) {
                     showThisLine = false;
                     break;
@@ -1450,20 +1354,16 @@ void MainWindow::show_log_impl(const QString &log) {
         logText = newLines.join("\n");
     }
 
-    FastAppendTextDocument(logText, qvLogDocument);
-    // qvLogDocument->setPlainText(qvLogDocument->toPlainText() + log);
+    ui->masterLogBrowser->append(logText);
 }
 
 void MainWindow::on_masterLogBrowser_customContextMenuRequested(const QPoint &pos) {
     QMenu *menu = ui->masterLogBrowser->createStandardContextMenu();
 
-    auto sep = new QAction(this);
-    sep->setSeparator(true);
-    menu->addAction(sep);
+    menu->addSeparator();
 
-    auto action_add_ignore = new QAction(this);
-    action_add_ignore->setText(tr("Set ignore keyword"));
-    connect(action_add_ignore, &QAction::triggered, this, [=, this] {
+    QAction *action_add_ignore = menu->addAction(tr("Set ignore keyword"));
+    connect(action_add_ignore, &QAction::triggered, this, [this] {
         auto list = NekoGui::dataStore->log_ignore;
         auto newStr = ui->masterLogBrowser->textCursor().selectedText().trimmed();
         if (!newStr.isEmpty()) list << newStr;
@@ -1474,21 +1374,16 @@ void MainWindow::on_masterLogBrowser_customContextMenuRequested(const QPoint &po
             NekoGui::dataStore->Save();
         }
     });
-    menu->addAction(action_add_ignore);
 
-    auto action_clear = new QAction(this);
-    action_clear->setText(tr("Clear"));
-    connect(action_clear, &QAction::triggered, this, [=, this] {
-        qvLogDocument->clear();
-        ui->masterLogBrowser->clear();
-    });
-    menu->addAction(action_clear);
+    QAction *action_clear = menu->addAction(tr("Clear"));
+    connect(action_clear, &QAction::triggered, ui->masterLogBrowser, &QTextBrowser::clear);
 
     menu->exec(ui->masterLogBrowser->viewport()->mapToGlobal(pos)); // 弹出菜单
+    menu->deleteLater();
 }
 
-void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &p) {
-    int clickedIndex = ui->tabWidget->tabBar()->tabAt(p);
+void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
+    int clickedIndex = ui->tabWidget->tabBar()->tabAt(pos);
     ui->tabWidget->setCurrentIndex(clickedIndex);
     QMenu menu(this);
 
@@ -1532,28 +1427,17 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &p) {
         });
     }
 
-    menu.exec(ui->tabWidget->tabBar()->mapToGlobal(p));
+    menu.exec(ui->tabWidget->tabBar()->mapToGlobal(pos));
 }
 
 // eventFilter
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
     if (event->type() == QEvent::MouseButtonPress) {
-        auto mouseEvent = dynamic_cast<QMouseEvent *>(event);
-        if (obj == ui->label_running && mouseEvent->button() == Qt::LeftButton && running != nullptr) {
+        auto mouseEvent = static_cast<QMouseEvent *>(event);
+        if (obj == ui->label_running && mouseEvent->button() == Qt::LeftButton && running) {
             speedtest_current();
             return true;
-        } else if (obj == ui->label_inbound && mouseEvent->button() == Qt::LeftButton) {
-            on_menu_basic_settings_triggered();
-            return true;
-        } else if (obj == ui->tabWidget && mouseEvent->button() == Qt::RightButton) {
-            on_tabWidget_customContextMenuRequested(mouseEvent->position().toPoint());
-            return true;
-        }
-    } else if (event->type() == QEvent::MouseButtonDblClick) {
-        if (obj == ui->splitter) {
-            auto size = ui->splitter->size();
-            ui->splitter->setSizes({size.height() / 2, size.height() / 2});
         }
     }
     return QMainWindow::eventFilter(obj, event);
@@ -1569,60 +1453,41 @@ void MainWindow::start_select_mode(QObject *context, const std::function<void(in
 
 // Hotkey
 
-#ifndef NKR_NO_QHOTKEY
-
-#include <QHotkey>
-
-inline QList<std::shared_ptr<QHotkey>> RegisteredHotkey;
-
 void MainWindow::RegisterHotkey(bool unregister) {
-    while (!RegisteredHotkey.isEmpty()) {
-        auto hk = RegisteredHotkey.takeFirst();
-        hk->deleteLater();
-    }
+    static QList<QHotkey *> RegisteredHotkey;
+
+    for (auto &hotkey: RegisteredHotkey) hotkey->deleteLater();
+    RegisteredHotkey.clear();
     if (unregister) return;
 
-    QStringList regstr{
-        NekoGui::dataStore->hotkey_mainwindow,
-        NekoGui::dataStore->hotkey_group,
-        NekoGui::dataStore->hotkey_route,
-        NekoGui::dataStore->hotkey_system_proxy_menu,
+    const QMap<QString, std::function<void()>> hotkeyActions = {
+        {NekoGui::dataStore->hotkey_mainwindow, [this] { tray->activated(QSystemTrayIcon::Trigger); }},
+        {NekoGui::dataStore->hotkey_group, [this] { on_menu_manage_groups_triggered(); }},
+        {NekoGui::dataStore->hotkey_route, [this] { on_menu_routing_settings_triggered(); }},
+        {NekoGui::dataStore->hotkey_system_proxy_menu, [this] { ui->menu_spmode->popup(QCursor::pos()); }},
     };
 
-    for (const auto &key: regstr) {
-        if (key.isEmpty() || regstr.count(key) > 1) continue;
-        auto hk = std::make_shared<QHotkey>(QKeySequence(key), true);
-        if (hk->isRegistered()) {
-            RegisteredHotkey += hk;
-            connect(hk.get(), &QHotkey::activated, this, [=, this] { HotkeyEvent(key); });
+    for (auto it = hotkeyActions.constBegin(); it != hotkeyActions.constEnd(); ++it) {
+        const QString &key = it.key();
+        if (key.isEmpty()) continue;
+        QHotkey *hotkey = new QHotkey(QKeySequence(key), true, this);
+        if (hotkey->isRegistered()) {
+            RegisteredHotkey.append(hotkey);
+            connect(hotkey, &QHotkey::activated, this, it.value());
         } else {
-            hk->deleteLater();
+            hotkey->deleteLater();
         }
     }
 }
 
-void MainWindow::HotkeyEvent(const QString &key) {
-    runOnUiThread([=, this] {
-        if (key == NekoGui::dataStore->hotkey_mainwindow) {
-            tray->activated(QSystemTrayIcon::ActivationReason::Trigger);
-        } else if (key == NekoGui::dataStore->hotkey_group) {
-            on_menu_manage_groups_triggered();
-        } else if (key == NekoGui::dataStore->hotkey_route) {
-            on_menu_routing_settings_triggered();
-        } else if (key == NekoGui::dataStore->hotkey_system_proxy_menu) {
-            ui->menu_spmode->popup(QCursor::pos());
-        }
-    });
+void MainWindow::updateLogMaxLines() {
+    ui->masterLogBrowser->document()->setMaximumBlockCount(NekoGui::dataStore->max_log_line);
 }
 
-#else
+void MainWindow::resetAutoUpdateSubscription(int minutes) {
+    if (minutes >= 30) autoUpdateSubscriptionTimer->start(minutes * 60 * 1000);
+}
 
-void MainWindow::RegisterHotkey(bool unregister) {}
-
-void MainWindow::HotkeyEvent(const QString &key) {}
-
-#endif
-
-void MainWindow::updateLogMaxLines() {
-    qvLogDocument->setMaximumBlockCount(NekoGui::dataStore->max_log_line);
+MainWindow *MainWindow::instance() {
+    return (MainWindow *) mainwindow;
 }

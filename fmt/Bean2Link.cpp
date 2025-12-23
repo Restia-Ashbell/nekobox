@@ -35,7 +35,7 @@ namespace NekoGui_fmt {
         //  security
         auto security = stream->security;
         if (security == "tls" && !stream->reality_pbk.trimmed().isEmpty()) security = "reality";
-        query.addQueryItem("security", security);
+        if (!security.isEmpty()) query.addQueryItem("security", security);
 
         if (!stream->sni.isEmpty()) query.addQueryItem("sni", stream->sni);
         if (!stream->alpn.isEmpty()) query.addQueryItem("alpn", stream->alpn);
@@ -49,27 +49,22 @@ namespace NekoGui_fmt {
         }
 
         // type
-        query.addQueryItem("type", stream->network);
+        if (!stream->network.isEmpty()) query.addQueryItem("type", stream->network);
 
         if (stream->network == "ws" || stream->network == "http" || stream->network == "httpupgrade") {
             if (!stream->path.isEmpty()) query.addQueryItem("path", stream->path);
             if (!stream->host.isEmpty()) query.addQueryItem("host", stream->host);
         } else if (stream->network == "grpc") {
             if (!stream->path.isEmpty()) query.addQueryItem("serviceName", stream->path);
-        } else if (stream->network == "tcp") {
-            if (stream->header_type == "http") {
-                if (!stream->path.isEmpty()) query.addQueryItem("path", stream->path);
-                query.addQueryItem("headerType", "http");
-                query.addQueryItem("host", stream->host);
-            }
+        }
+        if (stream->network == "http" && stream->security != "tls") {
+            query.removeQueryItem("type");
+            query.addQueryItem("type", "tcp");
+            query.addQueryItem("headerType", "http");
         }
 
         // mux
-        if (mux_state == 1) {
-            query.addQueryItem("mux", "true");
-        } else if (mux_state == 0) {
-            query.addQueryItem("mux", "false");
-        }
+        if (multiplex.enabled) query.addQueryItem("mux", "true");
 
         // protocol
         if (proxy_type == proxy_VLESS) {
@@ -83,13 +78,12 @@ namespace NekoGui_fmt {
         return url.toString(QUrl::FullyEncoded);
     }
 
-    const char* fixShadowsocksUserNameEncodeMagic = "fixShadowsocksUserNameEncodeMagic-holder-for-QUrl";
-
     QString ShadowSocksBean::ToShareLink() {
         QUrl url;
         url.setScheme("ss");
         if (method.startsWith("2022-")) {
-            url.setUserName(fixShadowsocksUserNameEncodeMagic);
+            url.setUserName(method);
+            url.setPassword(password);
         } else {
             auto method_password = method + ":" + password;
             url.setUserName(method_password.toUtf8().toBase64(QByteArray::Base64UrlEncoding));
@@ -97,42 +91,31 @@ namespace NekoGui_fmt {
         url.setHost(serverAddress);
         url.setPort(serverPort);
         if (!name.isEmpty()) url.setFragment(name);
-        QUrlQuery q;
-        if (!plugin.isEmpty()) q.addQueryItem("plugin", plugin);
 
-        // mux
-        if (mux_state == 1) {
-            q.addQueryItem("mux", "true");
-        } else if (mux_state == 0) {
-            q.addQueryItem("mux", "false");
-        }
-        // uot
-        if (uot == 1) {
-            q.addQueryItem("uot", "1");
-        } else if (uot == 2) {
-            q.addQueryItem("uot", "2");
-        }
+        QUrlQuery query;
+        if (!plugin.isEmpty()) query.addQueryItem("plugin", plugin);
+        if (multiplex.enabled) query.addQueryItem("mux", "true");
+        if (uot > 0) query.addQueryItem("uot", QString::number(uot));
 
-        if (!q.isEmpty()) url.setQuery(q);
-        //
-        auto link = url.toString(QUrl::FullyEncoded);
-        link = link.replace(fixShadowsocksUserNameEncodeMagic, method + ":" + QUrl::toPercentEncoding(password));
-        return link;
+        url.setQuery(query);
+        return url.toString(QUrl::FullyEncoded);
     }
 
     QString ShadowSocksRBean::ToShareLink() {
-        QString dataString = QString("%1:%2:%3:%4:%5:%6/?obfsparam=%7&protoparam=%8&remarks=%9")
-            .arg(serverAddress)
-            .arg(serverPort)
-            .arg(protocol)
-            .arg(method)
-            .arg(obfs)
-            .arg(password.isEmpty() ? QString() : QString::fromUtf8(password.toUtf8().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals)))
-            .arg(obfsParam.isEmpty() ? QString() : QString::fromUtf8(obfsParam.toUtf8().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals)))
-            .arg(protocolParam.isEmpty() ? QString() : QString::fromUtf8(protocolParam.toUtf8().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals)))
-            .arg(name.isEmpty() ? QString() : QString::fromUtf8(name.toUtf8().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals)));
+        auto encode = [](const QString &src) -> QString { return src.isEmpty() ? src : src.toUtf8().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals); };
+        QString dataString =
+            QString("%1:%2:%3:%4:%5:%6/?obfsparam=%7&protoparam=%8&remarks=%9")
+                .arg(serverAddress)
+                .arg(serverPort)
+                .arg(protocol)
+                .arg(method)
+                .arg(obfs)
+                .arg(encode(password))
+                .arg(encode(obfsParam))
+                .arg(encode(protocolParam))
+                .arg(encode(name));
 
-        return "ssr://" + QString::fromUtf8(dataString.toUtf8().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals));
+        return "ssr://" + encode(dataString);
     }
 
     QString VMessBean::ToShareLink() {
@@ -145,14 +128,20 @@ namespace NekoGui_fmt {
                 {"port", Int2String(serverPort)},
                 {"id", uuid},
                 {"aid", Int2String(aid)},
+                {"scy", security},
                 {"net", stream->network},
                 {"host", stream->host},
                 {"path", stream->path},
-                {"type", stream->header_type},
-                {"scy", security},
-                {"tls", stream->security == "tls" ? "tls" : ""},
+                {"tls", stream->security},
                 {"sni", stream->sni},
+                {"alpn", stream->alpn},
+                {"fp", stream->utlsFingerprint},
+                {"insecure", stream->allow_insecure ? "1" : "0"},
             };
+            if (stream->network == "http" && stream->security != "tls") {
+                N["net"] = "tcp";
+                N["type"] = "http";
+            }
             return "vmess://" + QJsonObject2QString(N, true).toUtf8().toBase64();
         } else {
             // ducksoft format
@@ -169,7 +158,7 @@ namespace NekoGui_fmt {
             //  security
             auto security = stream->security;
             if (security == "tls" && !stream->reality_pbk.trimmed().isEmpty()) security = "reality";
-            query.addQueryItem("security", security);
+            if (!security.isEmpty()) query.addQueryItem("security", security);
 
             if (!stream->sni.isEmpty()) query.addQueryItem("sni", stream->sni);
             if (stream->allow_insecure) query.addQueryItem("allowInsecure", "1");
@@ -186,26 +175,22 @@ namespace NekoGui_fmt {
             }
 
             // type
-            query.addQueryItem("type", stream->network);
+            if (!stream->network.isEmpty()) query.addQueryItem("type", stream->network);
 
             if (stream->network == "ws" || stream->network == "http" || stream->network == "httpupgrade") {
                 if (!stream->path.isEmpty()) query.addQueryItem("path", stream->path);
                 if (!stream->host.isEmpty()) query.addQueryItem("host", stream->host);
             } else if (stream->network == "grpc") {
                 if (!stream->path.isEmpty()) query.addQueryItem("serviceName", stream->path);
-            } else if (stream->network == "tcp") {
-                if (stream->header_type == "http") {
-                    query.addQueryItem("headerType", "http");
-                    query.addQueryItem("host", stream->host);
-                }
+            }
+            if (stream->network == "http" && stream->security != "tls") {
+                query.removeQueryItem("type");
+                query.addQueryItem("type", "tcp");
+                query.addQueryItem("headerType", "http");
             }
 
             // mux
-            if (mux_state == 1) {
-                query.addQueryItem("mux", "true");
-            } else if (mux_state == 0) {
-                query.addQueryItem("mux", "false");
-            }
+            if (multiplex.enabled) query.addQueryItem("mux", "true");
 
             url.setQuery(query);
             return url.toString(QUrl::FullyEncoded);
@@ -225,11 +210,13 @@ namespace NekoGui_fmt {
 
     QString QUICBean::ToShareLink() {
         QUrl url;
+        QUrlQuery q;
         if (proxy_type == proxy_Hysteria) {
             url.setScheme("hysteria");
             url.setHost(serverAddress);
             url.setPort(serverPort);
-            QUrlQuery q;
+
+            if (!hopPort.isEmpty()) q.addQueryItem("mport", hopPort);
             q.addQueryItem("upmbps", Int2String(uploadMbps));
             q.addQueryItem("downmbps", Int2String(downloadMbps));
             if (!obfsPassword.isEmpty()) {
@@ -244,8 +231,6 @@ namespace NekoGui_fmt {
             if (!alpn.isEmpty()) q.addQueryItem("alpn", alpn);
             if (connectionReceiveWindow > 0) q.addQueryItem("recv_window", Int2String(connectionReceiveWindow));
             if (streamReceiveWindow > 0) q.addQueryItem("recv_window_conn", Int2String(streamReceiveWindow));
-            if (!q.isEmpty()) url.setQuery(q);
-            if (!name.isEmpty()) url.setFragment(name);
         } else if (proxy_type == proxy_TUIC) {
             url.setScheme("tuic");
             url.setUserName(uuid);
@@ -253,15 +238,12 @@ namespace NekoGui_fmt {
             url.setHost(serverAddress);
             url.setPort(serverPort);
 
-            QUrlQuery q;
             if (!congestionControl.isEmpty()) q.addQueryItem("congestion_control", congestionControl);
             if (!alpn.isEmpty()) q.addQueryItem("alpn", alpn);
             if (!sni.isEmpty()) q.addQueryItem("sni", sni);
             if (!udpRelayMode.isEmpty()) q.addQueryItem("udp_relay_mode", udpRelayMode);
             if (allowInsecure) q.addQueryItem("allow_insecure", "1");
             if (disableSni) q.addQueryItem("disable_sni", "1");
-            if (!q.isEmpty()) url.setQuery(q);
-            if (!name.isEmpty()) url.setFragment(name);
         } else if (proxy_type == proxy_Hysteria2) {
             url.setScheme("hy2");
             url.setHost(serverAddress);
@@ -272,16 +254,17 @@ namespace NekoGui_fmt {
             } else {
                 url.setUserName(password);
             }
-            QUrlQuery q;
+
+            if (!hopPort.isEmpty()) q.addQueryItem("mport", hopPort);
             if (!obfsPassword.isEmpty()) {
                 q.addQueryItem("obfs", "salamander");
                 q.addQueryItem("obfs-password", obfsPassword);
             }
             if (allowInsecure) q.addQueryItem("insecure", "1");
             if (!sni.isEmpty()) q.addQueryItem("sni", sni);
-            if (!q.isEmpty()) url.setQuery(q);
-            if (!name.isEmpty()) url.setFragment(name);
         }
+        if (!q.isEmpty()) url.setQuery(q);
+        if (!name.isEmpty()) url.setFragment(name);
         return url.toString(QUrl::FullyEncoded);
     }
 
@@ -304,16 +287,12 @@ namespace NekoGui_fmt {
         url.setScheme("ssh");
         url.setHost(serverAddress);
         url.setPort(serverPort);
+        url.setUserName(user);
+        if (!password.isEmpty()) url.setPassword(password);
         if (!name.isEmpty()) url.setFragment(name);
         QUrlQuery q;
-        q.addQueryItem("user", user);
-        if (!password.isEmpty()) q.addQueryItem("password", password);
-        if (!privateKey.isEmpty()) q.addQueryItem("private_key", QString::fromUtf8(privateKey.toUtf8().toBase64(QByteArray::Base64UrlEncoding)));
-        if (!privateKeyPath.isEmpty()) q.addQueryItem("private_key_path", privateKeyPath);
+        if (!privateKey.isEmpty()) q.addQueryItem("private_key", privateKey.toUtf8().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals));
         if (!privateKeyPassphrase.isEmpty()) q.addQueryItem("private_key_passphrase", privateKeyPassphrase);
-        if (!hostKey.isEmpty()) q.addQueryItem("host_key", hostKey);
-        if (!hostKeyAlgorithms.isEmpty()) q.addQueryItem("host_key_algorithms", hostKeyAlgorithms);
-        if (!clientVersion.isEmpty()) q.addQueryItem("client_version", clientVersion);
         url.setQuery(q);
         return url.toString(QUrl::FullyEncoded);
     }
@@ -325,13 +304,12 @@ namespace NekoGui_fmt {
         url.setPort(serverPort);
         if (!name.isEmpty()) url.setFragment(name);
         QUrlQuery q;
-        q.addQueryItem("private_key", privateKey);
-        q.addQueryItem("peer_public_key", publicKey);
-        q.addQueryItem("pre_shared_key", preSharedKey);
-        q.addQueryItem("local_address", localAddress);
-        q.addQueryItem("reserved", reserved);
+        q.addQueryItem("privateKey", privateKey);
+        q.addQueryItem("publicKey", publicKey);
+        if (!preSharedKey.isEmpty()) q.addQueryItem("presharedKey", preSharedKey);
+        q.addQueryItem("address", localAddress);
+        if (!reserved.isEmpty()) q.addQueryItem("reserved", reserved);
         q.addQueryItem("mtu", Int2String(MTU));
-        q.addQueryItem("use_system_interface", useSystemInterface ? "true":"false");
         url.setQuery(q);
         return url.toString(QUrl::FullyEncoded);
     }
