@@ -342,9 +342,9 @@ void DialogBasicSettings::accept() {
 void DialogBasicSettings::refresh_auth() {
     ui->inbound_auth->setText({});
     if (NekoGui::dataStore->inbound_auth->NeedAuth()) {
-        ui->inbound_auth->setIcon(Icon::GetMaterialIcon("lock-outline"));
+        ui->inbound_auth->setIcon(QIcon::fromTheme("system-lock-screen"));
     } else {
-        ui->inbound_auth->setIcon(Icon::GetMaterialIcon("lock-open-outline"));
+        ui->inbound_auth->setIcon({});
     }
 }
 

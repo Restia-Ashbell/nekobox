@@ -15,7 +15,7 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
 endif ()
 
 # Find Qt
-find_package(Qt6 REQUIRED COMPONENTS Widgets Network Svg LinguistTools Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Network LinguistTools Concurrent)
 
 if (NKR_CROSS)
     set_property(TARGET Qt6::moc PROPERTY IMPORTED_LOCATION /usr/bin/moc)
@@ -284,7 +284,6 @@ target_include_directories(nekoray PRIVATE
 target_link_libraries(nekoray PRIVATE
         Qt::Widgets
         Qt::Network
-        Qt::Svg
         Qt::Concurrent
         ${PLATFORM_LIBRARIES}
         QJsonModel

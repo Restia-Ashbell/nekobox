@@ -13,6 +13,4 @@ namespace Icon {
 
     QPixmap GetTrayIcon(TrayIconStatus status);
 
-    QPixmap GetMaterialIcon(const QString &name);
-
 } // namespace Icon

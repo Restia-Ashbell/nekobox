@@ -44,8 +44,7 @@
         </sizepolicy>
        </property>
        <property name="icon">
-        <iconset resource="../../res/neko.qrc">
-         <normaloff>:/icon/material/swap-horizontal.svg</normaloff>:/icon/material/swap-horizontal.svg</iconset>
+        <iconset theme="view-refresh"/>
        </property>
       </widget>
      </item>
@@ -58,8 +57,7 @@
         </sizepolicy>
        </property>
        <property name="icon">
-        <iconset resource="../../res/neko.qrc">
-         <normaloff>:/icon/material/delete.svg</normaloff>:/icon/material/delete.svg</iconset>
+        <iconset theme="edit-delete"/>
        </property>
       </widget>
      </item>
@@ -95,7 +93,7 @@
         <string notr="true">测试结果</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
        </property>
       </widget>
      </item>
@@ -131,7 +129,7 @@
         <string notr="true">流量</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
        </property>
       </widget>
      </item>
@@ -139,8 +137,6 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../../res/neko.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
