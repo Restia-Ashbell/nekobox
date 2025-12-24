@@ -1,8 +1,8 @@
 #include "Icon.hpp"
 
-#include "main/NekoGui.hpp"
-
 #include <QPainter>
+
+#include "main/NekoGui_Utils.hpp"
 
 QPixmap Icon::GetTrayIcon(Icon::TrayIconStatus status) {
     QPixmap pixmap;

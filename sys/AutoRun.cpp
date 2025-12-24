@@ -3,7 +3,7 @@
 #include <QApplication>
 #include <QDir>
 
-#include "main/NekoGui.hpp"
+#include "main/NekoGui_DataStore.hpp"
 
 // macOS headers (possibly OBJ-c)
 #if defined(Q_OS_MACOS)

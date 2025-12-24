@@ -1,12 +1,12 @@
 #include "TrafficLooper.hpp"
 
+#include <QThread>
+#include <QJsonObject>
+
 #include "libbox.h"
 
 #include "db/ProfileManager.hpp"
 #include "ui/mainwindow.h"
-
-#include <QThread>
-#include <QJsonObject>
 
 namespace NekoGui_traffic {
 

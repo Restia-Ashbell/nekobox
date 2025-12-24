@@ -1,7 +1,5 @@
 #include "w_JsonEditor.hpp"
 
-#include "main/NekoGui.hpp"
-
 JsonEditor::JsonEditor(const QString& jsonString, QWidget* parent) : QDialog(parent) {
     setupUi(this);
     //    QvMessageBusConnect(JsonEditor);

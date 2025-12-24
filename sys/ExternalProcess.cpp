@@ -1,5 +1,6 @@
 #include "ExternalProcess.hpp"
-#include "main/NekoGui.hpp"
+
+#include "main/NekoGui_DataStore.hpp"
 
 namespace NekoGui_sys {
 

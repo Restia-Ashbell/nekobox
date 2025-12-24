@@ -2,8 +2,8 @@
 
 #include <QHostInfo>
 
-#include "main/NekoGui.hpp"
 #include "fmt/V2RayStreamSettings.hpp"
+#include "main/NekoGui_DataStore.hpp"
 
 namespace NekoGui_fmt {
     struct CoreObjOutboundBuildResult {

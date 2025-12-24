@@ -1,3 +1,5 @@
+#pragma once
+
 #include "NekoGui_Utils.hpp"
 
 namespace NekoGui_ConfigItem {

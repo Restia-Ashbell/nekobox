@@ -6,7 +6,7 @@
 #include <QMetaEnum>
 #include <QTimer>
 
-#include "main/NekoGui.hpp"
+#include "main/NekoGui_DataStore.hpp"
 
 namespace NekoGui_network {
 

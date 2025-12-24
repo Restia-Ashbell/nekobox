@@ -3,7 +3,7 @@
 #include <QDialog>
 #include <QMenu>
 
-#include "main/NekoGui.hpp"
+#include "main/NekoGui_DataStore.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

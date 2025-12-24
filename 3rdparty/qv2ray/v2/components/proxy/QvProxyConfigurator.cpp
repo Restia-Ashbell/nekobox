@@ -18,7 +18,7 @@
 
 #include "3rdparty/qv2ray/wrapper.hpp"
 #include "fmt/Preset.hpp"
-#include "main/NekoGui.hpp"
+#include "main/NekoGui_DataStore.hpp"
 
 #define QV_MODULE_NAME "SystemProxy"
 

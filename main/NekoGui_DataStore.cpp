@@ -1,9 +1,10 @@
-#include "NekoGui.hpp"
+#include "NekoGui_DataStore.hpp"
+
 #include "fmt/Preset.hpp"
 
 namespace NekoGui {
 
-    DataStore *dataStore = new DataStore();
+    DataStore *dataStore = new DataStore;
 
     // datastore
 

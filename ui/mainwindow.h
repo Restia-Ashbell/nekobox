@@ -1,9 +1,6 @@
 #pragma once
 
 #include <QMainWindow>
-
-#include "main/NekoGui.hpp"
-
 #include <QFuture>
 #include <QTableWidgetItem>
 #include <QKeyEvent>
@@ -12,9 +9,9 @@
 #include <QMutex>
 
 #include "GroupSort.hpp"
-
 #include "db/ProxyEntity.hpp"
 #include "main/GuiUtils.hpp"
+#include "main/NekoGui_DataStore.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

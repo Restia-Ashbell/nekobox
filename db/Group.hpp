@@ -1,6 +1,5 @@
 #pragma once
 
-#include "main/NekoGui.hpp"
 #include "ProxyEntity.hpp"
 
 namespace NekoGui {

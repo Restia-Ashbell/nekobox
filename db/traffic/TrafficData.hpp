@@ -1,6 +1,6 @@
 #pragma once
 
-#include "main/NekoGui.hpp"
+#include "main/NekoGui_ConfigItem.hpp"
 
 namespace NekoGui_traffic {
     class TrafficData : public JsonStore {

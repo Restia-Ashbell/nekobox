@@ -126,7 +126,7 @@ set(PROJECT_SOURCES
         ${PLATFORM_SOURCES}
 
         main/main.cpp
-        main/NekoGui.cpp
+        main/NekoGui_DataStore.cpp
         main/NekoGui_ConfigItem.cpp
         main/HTTPRequestHelper.cpp
 

@@ -1,6 +1,26 @@
 #include "./ui_mainwindow.h"
 #include "mainwindow.h"
 
+#include <QClipboard>
+#include <QLabel>
+#include <QTextBlock>
+#include <QScrollBar>
+#include <QScreen>
+#include <QDesktopServices>
+#include <QInputDialog>
+#include <QThread>
+#include <QTimer>
+#include <QMessageBox>
+#include <QDir>
+#include <QFileInfo>
+#include <QPlainTextEdit>
+#include <QHotkey>
+
+#include "ZxingQtReader.h"
+#include "MultiFormatWriter.h"
+#include "BarcodeFormat.h"
+#include "BitMatrix.h"
+
 #include "libbox.h"
 
 #include "fmt/Preset.hpp"
@@ -24,27 +44,6 @@
 #include "3rdparty/VT100Parser.hpp"
 #include "3rdparty/qv2ray/v2/components/proxy/QvProxyConfigurator.hpp"
 #include "3rdparty/qv2ray/v2/ui/LogHighlighter.hpp"
-
-#include "ZxingQtReader.h"
-#include "MultiFormatWriter.h"
-#include "BarcodeFormat.h"
-#include "BitMatrix.h"
-
-#include <QHotkey>
-
-#include <QClipboard>
-#include <QLabel>
-#include <QTextBlock>
-#include <QScrollBar>
-#include <QScreen>
-#include <QDesktopServices>
-#include <QInputDialog>
-#include <QThread>
-#include <QTimer>
-#include <QMessageBox>
-#include <QDir>
-#include <QFileInfo>
-#include <QPlainTextEdit>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     mainwindow = this;

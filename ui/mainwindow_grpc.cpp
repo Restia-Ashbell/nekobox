@@ -1,13 +1,6 @@
 #include "./ui_mainwindow.h"
 #include "mainwindow.h"
 
-#include "libbox.h"
-
-#include "db/ProfileManager.hpp"
-#include "db/ConfigBuilder.hpp"
-#include "db/traffic/TrafficLooper.hpp"
-#include "sys/ExternalProcess.hpp"
-
 #include <QThread>
 #include <QInputDialog>
 #include <QPushButton>
@@ -15,6 +8,13 @@
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QtConcurrent>
+
+#include "libbox.h"
+
+#include "db/ProfileManager.hpp"
+#include "db/ConfigBuilder.hpp"
+#include "db/traffic/TrafficLooper.hpp"
+#include "sys/ExternalProcess.hpp"
 
 // ext core
 

@@ -9,7 +9,6 @@
 #include <QLocalServer>
 #include <QCryptographicHash>
 
-#include "main/NekoGui.hpp"
 #include "ui/mainwindow.h"
 
 #ifdef Q_OS_WIN

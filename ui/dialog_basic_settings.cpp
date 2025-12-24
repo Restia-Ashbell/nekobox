@@ -7,7 +7,6 @@
 #include "ui/ThemeManager.hpp"
 #include "ui/Icon.hpp"
 #include "main/GuiUtils.hpp"
-#include "main/NekoGui.hpp"
 
 #include <QStyleFactory>
 #include <QFileDialog>
