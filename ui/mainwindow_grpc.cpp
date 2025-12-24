@@ -7,7 +7,6 @@
 #include "db/ConfigBuilder.hpp"
 #include "db/traffic/TrafficLooper.hpp"
 #include "sys/ExternalProcess.hpp"
-#include "ui/widget/MessageBoxTimer.h"
 
 #include <QThread>
 #include <QInputDialog>
@@ -231,19 +230,14 @@ void MainWindow::neko_start(int _id) {
         return;
     }
 
-    if (!mu_state.tryLock()) {
-        MessageBoxWarning(software_name, "Another profile is starting/stopping...");
-        return;
+    // stop current running
+    if (NekoGui::dataStore->started_id >= 0) {
+        neko_stop();
     }
 
-    auto neko_start_stage2 = [=, this] {
-        // stop current running
-        if (NekoGui::dataStore->started_id >= 0) {
-            mu_state.unlock();
-            neko_stop();
-            mu_state.lock();
-        }
+    mu_state.lock();
 
+    auto neko_start_stage2 = [=, this] {
         MW_show_log(">>>>>>>> " + tr("Starting profile %1").arg(ent->bean->DisplayTypeAndName()));
 
         auto CoreConfig = QJsonObject2QString(result->coreConfig, false).toUtf8();
@@ -272,38 +266,20 @@ void MainWindow::neko_start(int _id) {
         });
     };
 
-    // timeout message
-    auto restartMsgbox = new QMessageBox(QMessageBox::Question, software_name, tr("If there is no response for a long time, it is recommended to restart the software."),
-                                         QMessageBox::Yes | QMessageBox::No, this);
-    connect(restartMsgbox, &QMessageBox::accepted, this, [=, this] { MW_dialog_message("", "RestartProgram"); });
-    auto restartMsgboxTimer = new MessageBoxTimer(this, restartMsgbox, 5000);
-
     runOnNewThread([=, this] {
         // do start
         neko_start_stage2();
         mu_state.unlock();
-        // cancel timeout
-        runOnUiThread([=, this] {
-            restartMsgboxTimer->cancel();
-            restartMsgboxTimer->deleteLater();
-            restartMsgbox->deleteLater();
-#ifdef Q_OS_LINUX
-            // Check systemd-resolved
-            if (NekoGui::dataStore->spmode_vpn && NekoGui::dataStore->routing->direct_dns.startsWith("local") && ReadFileText("/etc/resolv.conf").contains("systemd-resolved")) {
-                MW_show_log("[Warning] The default Direct DNS may not works with systemd-resolved, you may consider change your DNS settings.");
-            }
-#endif
-        });
     });
 }
 
 void MainWindow::neko_stop(bool crash) {
+    auto id = NekoGui::dataStore->started_id;
+    if (id < 0) return;
+
     mu_state.lock();
 
     auto neko_stop_stage2 = [=, this] {
-        auto id = NekoGui::dataStore->started_id;
-        if (id < 0) return;
-
         MW_show_log(">>>>>>>> " + tr("Stopping profile %1").arg(running->bean->DisplayTypeAndName()));
 
         runOnUiThread(
@@ -336,22 +312,10 @@ void MainWindow::neko_stop(bool crash) {
         });
     };
 
-    // timeout message
-    auto restartMsgbox = new QMessageBox(QMessageBox::Question, software_name, tr("If there is no response for a long time, it is recommended to restart the software."),
-                                         QMessageBox::Yes | QMessageBox::No, this);
-    connect(restartMsgbox, &QMessageBox::accepted, this, [=, this] { MW_dialog_message("", "RestartProgram"); });
-    auto restartMsgboxTimer = new MessageBoxTimer(this, restartMsgbox, 5000);
-
     runOnNewThread([=, this] {
         // do stop
         neko_stop_stage2();
         mu_state.unlock();
-        // cancel timeout
-        runOnUiThread([=, this] {
-            restartMsgboxTimer->cancel();
-            restartMsgboxTimer->deleteLater();
-            restartMsgbox->deleteLater();
-        });
     });
 }
 

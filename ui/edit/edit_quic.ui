@@ -26,7 +26,7 @@
         </widget>
        </item>
        <item>
-        <widget class="MyLineEdit" name="heartbeat">
+        <widget class="QLineEdit" name="heartbeat">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -47,7 +47,7 @@
         </widget>
        </item>
        <item>
-        <widget class="MyLineEdit" name="hopPort"/>
+        <widget class="QLineEdit" name="hopPort"/>
        </item>
       </layout>
      </item>
@@ -91,7 +91,7 @@
         </widget>
        </item>
        <item>
-        <widget class="MyLineEdit" name="downloadMbps"/>
+        <widget class="QLineEdit" name="downloadMbps"/>
        </item>
       </layout>
      </item>
@@ -105,7 +105,7 @@
         </widget>
        </item>
        <item>
-        <widget class="MyLineEdit" name="hopInterval"/>
+        <widget class="QLineEdit" name="hopInterval"/>
        </item>
       </layout>
      </item>
@@ -119,7 +119,7 @@
         </widget>
        </item>
        <item>
-        <widget class="MyLineEdit" name="uploadMbps"/>
+        <widget class="QLineEdit" name="uploadMbps"/>
        </item>
       </layout>
      </item>
@@ -227,14 +227,14 @@
       </layout>
      </item>
      <item row="1" column="1">
-      <widget class="MyLineEdit" name="obfsPassword"/>
+      <widget class="QLineEdit" name="obfsPassword"/>
      </item>
     </layout>
    </item>
    <item>
     <layout class="QGridLayout" name="authentication">
      <item row="2" column="1">
-      <widget class="MyLineEdit" name="uuid"/>
+      <widget class="QLineEdit" name="uuid"/>
      </item>
      <item row="0" column="0">
       <widget class="QLabel" name="authPayloadType_l">
@@ -290,10 +290,10 @@
       </widget>
      </item>
      <item row="3" column="1" colspan="2">
-      <widget class="MyLineEdit" name="password"/>
+      <widget class="QLineEdit" name="password"/>
      </item>
      <item row="1" column="1" colspan="2">
-      <widget class="MyLineEdit" name="authPayload"/>
+      <widget class="QLineEdit" name="authPayload"/>
      </item>
      <item row="0" column="1" colspan="2">
       <widget class="QComboBox" name="authPayloadType">
@@ -333,7 +333,7 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="MyLineEdit" name="alpn"/>
+      <widget class="QLineEdit" name="alpn"/>
      </item>
      <item row="0" column="2">
       <widget class="QCheckBox" name="disableSni">
@@ -343,7 +343,7 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="MyLineEdit" name="sni"/>
+      <widget class="QLineEdit" name="sni"/>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="alpn_l">
@@ -369,10 +369,10 @@
      <item row="1" column="2">
       <spacer name="alpn_sp">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+        <enum>QSizePolicy::Policy::Maximum</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -394,7 +394,7 @@
       </widget>
      </item>
      <item>
-      <widget class="MyLineEdit" name="streamReceiveWindow"/>
+      <widget class="QLineEdit" name="streamReceiveWindow"/>
      </item>
      <item>
       <widget class="QLabel" name="connectionReceiveWindow_l">
@@ -404,19 +404,12 @@
       </widget>
      </item>
      <item>
-      <widget class="MyLineEdit" name="connectionReceiveWindow"/>
+      <widget class="QLineEdit" name="connectionReceiveWindow"/>
      </item>
     </layout>
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>MyLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>ui/widget/MyLineEdit.h</header>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>hopPort</tabstop>
   <tabstop>hopInterval</tabstop>

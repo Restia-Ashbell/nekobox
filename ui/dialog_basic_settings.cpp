@@ -21,7 +21,7 @@ public:
     QString coreName;
 
     QLabel *label_name;
-    MyLineEdit *lineEdit_path;
+    QLineEdit *lineEdit_path;
     QPushButton *pushButton_pick;
 
     explicit ExtraCoreWidget(QJsonObject *extraCore, const QString &coreName_,
@@ -30,7 +30,7 @@ public:
         coreName = coreName_;
         label_name = new QLabel;
         label_name->setText(coreName);
-        lineEdit_path = new MyLineEdit;
+        lineEdit_path = new QLineEdit;
         lineEdit_path->setText(extraCore->value(coreName).toString());
         pushButton_pick = new QPushButton;
         pushButton_pick->setText(QObject::tr("Select"));
@@ -379,8 +379,8 @@ void DialogBasicSettings::on_inbound_auth_clicked() {
     //
     auto user_l = new QLabel(tr("Username"));
     auto pass_l = new QLabel(tr("Password"));
-    auto user = new MyLineEdit;
-    auto pass = new MyLineEdit;
+    auto user = new QLineEdit;
+    auto pass = new QLineEdit;
     user->setText(NekoGui::dataStore->inbound_auth->username);
     pass->setText(NekoGui::dataStore->inbound_auth->password);
     //

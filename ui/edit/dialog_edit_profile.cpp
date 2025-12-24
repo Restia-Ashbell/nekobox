@@ -146,51 +146,39 @@ void DialogEditProfile::typeSelected() {
 
     if (type == "socks" || type == "http") {
         auto _innerWidget = new EditSocksHttp(this);
-        innerWidget = _innerWidget;
         innerEditor = _innerWidget;
     } else if (type == "shadowsocks") {
         auto _innerWidget = new EditShadowSocks(this);
-        innerWidget = _innerWidget;
         innerEditor = _innerWidget;
     } else if (type == "shadowsocksr") {
         auto _innerWidget = new EditShadowSocksR(this);
-        innerWidget = _innerWidget;
         innerEditor = _innerWidget;
     } else if (type == "chain") {
         auto _innerWidget = new EditChain(this);
-        innerWidget = _innerWidget;
         innerEditor = _innerWidget;
     } else if (type == "vmess") {
         auto _innerWidget = new EditVMess(this);
-        innerWidget = _innerWidget;
         innerEditor = _innerWidget;
     } else if (type == "trojan" || type == "vless") {
         auto _innerWidget = new EditTrojanVLESS(this);
-        innerWidget = _innerWidget;
         innerEditor = _innerWidget;
     } else if (type == "naive") {
         auto _innerWidget = new EditNaive(this);
-        innerWidget = _innerWidget;
         innerEditor = _innerWidget;
     } else if (type == "hysteria" || type == "hysteria2" || type == "tuic") {
         auto _innerWidget = new EditQUIC(this);
-        innerWidget = _innerWidget;
         innerEditor = _innerWidget;
     } else if (type == "anytls") {
         auto _innerWidget = new EditAnyTLS(this);
-        innerWidget = _innerWidget;
         innerEditor = _innerWidget;
     } else if (type == "ssh") {
         auto _innerWidget = new EditSSH(this);
-        innerWidget = _innerWidget;
         innerEditor = _innerWidget;
     } else if (type == "wireguard") {
         auto _innerWidget = new EditWireGuard(this);
-        innerWidget = _innerWidget;
         innerEditor = _innerWidget;
     } else if (type == "custom" || type == "internal" || type == "internal-full") {
         auto _innerWidget = new EditCustom(this);
-        innerWidget = _innerWidget;
         innerEditor = _innerWidget;
         customType = newEnt ? type : ent->CustomBean()->core;
         if (customType != "custom") _innerWidget->preset_core = customType;
@@ -272,12 +260,14 @@ void DialogEditProfile::typeSelected() {
     ui->custom_global_box->setVisible(show_custom_config);
 
     // 左边 bean
-    auto old = ui->bean->layout()->itemAt(0)->widget();
-    ui->bean->layout()->removeWidget(old);
+    if (auto old = ui->bean->layout()->takeAt(0)) {
+        delete old->widget();
+        delete old;
+    }
+    auto innerWidget = dynamic_cast<QWidget *>(innerEditor);
     innerWidget->layout()->setContentsMargins(0, 0, 0, 0);
     ui->bean->layout()->addWidget(innerWidget);
     ui->bean->setTitle(ent->bean->DisplayType());
-    delete old;
 
     // 左边 bean inner editor
     innerEditor->get_edit_dialog = [&]() { return (QWidget *) this; };

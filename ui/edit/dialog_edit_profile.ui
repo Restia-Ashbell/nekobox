@@ -68,7 +68,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="MyLineEdit" name="name"/>
+          <widget class="QLineEdit" name="name"/>
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="address_l">
@@ -78,7 +78,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="MyLineEdit" name="address"/>
+          <widget class="QLineEdit" name="address"/>
          </item>
          <item row="3" column="0">
           <widget class="QLabel" name="port_l">
@@ -104,11 +104,7 @@
         <property name="title">
          <string notr="true">Bean</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <item>
-          <widget class="QWidget" name="fake" native="true"/>
-         </item>
-        </layout>
+        <layout class="QVBoxLayout" name="verticalLayout_4"/>
        </widget>
       </item>
       <item>
@@ -334,10 +330,10 @@
         </property>
         <layout class="QGridLayout" name="gridLayout">
          <item row="0" column="1">
-          <widget class="MyLineEdit" name="path"/>
+          <widget class="QLineEdit" name="path"/>
          </item>
          <item row="3" column="1">
-          <widget class="MyLineEdit" name="ws_early_data_name"/>
+          <widget class="QLineEdit" name="ws_early_data_name"/>
          </item>
          <item row="3" column="0">
           <widget class="QLabel" name="ws_early_data_name_l">
@@ -347,7 +343,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="MyLineEdit" name="host"/>
+          <widget class="QLineEdit" name="host"/>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="host_l">
@@ -371,7 +367,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="MyLineEdit" name="ws_early_data_length"/>
+          <widget class="QLineEdit" name="ws_early_data_length"/>
          </item>
         </layout>
        </widget>
@@ -416,7 +412,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="MyLineEdit" name="sni"/>
+          <widget class="QLineEdit" name="sni"/>
          </item>
          <item row="2" column="2">
           <widget class="QCheckBox" name="disable_sni">
@@ -433,7 +429,7 @@
           </widget>
          </item>
          <item row="3" column="1" colspan="2">
-          <widget class="MyLineEdit" name="alpn"/>
+          <widget class="QLineEdit" name="alpn"/>
          </item>
          <item row="1" column="1">
           <widget class="QPushButton" name="ech_edit">
@@ -473,7 +469,7 @@
           </widget>
          </item>
          <item row="6" column="1" colspan="2">
-          <widget class="MyLineEdit" name="reality_sid"/>
+          <widget class="QLineEdit" name="reality_sid"/>
          </item>
          <item row="0" column="2">
           <widget class="QCheckBox" name="insecure">
@@ -509,7 +505,7 @@
           </widget>
          </item>
          <item row="5" column="1" colspan="2">
-          <widget class="MyLineEdit" name="reality_pbk"/>
+          <widget class="QLineEdit" name="reality_pbk"/>
          </item>
          <item row="7" column="0">
           <widget class="QCheckBox" name="tls_fragment">
@@ -604,13 +600,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>MyLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>ui/widget/MyLineEdit.h</header>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>type</tabstop>
   <tabstop>name</tabstop>

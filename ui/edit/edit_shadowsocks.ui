@@ -22,7 +22,7 @@
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="MyLineEdit" name="password"/>
+    <widget class="QLineEdit" name="password"/>
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="plugin_l">
@@ -46,7 +46,7 @@
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="MyLineEdit" name="plugin_opts"/>
+    <widget class="QLineEdit" name="plugin_opts"/>
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="label_5">
@@ -108,13 +108,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>MyLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>ui/widget/MyLineEdit.h</header>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>method</tabstop>
   <tabstop>password</tabstop>

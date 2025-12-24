@@ -22,7 +22,7 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="MyLineEdit" name="username"/>
+    <widget class="QLineEdit" name="username"/>
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="label_2">
@@ -32,7 +32,7 @@
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="MyLineEdit" name="password"/>
+    <widget class="QLineEdit" name="password"/>
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label_3">
@@ -77,7 +77,7 @@
     </widget>
    </item>
    <item row="4" column="1">
-    <widget class="MyLineEdit" name="sni"/>
+    <widget class="QLineEdit" name="sni"/>
    </item>
    <item row="5" column="0">
     <widget class="QLabel" name="label_7">
@@ -101,7 +101,7 @@
     </widget>
    </item>
    <item row="6" column="1">
-    <widget class="MyLineEdit" name="insecure_concurrency"/>
+    <widget class="QLineEdit" name="insecure_concurrency"/>
    </item>
    <item row="7" column="0">
     <widget class="QLabel" name="label_8">
@@ -119,13 +119,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>MyLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>ui/widget/MyLineEdit.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -40,7 +40,6 @@ private:
 
     std::map<QWidget *, FloatCheckBox *> apply_to_group_ui;
 
-    QWidget *innerWidget{};
     ProfileEditor *innerEditor{};
 
     QString type;
