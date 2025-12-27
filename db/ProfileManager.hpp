@@ -44,10 +44,6 @@ namespace NekoGui {
         std::shared_ptr<Group> CurrentGroup();
 
     private:
-        // sort by id
-        QList<int> profilesIdOrder;
-        QList<int> groupsIdOrder;
-
         [[nodiscard]] int NewProfileID() const;
 
         [[nodiscard]] int NewGroupID() const;

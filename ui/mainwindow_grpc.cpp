@@ -96,7 +96,7 @@ void MainWindow::speedtest_current_group(int mode) {
                 profile->Save();
                 auto profileId = profile->id;
                 runOnUiThread([this, profileId] {
-                    refresh_proxy_list(profileId);
+                    refresh_proxy(profileId);
                 });
                 return;
             }
@@ -178,7 +178,7 @@ void MainWindow::speedtest_current_group(int mode) {
 
         auto profileId = profile->id;
         runOnUiThread([this, profileId] {
-            refresh_proxy_list(profileId);
+            refresh_proxy(profileId);
         });
     });
 }
@@ -262,7 +262,7 @@ void MainWindow::neko_start(int _id) {
 
         runOnUiThread([=, this] {
             refresh_status();
-            refresh_proxy_list(ent->id);
+            refresh_proxy(ent->id);
         });
     };
 
@@ -308,7 +308,7 @@ void MainWindow::neko_stop(bool crash) {
 
         runOnUiThread([=, this] {
             refresh_status();
-            refresh_proxy_list(id);
+            refresh_proxy(id);
         });
     };
 

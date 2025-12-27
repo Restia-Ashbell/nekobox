@@ -32,16 +32,6 @@
       <string>Common</string>
      </property>
      <layout class="QGridLayout" name="main">
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="name"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Type</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="1">
        <widget class="QComboBox" name="type">
         <item>
@@ -56,37 +46,8 @@
         </item>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="front_proxy_l">
-        <property name="text">
-         <string>Front Proxy</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QCheckBox" name="manually_column_width">
-          <property name="text">
-           <string>Manually column width</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="archive">
-          <property name="text">
-           <string>Archive</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Name</string>
-        </property>
-       </widget>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="name"/>
       </item>
       <item row="2" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout">
@@ -111,6 +72,34 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="front_proxy_l">
+        <property name="text">
+         <string>Front Proxy</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Type</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Name</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="archive">
+        <property name="text">
+         <string>Archive</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -178,8 +167,6 @@
   <tabstop>type</tabstop>
   <tabstop>front_proxy</tabstop>
   <tabstop>front_proxy_clear</tabstop>
-  <tabstop>manually_column_width</tabstop>
-  <tabstop>archive</tabstop>
   <tabstop>url</tabstop>
   <tabstop>skip_auto_update</tabstop>
   <tabstop>copy_links</tabstop>

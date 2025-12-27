@@ -1,12 +1,13 @@
+#include "GroupUpdater.hpp"
+
+#include <QInputDialog>
+
 #include "db/ProfileFilter.hpp"
 #include "fmt/includes.h"
 #include "fmt/Preset.hpp"
 #include "main/HTTPRequestHelper.hpp"
 #include "ui/widget/GroupItem.h"
-
-#include "GroupUpdater.hpp"
-
-#include <QInputDialog>
+#include "ui/mainwindow.h"
 
 #ifndef NKR_NO_YAML
 #include <yaml-cpp/yaml.h>
@@ -608,6 +609,7 @@ namespace NekoGui_sub {
                 _sub_gid = group->id;
             }
             Update(content, _sub_gid, asURL);
+            MainWindow::instance()->refresh_group(_sub_gid);
             emit asyncUpdateCallback(_sub_gid);
             if (createNewGroup) {
                 if (group->name.isEmpty()) group->name = url.host();

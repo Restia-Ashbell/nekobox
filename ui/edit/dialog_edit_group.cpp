@@ -22,7 +22,6 @@ DialogEditGroup::DialogEditGroup(const std::shared_ptr<NekoGui::Group> &ent, QWi
     ui->url->setText(ent->url);
     ui->type->setCurrentIndex(ent->url.isEmpty() ? 0 : 1);
     ui->type->currentIndexChanged(ui->type->currentIndex());
-    ui->manually_column_width->setChecked(ent->manually_column_width);
     ui->cat_share->setVisible(false);
 
     if (ent->id >= 0) { // already a group
@@ -80,7 +79,6 @@ void DialogEditGroup::accept() {
     ent->url = ui->url->text();
     ent->archive = ui->archive->isChecked();
     ent->skip_auto_update = ui->skip_auto_update->isChecked();
-    ent->manually_column_width = ui->manually_column_width->isChecked();
     ent->front_proxy_id = CACHE.front_proxy;
     QDialog::accept();
 }

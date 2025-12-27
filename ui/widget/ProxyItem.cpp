@@ -24,7 +24,7 @@ void ProxyItem::refresh_data() {
     ui->name->setText(ent->bean->DisplayName());
     ui->address->setText(ent->bean->DisplayAddress());
     ui->traffic->setText(ent->traffic_data->DisplayTraffic());
-    ui->test_result->setText(ent->DisplayLatency());
+    ui->test_result->setText(ent->DisplayLatency().toString());
 
     item->setSizeHint(sizeHint());
 }

@@ -75,8 +75,6 @@ namespace NekoGui {
 
         std::unique_ptr<Routing> routing;
         int imported_count = 0;
-        bool refreshing_group_list = false;
-        bool refreshing_group = false;
         int resolve_count = 0;
 
         // Flags

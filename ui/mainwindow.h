@@ -2,13 +2,12 @@
 
 #include <QMainWindow>
 #include <QFuture>
-#include <QTableWidgetItem>
+#include <QTableWidget>
 #include <QKeyEvent>
 #include <QSystemTrayIcon>
 #include <QShortcut>
 #include <QMutex>
 
-#include "GroupSort.hpp"
 #include "db/ProxyEntity.hpp"
 #include "main/GuiUtils.hpp"
 #include "main/NekoGui_DataStore.hpp"
@@ -27,9 +26,9 @@ public:
 
     ~MainWindow() override;
 
-    void refresh_proxy_list(const int &id = -1);
+    void refresh_proxy(int id);
 
-    void show_group(int gid);
+    void refresh_group(int gid = -1);
 
     void refresh_groups();
 
@@ -97,8 +96,6 @@ private slots:
 
     void on_menu_export_config_triggered();
 
-    void display_qr_link(bool nkrFormat = false);
-
     void on_menu_scan_qr_triggered();
 
     void on_menu_clear_test_result_triggered();
@@ -114,10 +111,6 @@ private slots:
     void on_menu_update_subscription_triggered();
 
     void on_menu_resolve_domain_triggered();
-
-    void on_proxyListTable_itemDoubleClicked(QTableWidgetItem *item);
-
-    void on_proxyListTable_customContextMenuRequested(const QPoint &pos);
 
     void on_tabWidget_currentChanged(int index);
 
@@ -162,9 +155,9 @@ private:
 
     void dialog_message_impl(const QString &sender, const QString &info);
 
-    void refresh_proxy_list_impl(const int &id = -1, GroupSortAction groupSortAction = {});
+    void updateTableRow(int row, int id, QTableWidget *tableWidget);
 
-    void refresh_proxy_list_impl_refresh_data(const int &id = -1);
+    QTableWidget *createTable(int gid);
 
     void keyPressEvent(QKeyEvent *event) override;
 
@@ -172,6 +165,8 @@ private:
 
     template<typename DialogType, typename... Args>
     void openDialog(Args &&...args);
+
+    void display_qr_link(bool nkrFormat = false);
 
     void speedtest_current_group(int mode);
 

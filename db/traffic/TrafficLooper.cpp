@@ -60,7 +60,7 @@ namespace NekoGui_traffic {
                         m->refresh_status("STOP");
                         for (const auto &item: items) {
                             NekoGui::profileManager->GetProfile(item->id)->Save();
-                            m->refresh_proxy_list(item->id);
+                            m->refresh_proxy(item->id);
                         }
                     });
                 }
@@ -83,7 +83,7 @@ namespace NekoGui_traffic {
                 }
                 for (const auto &item: items) {
                     if (item->id >= 0)
-                        m->refresh_proxy_list(item->id);
+                        m->refresh_proxy(item->id);
                 }
             });
         }

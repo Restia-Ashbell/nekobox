@@ -19,7 +19,7 @@ namespace NekoGui {
 
         ProxyEntity(NekoGui_fmt::AbstractBean *bean, const QString &type_);
 
-        [[nodiscard]] QString DisplayLatency() const;
+        [[nodiscard]] QVariant DisplayLatency() const;
 
         [[nodiscard]] QColor DisplayLatencyColor() const;
 

@@ -14,6 +14,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QPlainTextEdit>
+#include <QHeaderView>
 #include <QHotkey>
 
 #include "ZxingQtReader.h"
@@ -121,39 +122,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         runOnUiThread([=, this] { show_log_impl(cleanVT100String(log)); });
     };
 
-    // table UI
-    ui->proxyListTable->callback_save_order = [=, this] {
-        auto group = NekoGui::profileManager->CurrentGroup();
-        group->order = ui->proxyListTable->order;
-        group->Save();
-    };
-    ui->proxyListTable->refresh_data = [=, this](int id) { refresh_proxy_list_impl_refresh_data(id); };
-    if (auto button = ui->proxyListTable->findChild<QAbstractButton *>(QString(), Qt::FindDirectChildrenOnly)) {
-        // Corner Button
-        connect(button, &QAbstractButton::clicked, this, [=, this] { refresh_proxy_list_impl(-1, {GroupSortMethod::ById}); });
-    }
-    connect(ui->proxyListTable->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, [this](int logicalIndex, Qt::SortOrder order) {
-        if (logicalIndex < 0 || logicalIndex > 3) return;
-        GroupSortAction action;
-        action.method = static_cast<GroupSortMethod>(logicalIndex);
-        action.descending = order == Qt::DescendingOrder;
-        action.save_sort = true;
-        refresh_proxy_list_impl(-1, action);
-    });
-    connect(ui->proxyListTable->horizontalHeader(), &QHeaderView::sectionResized, this, [=, this](int logicalIndex, int oldSize, int newSize) {
-        auto group = NekoGui::profileManager->CurrentGroup();
-        if (NekoGui::dataStore->refreshing_group || group == nullptr || !group->manually_column_width) return;
-        // save manually column width
-        group->column_width.clear();
-        for (int i = 0; i < ui->proxyListTable->horizontalHeader()->count(); i++) {
-            group->column_width.push_back(ui->proxyListTable->horizontalHeader()->sectionSize(i));
-        }
-        group->column_width[logicalIndex] = newSize;
-        group->Save();
-    });
-    ui->proxyListTable->verticalHeader()->setDefaultSectionSize(24);
-    ui->proxyListTable->setTabKeyNavigation(false);
-
     // search box
     ui->search->setVisible(false);
     connect(shortcut_ctrl_f, &QShortcut::activated, this, [=, this] {
@@ -172,12 +140,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             refresh_status();
         }
     });
-    connect(ui->search, &QLineEdit::textChanged, this, [=, this](const QString &text) {
-        for (int i = 0; i < ui->proxyListTable->rowCount(); ++i) {
-            ui->proxyListTable->setRowHidden(i, !text.isEmpty());
-        }
-        for (auto *item: ui->proxyListTable->findItems(text, Qt::MatchContains)) {
-            if (item) ui->proxyListTable->setRowHidden(item->row(), false);
+    connect(ui->search, &QLineEdit::textChanged, this, [this](const QString &text) {
+        for (int index = 0; index < ui->tabWidget->count(); ++index) {
+            auto proxyListTable = qobject_cast<QTableWidget *>(ui->tabWidget->widget(index));
+            for (int row = 0; row < proxyListTable->rowCount(); ++row) {
+                proxyListTable->setRowHidden(row, !text.isEmpty());
+            }
+            for (auto *item: proxyListTable->findItems(text, Qt::MatchContains)) {
+                if (item) proxyListTable->setRowHidden(item->row(), false);
+            }
         }
     });
 
@@ -371,66 +342,6 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-// Group tab manage
-
-inline int tabIndex2GroupId(int index) {
-    if (NekoGui::profileManager->groupsTabOrder.length() <= index) return -1;
-    return NekoGui::profileManager->groupsTabOrder[index];
-}
-
-inline int groupId2TabIndex(int gid) {
-    for (int key = 0; key < NekoGui::profileManager->groupsTabOrder.count(); key++) {
-        if (NekoGui::profileManager->groupsTabOrder[key] == gid) return key;
-    }
-    return 0;
-}
-
-void MainWindow::on_tabWidget_currentChanged(int index) {
-    if (NekoGui::dataStore->refreshing_group_list) return;
-    if (tabIndex2GroupId(index) == NekoGui::dataStore->current_group) return;
-    show_group(tabIndex2GroupId(index));
-}
-
-void MainWindow::show_group(int gid) {
-    if (NekoGui::dataStore->refreshing_group) return;
-    NekoGui::dataStore->refreshing_group = true;
-
-    auto group = NekoGui::profileManager->GetGroup(gid);
-    if (group == nullptr) {
-        MessageBoxWarning(tr("Error"), QString("No such group: %1").arg(gid));
-        NekoGui::dataStore->refreshing_group = false;
-        return;
-    }
-
-    if (NekoGui::dataStore->current_group != gid) {
-        NekoGui::dataStore->current_group = gid;
-        NekoGui::dataStore->Save();
-    }
-    ui->tabWidget->widget(groupId2TabIndex(gid))->layout()->addWidget(ui->proxyListTable);
-
-    // 列宽是否可调
-    if (group->manually_column_width) {
-        for (int i = 0; i <= 4; i++) {
-            int size = group->column_width.value(i, ui->proxyListTable->horizontalHeader()->defaultSectionSize());
-            ui->proxyListTable->horizontalHeader()->resizeSection(i, size);
-            ui->proxyListTable->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Interactive);
-        }
-    } else {
-        ui->proxyListTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-        ui->proxyListTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
-        ui->proxyListTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
-        ui->proxyListTable->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
-        ui->proxyListTable->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
-    }
-
-    // show proxies
-    GroupSortAction gsa;
-    gsa.scroll_to_started = true;
-    refresh_proxy_list_impl(-1, gsa);
-
-    NekoGui::dataStore->refreshing_group = false;
-}
-
 // callback
 
 void MainWindow::dialog_message_impl(const QString &sender, const QString &info) {
@@ -447,7 +358,6 @@ void MainWindow::dialog_message_impl(const QString &sender, const QString &info)
         if (info.contains("NeedRestart")) {
             suggestRestartProxy = false;
         }
-        refresh_proxy_list();
         if (info.contains("VPNChanged") && NekoGui::dataStore->spmode_vpn) {
             MessageBoxWarning(tr("Tun Settings changed"), tr("Restart Tun to take effect."));
         }
@@ -478,7 +388,7 @@ void MainWindow::dialog_message_impl(const QString &sender, const QString &info)
     if (sender == Dialog_DialogEditProfile) {
         auto msg = info.split(",");
         if (msg.contains("accept")) {
-            refresh_proxy_list();
+            refresh_group();
             if (msg.contains("restart")) {
                 if (QMessageBox::question(GetMessageBoxParent(), tr("Confirmation"), tr("Settings changed, restart proxy?")) == QMessageBox::StandardButton::Yes) {
                     neko_start(NekoGui::dataStore->started_id);
@@ -491,7 +401,6 @@ void MainWindow::dialog_message_impl(const QString &sender, const QString &info)
         }
     } else if (sender == "SubUpdater") {
         if (info.startsWith("finish")) {
-            refresh_proxy_list();
             if (!info.contains("dingyue")) {
                 show_log_impl(tr("Imported %1 profile(s)").arg(NekoGui::dataStore->imported_count));
             }
@@ -790,174 +699,132 @@ void MainWindow::refresh_status(const QString &traffic_update) {
 
 // table显示
 
-// refresh_groups -> show_group -> refresh_proxy_list
-void MainWindow::refresh_groups() {
-    NekoGui::dataStore->refreshing_group_list = true;
+void MainWindow::updateTableRow(int row, int id, QTableWidget *tableWidget) {
+    auto profile = NekoGui::profileManager->GetProfile(id);
+    if (!profile) return;
 
-    // refresh group?
-    for (int i = ui->tabWidget->count() - 1; i > 0; i--) {
-        ui->tabWidget->removeTab(i);
-    }
-
-    int index = 0;
-    for (const auto &gid: NekoGui::profileManager->groupsTabOrder) {
-        auto group = NekoGui::profileManager->GetGroup(gid);
-        if (index == 0) {
-            ui->tabWidget->setTabText(0, group->name);
-        } else {
-            auto widget2 = new QWidget();
-            auto layout2 = new QVBoxLayout();
-            layout2->setContentsMargins(QMargins());
-            layout2->setSpacing(0);
-            widget2->setLayout(layout2);
-            ui->tabWidget->addTab(widget2, group->name);
-        }
-        ui->tabWidget->tabBar()->setTabData(index, gid);
-        index++;
-    }
-
-    // show after group changed
-    if (NekoGui::profileManager->CurrentGroup() == nullptr) {
-        NekoGui::dataStore->current_group = -1;
-        ui->tabWidget->setCurrentIndex(groupId2TabIndex(0));
-        show_group(NekoGui::profileManager->groupsTabOrder.count() > 0 ? NekoGui::profileManager->groupsTabOrder.first() : 0);
-    } else {
-        ui->tabWidget->setCurrentIndex(groupId2TabIndex(NekoGui::dataStore->current_group));
-        show_group(NekoGui::dataStore->current_group);
-    }
-
-    NekoGui::dataStore->refreshing_group_list = false;
-}
-
-void MainWindow::refresh_proxy_list(const int &id) {
-    refresh_proxy_list_impl(id, {});
-}
-
-void MainWindow::refresh_proxy_list_impl(const int &id, GroupSortAction groupSortAction) {
-    // id < 0 重绘
-    if (id < 0) {
-        // 清空数据
-        ui->proxyListTable->row2Id.clear();
-        ui->proxyListTable->setRowCount(0);
-        // 添加行
-        int row = -1;
-        for (const auto &[id, profile]: NekoGui::profileManager->profiles) {
-            if (NekoGui::dataStore->current_group != profile->gid) continue;
-            row++;
-            ui->proxyListTable->insertRow(row);
-            ui->proxyListTable->row2Id += id;
-        }
-
-        // 显示排序
-        switch (groupSortAction.method) {
-            case GroupSortMethod::Raw: {
-                auto group = NekoGui::profileManager->CurrentGroup();
-                if (group == nullptr) return;
-                ui->proxyListTable->order = group->order;
-                break;
-            }
-            case GroupSortMethod::ById: {
-                // Clear Order
-                ui->proxyListTable->order.clear();
-                ui->proxyListTable->callback_save_order();
-                break;
-            }
-            case GroupSortMethod::ByAddress:
-            case GroupSortMethod::ByName:
-            case GroupSortMethod::ByLatency:
-            case GroupSortMethod::ByType: {
-                std::sort(ui->proxyListTable->order.begin(), ui->proxyListTable->order.end(), [&](int a, int b) {
-                    QString ms_a, ms_b;
-                    if (groupSortAction.method == GroupSortMethod::ByType) {
-                        ms_a = NekoGui::profileManager->GetProfile(a)->bean->DisplayType();
-                        ms_b = NekoGui::profileManager->GetProfile(b)->bean->DisplayType();
-                    } else if (groupSortAction.method == GroupSortMethod::ByName) {
-                        ms_a = NekoGui::profileManager->GetProfile(a)->bean->name;
-                        ms_b = NekoGui::profileManager->GetProfile(b)->bean->name;
-                    } else if (groupSortAction.method == GroupSortMethod::ByAddress) {
-                        ms_a = NekoGui::profileManager->GetProfile(a)->bean->DisplayAddress();
-                        ms_b = NekoGui::profileManager->GetProfile(b)->bean->DisplayAddress();
-                    } else if (groupSortAction.method == GroupSortMethod::ByLatency) {
-                        ms_a = NekoGui::profileManager->GetProfile(a)->full_test_report;
-                        ms_b = NekoGui::profileManager->GetProfile(b)->full_test_report;
-                        if (ms_a.isEmpty() && ms_b.isEmpty()) {
-                            auto get_latency_for_sort = [](int id) {
-                                auto i = NekoGui::profileManager->GetProfile(id)->latency;
-                                if (i == 0)
-                                    i = INT_MAX;
-                                else if (i < 0)
-                                    i = INT_MAX - 1;
-                                return i;
-                            };
-                            return groupSortAction.descending
-                                       ? get_latency_for_sort(a) > get_latency_for_sort(b)
-                                       : get_latency_for_sort(a) < get_latency_for_sort(b);
-                        }
-                    }
-                    return groupSortAction.descending ? ms_a > ms_b : ms_a < ms_b;
-                });
-                break;
-            }
-        }
-        ui->proxyListTable->update_order(groupSortAction.save_sort);
-    }
-
-    // refresh data
-    refresh_proxy_list_impl_refresh_data(id);
-}
-
-void MainWindow::refresh_proxy_list_impl_refresh_data(const int &id) {
-    auto updateRow = [&](int row, int profileId) {
-        auto profile = NekoGui::profileManager->GetProfile(profileId);
-        if (!profile) return;
-        const bool isRunning = profileId == NekoGui::dataStore->started_id;
-        const QColor itemColor = isRunning ? palette().link().color() : QColor();
-
-        auto makeItem = [&](const QString &text, const QColor &color = QColor()) {
-            auto item = new QTableWidgetItem(text);
-            item->setData(114514, profileId);
-            if (color.isValid()) item->setForeground(color);
-            return item;
-        };
-
-        ui->proxyListTable->setVerticalHeaderItem(row, makeItem(isRunning ? "✓" : Int2String(row + 1)));
-
-        ui->proxyListTable->setItem(row, 0, makeItem(profile->bean->DisplayType(), itemColor));
-
-        ui->proxyListTable->setItem(row, 1, makeItem(profile->bean->DisplayAddress(), itemColor));
-
-        ui->proxyListTable->setItem(row, 2, makeItem(profile->bean->name, itemColor));
-
-        const QString testResult = profile->full_test_report.isEmpty() ? profile->DisplayLatency() : profile->full_test_report;
-        const QColor testColor = profile->full_test_report.isEmpty() ? profile->DisplayLatencyColor() : QColor();
-        ui->proxyListTable->setItem(row, 3, makeItem(testResult, testColor));
-
-        ui->proxyListTable->setItem(row, 4, makeItem(profile->traffic_data->DisplayTraffic()));
+    auto makeItem = [&](const QVariant &value, const QColor &color = QColor()) {
+        auto item = new QTableWidgetItem();
+        item->setData(Qt::DisplayRole, value);
+        item->setData(114514, profile->id);
+        if (color.isValid()) item->setForeground(color);
+        if (id == NekoGui::dataStore->started_id) item->setBackground(palette().highlight().color().lighter());
+        return item;
     };
 
-    if (id >= 0) {
-        if (!ui->proxyListTable->id2Row.contains(id)) return;
-        updateRow(ui->proxyListTable->id2Row[id], id);
+    tableWidget->setItem(row, 0, makeItem(profile->bean->DisplayType()));
+
+    tableWidget->setItem(row, 1, makeItem(profile->bean->DisplayAddress()));
+
+    tableWidget->setItem(row, 2, makeItem(profile->bean->name));
+
+    const QVariant testResult = profile->full_test_report.isEmpty() ? profile->DisplayLatency() : profile->full_test_report;
+    const QColor testColor = profile->full_test_report.isEmpty() ? profile->DisplayLatencyColor() : QColor();
+    tableWidget->setItem(row, 3, makeItem(testResult, testColor));
+
+    tableWidget->setItem(row, 4, makeItem(profile->traffic_data->DisplayTraffic()));
+}
+
+QTableWidget *MainWindow::createTable(int gid) {
+    auto group = NekoGui::profileManager->GetGroup(gid);
+    auto tableWidget = new QTableWidget(group->order.size(), 5);
+    tableWidget->setHorizontalHeaderLabels({tr("Type"), tr("Address"), tr("Name"), tr("Test Result"), tr("Traffic")});
+    tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    // tableWidget->setAlternatingRowColors(true);
+    tableWidget->setTabKeyNavigation(false);
+    tableWidget->setWordWrap(false);
+    tableWidget->verticalHeader()->setDefaultSectionSize(24);
+    // tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    tableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
+    tableWidget->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+    tableWidget->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
+    tableWidget->horizontalHeader()->setHighlightSections(false);
+    connect(tableWidget->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, [=, this](int logicalIndex, Qt::SortOrder order) {
+        tableWidget->sortItems(logicalIndex, order);
+        group->order.clear();
+        for (int row = 0; row < tableWidget->rowCount(); ++row) {
+            group->order.append(tableWidget->item(row, 0)->data(114514).toInt());
+        }
+        group->Save();
+    });
+    connect(tableWidget, &QTableWidget::itemDoubleClicked, this, [this](QTableWidgetItem *item) {
+        auto id = item->data(114514).toInt();
+        if (select_mode) {
+            emit profile_selected(id);
+            select_mode = false;
+            refresh_status();
+            return;
+        }
+        auto dialog = new DialogEditProfile("", id, this);
+        connect(dialog, &QDialog::finished, dialog, &QDialog::deleteLater);
+    });
+    connect(tableWidget, &QWidget::customContextMenuRequested, this, [=, this](const QPoint &pos) {
+        ui->menu_server->popup(tableWidget->viewport()->mapToGlobal(pos));
+    });
+    for (const auto &[row, id]: std::views::enumerate(group->order)) {
+        updateTableRow(row, id, tableWidget);
+    }
+    return tableWidget;
+}
+
+void MainWindow::refresh_proxy(int id) {
+    auto profile = NekoGui::profileManager->GetProfile(id);
+    auto tableWidget = qobject_cast<QTableWidget *>(ui->tabWidget->widget(NekoGui::profileManager->groupsTabOrder.indexOf(profile->gid)));
+    updateTableRow(NekoGui::profileManager->GetGroup(profile->gid)->order.indexOf(id), id, tableWidget);
+}
+
+void MainWindow::refresh_group(int gid) {
+    QTableWidget *tableWidget;
+    if (gid < 0) {
+        gid = NekoGui::dataStore->current_group;
+        tableWidget = qobject_cast<QTableWidget *>(ui->tabWidget->currentWidget());
     } else {
-        for (int row = 0; row < ui->proxyListTable->rowCount(); ++row) {
-            updateRow(row, ui->proxyListTable->row2Id[row]);
+        tableWidget = qobject_cast<QTableWidget *>(ui->tabWidget->widget(NekoGui::profileManager->groupsTabOrder.indexOf(gid)));
+    }
+
+    auto group = NekoGui::profileManager->GetGroup(gid);
+    group->order.removeIf([](int k) { return !NekoGui::profileManager->profiles.contains(k); });
+    for (const auto &[id, profile]: NekoGui::profileManager->profiles)
+        if (profile->gid == gid && !group->order.contains(id))
+            group->order.append(id);
+    group->Save();
+
+    tableWidget->setRowCount(0);
+    for (const auto &[row, id]: std::views::enumerate(group->order)) {
+        tableWidget->insertRow(row);
+        updateTableRow(row, id, tableWidget);
+    }
+    ui->tabWidget->setTabText(ui->tabWidget->indexOf(tableWidget), group->name);
+}
+
+void MainWindow::refresh_groups() {
+    QList<int> validGids;
+    for (int i = ui->tabWidget->count() - 1; i >= 0; --i) {
+        int gid = ui->tabWidget->tabBar()->tabData(i).toInt();
+        if (NekoGui::profileManager->groupsTabOrder.contains(gid)) {
+            validGids.append(gid);
+        } else {
+            QWidget *page = ui->tabWidget->widget(i);
+            ui->tabWidget->removeTab(i);
+            delete page;
         }
     }
+    int last_gid = NekoGui::dataStore->current_group;
+    for (const auto &[index, gid]: std::views::enumerate(NekoGui::profileManager->groupsTabOrder)) {
+        if (!validGids.contains(gid)) {
+            auto group = NekoGui::profileManager->GetGroup(gid);
+            ui->tabWidget->insertTab(index, createTable(gid), group->name);
+            ui->tabWidget->tabBar()->setTabData(index, gid);
+        }
+    }
+    ui->tabWidget->setCurrentIndex(NekoGui::profileManager->groupsTabOrder.indexOf(last_gid));
 }
 
 // table菜单相关
-
-void MainWindow::on_proxyListTable_itemDoubleClicked(QTableWidgetItem *item) {
-    auto id = item->data(114514).toInt();
-    if (select_mode) {
-        emit profile_selected(id);
-        select_mode = false;
-        refresh_status();
-        return;
-    }
-    auto dialog = new DialogEditProfile("", id, this);
-    connect(dialog, &QDialog::finished, dialog, &QDialog::deleteLater);
-}
 
 void MainWindow::on_menu_add_from_input_triggered() {
     auto dialog = new DialogEditProfile("socks", NekoGui::dataStore->current_group, this);
@@ -1004,7 +871,8 @@ void MainWindow::on_menu_move_triggered() {
     for (const auto &ent: ents) {
         NekoGui::profileManager->MoveProfile(ent, gid);
     }
-    refresh_proxy_list();
+    refresh_group();
+    refresh_group(gid);
 }
 
 void MainWindow::on_menu_delete_triggered() {
@@ -1015,7 +883,7 @@ void MainWindow::on_menu_delete_triggered() {
         for (const auto &ent: ents) {
             NekoGui::profileManager->DeleteProfile(ent->id);
         }
-        refresh_proxy_list();
+        refresh_group();
     }
 }
 
@@ -1025,7 +893,7 @@ void MainWindow::on_menu_reset_traffic_triggered() {
     for (const auto &ent: ents) {
         ent->traffic_data->Reset();
         ent->Save();
-        refresh_proxy_list(ent->id);
+        refresh_proxy(ent->id);
     }
 }
 
@@ -1043,7 +911,7 @@ void MainWindow::on_menu_profile_debug_info_triggered() {
     } else if (msgBox.clickedButton() == button_2) {
         NekoGui::dataStore->Load();
         NekoGui::profileManager->LoadManager();
-        refresh_proxy_list();
+        refresh_proxy(ents.first()->id);
     }
 }
 
@@ -1199,7 +1067,7 @@ void MainWindow::on_menu_clear_test_result_triggered() {
         profile->full_test_report = "";
         profile->Save();
     }
-    refresh_proxy_list();
+    refresh_group();
 }
 
 void MainWindow::on_menu_select_all_triggered() {
@@ -1207,7 +1075,7 @@ void MainWindow::on_menu_select_all_triggered() {
         ui->masterLogBrowser->selectAll();
         return;
     }
-    ui->proxyListTable->selectAll();
+    qobject_cast<QTableWidget *>(ui->tabWidget->currentWidget())->selectAll();
 }
 
 void MainWindow::on_menu_delete_repeat_triggered() {
@@ -1232,7 +1100,7 @@ void MainWindow::on_menu_delete_repeat_triggered() {
         for (const auto &ent: out_del) {
             NekoGui::profileManager->DeleteProfile(ent->id);
         }
-        refresh_proxy_list();
+        refresh_group();
     }
 }
 
@@ -1267,7 +1135,7 @@ void MainWindow::on_menu_remove_unavailable_triggered() {
         for (const auto &ent: out_del) {
             NekoGui::profileManager->DeleteProfile(ent->id);
         }
-        refresh_proxy_list();
+        refresh_group();
     }
 }
 
@@ -1288,18 +1156,14 @@ void MainWindow::on_menu_resolve_domain_triggered() {
         profile->bean->ResolveDomainToIP([=, this] {
             profile->Save();
             if (--NekoGui::dataStore->resolve_count != 0) return;
-            refresh_proxy_list();
+            refresh_group(profile->gid);
             mw_sub_updating = false;
         });
     }
 }
 
-void MainWindow::on_proxyListTable_customContextMenuRequested(const QPoint &pos) {
-    ui->menu_server->popup(ui->proxyListTable->viewport()->mapToGlobal(pos)); // 弹出菜单
-}
-
 QList<std::shared_ptr<NekoGui::ProxyEntity>> MainWindow::get_now_selected_list() {
-    auto items = ui->proxyListTable->selectedItems();
+    auto items = qobject_cast<QTableWidget *>(ui->tabWidget->currentWidget())->selectedItems();
     QList<std::shared_ptr<NekoGui::ProxyEntity>> list;
     for (auto item: items) {
         auto id = item->data(114514).toInt();
@@ -1381,9 +1245,18 @@ void MainWindow::on_masterLogBrowser_customContextMenuRequested(const QPoint &po
     menu->deleteLater();
 }
 
+// Group tab manage
+
+void MainWindow::on_tabWidget_currentChanged(int index) {
+    int gid = NekoGui::profileManager->groupsTabOrder.value(index, -1);
+    if (NekoGui::dataStore->current_group != gid) {
+        NekoGui::dataStore->current_group = gid;
+        NekoGui::dataStore->Save();
+    }
+}
+
 void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
     int clickedIndex = ui->tabWidget->tabBar()->tabAt(pos);
-    ui->tabWidget->setCurrentIndex(clickedIndex);
     QMenu menu(this);
 
     QAction *addAction = menu.addAction(tr("Add new Group"));
@@ -1392,7 +1265,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
         DialogEditGroup dialog(ent, this);
         if (dialog.exec() == QDialog::Accepted) {
             NekoGui::profileManager->AddGroup(ent);
-            MW_dialog_message(Dialog_DialogManageGroups, "refresh-1");
+            refresh_groups();
         }
     });
 
@@ -1405,7 +1278,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
             connect(dialog, &QDialog::finished, this, [=, this] {
                 if (dialog->result() == QDialog::Accepted) {
                     ent->Save();
-                    MW_dialog_message(Dialog_DialogManageGroups, "refresh" + Int2String(ent->id));
+                    refresh_group(id);
                 }
                 dialog->deleteLater();
             });
@@ -1420,8 +1293,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
             if (QMessageBox::question(this, tr("Confirmation"), tr("Remove %1?").arg(NekoGui::profileManager->groups[id]->name)) ==
                 QMessageBox::StandardButton::Yes) {
                 NekoGui::profileManager->DeleteGroup(id);
-                MW_dialog_message(Dialog_DialogManageGroups, "refresh-1");
-                ui->tabWidget->setCurrentIndex(clickedIndex - 1);
+                refresh_groups();
             }
         });
     }
