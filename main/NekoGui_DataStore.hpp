@@ -118,9 +118,9 @@ namespace NekoGui {
         QString utlsFingerprint = "";
 
         // Remember
-        QStringList remember_spmode = {};
         int remember_id = -1919;
-        bool remember_enable = false;
+        bool remember_spmode_vpn = false;
+        bool remember_spmode_system_proxy = false;
 
         // Mixed Inbound
         QString inbound_address = "127.0.0.1";
@@ -171,8 +171,6 @@ namespace NekoGui {
         // Methods
 
         DataStore();
-
-        void UpdateStartedId(int id);
 
         QString GetUserAgent(bool isDefault = false) const;
     };

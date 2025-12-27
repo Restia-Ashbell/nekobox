@@ -24,8 +24,8 @@ namespace NekoGui {
         _add(new configItem("custom_inbound", &custom_inbound, itemType::string));
         _add(new configItem("sub_use_proxy", &sub_use_proxy, itemType::boolean));
         _add(new configItem("remember_id", &remember_id, itemType::integer));
-        _add(new configItem("remember_enable", &remember_enable, itemType::boolean));
-        _add(new configItem("remember_spmode", &remember_spmode, itemType::stringList));
+        _add(new configItem("remember_spmode_vpn", &remember_spmode_vpn, itemType::boolean));
+        _add(new configItem("remember_spmode_system_proxy", &remember_spmode_system_proxy, itemType::boolean));
         _add(new configItem("language", &language, itemType::string));
         _add(new configItem("font", &font, itemType::string));
         _add(new configItem("skip_cert", &skip_cert, itemType::boolean));
@@ -63,17 +63,6 @@ namespace NekoGui {
         _add(new configItem("certificate", &certificate, itemType::string));
         _add(new configItem("certificate_path", &certificate_path, itemType::string));
         _add(new configItem("certificate_directory_path", &certificate_directory_path, itemType::string));
-    }
-
-    void DataStore::UpdateStartedId(int id) {
-        started_id = id;
-        if (remember_enable) {
-            remember_id = id;
-            Save();
-        } else if (remember_id >= 0) {
-            remember_id = -1919;
-            Save();
-        }
     }
 
     QString DataStore::GetUserAgent(bool isDefault) const {

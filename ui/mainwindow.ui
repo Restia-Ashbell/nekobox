@@ -359,7 +359,6 @@
     <addaction name="menu_scan_qr"/>
     <addaction name="separator"/>
     <addaction name="actionStart_with_system"/>
-    <addaction name="actionRemember_last_proxy"/>
     <addaction name="actionAllow_LAN"/>
     <addaction name="menuActive_Server"/>
     <addaction name="menuActive_Routing"/>
@@ -611,14 +610,6 @@
    </property>
    <property name="text">
     <string>Start with system</string>
-   </property>
-  </action>
-  <action name="actionRemember_last_proxy">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Remember last profile</string>
    </property>
   </action>
   <action name="actionAllow_LAN">

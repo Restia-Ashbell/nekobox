@@ -38,9 +38,9 @@ public:
 
     void neko_stop(bool crash = false);
 
-    void neko_set_spmode_system_proxy(bool enable, bool save = true);
+    void neko_set_spmode_vpn(bool enable);
 
-    void neko_set_spmode_vpn(bool enable, bool save = true);
+    void neko_set_spmode_system_proxy(bool enable);
 
     bool get_elevated_permissions();
 
@@ -132,7 +132,6 @@ private:
     //
     bool select_mode = false;
     QMutex mu_state;
-    QMutex mu_exit;
     int exit_reason = 0;
     //
     bool dialog_is_using = false;

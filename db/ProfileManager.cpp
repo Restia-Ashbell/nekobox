@@ -281,7 +281,8 @@ namespace NekoGui {
     }
 
     std::shared_ptr<ProxyEntity> ProfileManager::GetProfile(int id) {
-        return profiles.count(id) ? profiles[id] : nullptr;
+        auto it = profiles.find(id);
+        return it != profiles.end() ? it->second : nullptr;
     }
 
     // Group
@@ -338,7 +339,8 @@ namespace NekoGui {
     }
 
     std::shared_ptr<Group> ProfileManager::GetGroup(int id) {
-        return groups.count(id) ? groups[id] : nullptr;
+        auto it = groups.find(id);
+        return it != groups.end() ? it->second : nullptr;
     }
 
     std::shared_ptr<Group> ProfileManager::CurrentGroup() {

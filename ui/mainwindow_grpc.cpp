@@ -257,7 +257,7 @@ void MainWindow::neko_start(int _id) {
 
         runOnUiThread([result] { NekoGui_sys::running_ext = CreateExtCFromExtR(result->extRs, true); }, DS_cores);
 
-        NekoGui::dataStore->UpdateStartedId(ent->id);
+        NekoGui::dataStore->started_id = ent->id;
         running = ent;
 
         runOnUiThread([=, this] {
@@ -302,7 +302,7 @@ void MainWindow::neko_stop(bool crash) {
             }
         }
 
-        NekoGui::dataStore->UpdateStartedId(-1919);
+        NekoGui::dataStore->started_id = -1919;
         NekoGui::dataStore->need_keep_vpn_off = false;
         running = nullptr;
 

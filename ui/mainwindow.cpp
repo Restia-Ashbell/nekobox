@@ -174,7 +174,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->actionShow_window, &QAction::triggered, this, [=, this] { tray->activated(QSystemTrayIcon::ActivationReason::Trigger); });
     //
     connect(ui->menu_program, &QMenu::aboutToShow, this, [=, this]() {
-        ui->actionRemember_last_proxy->setChecked(NekoGui::dataStore->remember_enable);
         ui->actionStart_with_system->setChecked(AutoRun_IsEnabled());
         ui->actionAllow_LAN->setChecked(QStringList{"::", "0.0.0.0"}.contains(NekoGui::dataStore->inbound_address));
         // active server
@@ -230,10 +229,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 }
             }
         }
-    });
-    connect(ui->actionRemember_last_proxy, &QAction::triggered, this, [=, this](bool checked) {
-        NekoGui::dataStore->remember_enable = checked;
-        NekoGui::dataStore->Save();
     });
     connect(ui->actionStart_with_system, &QAction::triggered, this, [=, this](bool checked) {
         AutoRun_SetEnabled(checked);
@@ -308,15 +303,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     BoxMain([](const char *log) { MW_show_log(log); });
     runOnNewThread([=, this] { NekoGui_traffic::trafficLooper->Loop(); });
 
-    // Remember system proxy
-    if (NekoGui::dataStore->remember_enable || NekoGui::dataStore->flag_restart_tun_on) {
-        if (NekoGui::dataStore->remember_spmode.contains("system_proxy")) {
-            neko_set_spmode_system_proxy(true, false);
-        }
-        if (NekoGui::dataStore->remember_spmode.contains("vpn") || NekoGui::dataStore->flag_restart_tun_on) {
-            neko_set_spmode_vpn(true, false);
-        }
-    }
+    // Remember
+    neko_set_spmode_vpn(NekoGui::dataStore->remember_spmode_vpn || NekoGui::dataStore->flag_restart_tun_on);
+    neko_set_spmode_system_proxy(NekoGui::dataStore->remember_spmode_system_proxy);
+    neko_start(NekoGui::dataStore->remember_id);
 
     connect(qApp, &QGuiApplication::commitDataRequest, this, &MainWindow::on_commitDataRequest);
 
@@ -461,10 +451,9 @@ void MainWindow::on_commitDataRequest() {
     //
     NekoGui::dataStore->splitter_state = ui->splitter->saveState().toBase64();
     //
-    auto last_id = NekoGui::dataStore->started_id;
-    if (NekoGui::dataStore->remember_enable && last_id >= 0) {
-        NekoGui::dataStore->remember_id = last_id;
-    }
+    NekoGui::dataStore->remember_id = NekoGui::dataStore->started_id;
+    NekoGui::dataStore->remember_spmode_vpn = NekoGui::dataStore->spmode_vpn;
+    NekoGui::dataStore->remember_spmode_system_proxy = NekoGui::dataStore->spmode_system_proxy;
     //
     NekoGui::dataStore->Save();
     NekoGui::profileManager->SaveManager();
@@ -472,31 +461,20 @@ void MainWindow::on_commitDataRequest() {
 }
 
 void MainWindow::on_menu_exit_triggered() {
-    if (mu_exit.tryLock()) {
-        NekoGui::dataStore->prepare_exit = true;
-        //
-        neko_set_spmode_system_proxy(false, false);
-        neko_set_spmode_vpn(false, false);
-        if (NekoGui::dataStore->spmode_vpn) {
-            mu_exit.unlock(); // retry
-            return;
-        }
-        RegisterHotkey(true);
-        //
-        on_commitDataRequest();
-        //
-        NekoGui::dataStore->save_control_no_save = true; // don't change datastore after this line
-        neko_stop();
-        //
-        hide();
-        runOnNewThread([=, this] {
-            mu_state.lock();
-            runOnUiThread([=, this] {
-                on_menu_exit_triggered(); // continue exit progress
-            });
-        });
-        return;
-    }
+    NekoGui::dataStore->prepare_exit = true;
+    //
+    RegisterHotkey(true);
+    //
+    on_commitDataRequest();
+    NekoGui::dataStore->save_control_no_save = true; // don't change datastore after this line
+    //
+    neko_stop();
+    mu_state.lock();
+    //
+    neko_set_spmode_system_proxy(false);
+    neko_set_spmode_vpn(false);
+    //
+    hide();
     //
     if (exit_reason == 1) {
         QDir::setCurrent(QApplication::applicationDirPath());
@@ -527,7 +505,23 @@ void MainWindow::on_menu_exit_triggered() {
     QApplication::quit();
 }
 
-void MainWindow::neko_set_spmode_system_proxy(bool enable, bool save) {
+void MainWindow::neko_set_spmode_vpn(bool enable) {
+    if (enable != NekoGui::dataStore->spmode_vpn) {
+        if (enable) {
+            if (!isRunningAsAdmin()) {
+                if (!get_elevated_permissions()) {
+                    refresh_status();
+                    return;
+                }
+            }
+        }
+        NekoGui::dataStore->spmode_vpn = enable;
+        if (NekoGui::dataStore->started_id >= 0) neko_start(NekoGui::dataStore->started_id);
+    }
+    refresh_status();
+}
+
+void MainWindow::neko_set_spmode_system_proxy(bool enable) {
     if (enable != NekoGui::dataStore->spmode_system_proxy) {
         if (enable) {
             auto socks_port = NekoGui::dataStore->inbound_port;
@@ -535,17 +529,8 @@ void MainWindow::neko_set_spmode_system_proxy(bool enable, bool save) {
         } else {
             ClearSystemProxy();
         }
+        NekoGui::dataStore->spmode_system_proxy = enable;
     }
-
-    if (save) {
-        NekoGui::dataStore->remember_spmode.removeAll("system_proxy");
-        if (enable && NekoGui::dataStore->remember_enable) {
-            NekoGui::dataStore->remember_spmode.append("system_proxy");
-        }
-        NekoGui::dataStore->Save();
-    }
-
-    NekoGui::dataStore->spmode_system_proxy = enable;
     refresh_status();
 }
 
@@ -579,32 +564,6 @@ bool MainWindow::get_elevated_permissions() {
 #endif
 
     return false;
-}
-
-void MainWindow::neko_set_spmode_vpn(bool enable, bool save) {
-    if (enable != NekoGui::dataStore->spmode_vpn) {
-        if (enable) {
-            bool requestPermission = !isRunningAsAdmin();
-            if (requestPermission) {
-                if (!get_elevated_permissions()) {
-                    refresh_status();
-                    return;
-                }
-            }
-        }
-        NekoGui::dataStore->spmode_vpn = enable;
-        if (NekoGui::dataStore->started_id >= 0) neko_start(NekoGui::dataStore->started_id);
-    }
-
-    if (save) {
-        NekoGui::dataStore->remember_spmode.removeAll("vpn");
-        if (enable && NekoGui::dataStore->remember_enable) {
-            NekoGui::dataStore->remember_spmode.append("vpn");
-        }
-        NekoGui::dataStore->Save();
-    }
-
-    refresh_status();
 }
 
 void MainWindow::refresh_status(const QString &traffic_update) {
@@ -1306,7 +1265,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
 bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
     if (event->type() == QEvent::MouseButtonPress) {
         auto mouseEvent = static_cast<QMouseEvent *>(event);
-        if (obj == ui->label_running && mouseEvent->button() == Qt::LeftButton && running) {
+        if (obj == ui->label_running && mouseEvent->button() == Qt::LeftButton && NekoGui::dataStore->started_id >= 0) {
             speedtest_current();
             return true;
         }
