@@ -160,23 +160,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="theme">
-              <item>
-               <property name="text">
-                <string notr="true">flatgray</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">lightblue</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">blacksoft</string>
-               </property>
-              </item>
-             </widget>
+             <widget class="QComboBox" name="theme"/>
             </item>
             <item>
              <widget class="QPushButton" name="set_custom_icon">
@@ -863,8 +847,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>686</width>
-            <height>377</height>
+            <width>204</width>
+            <height>61</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">

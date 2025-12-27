@@ -4,7 +4,6 @@
 #include "3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp"
 #include "fmt/Preset.hpp"
 #include "ui/mainwindow.h"
-#include "ui/ThemeManager.hpp"
 #include "ui/Icon.hpp"
 #include "main/GuiUtils.hpp"
 
@@ -115,29 +114,12 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
         QFont currentFont = QApplication::font();
         currentFont.setFamily(fontName);
         QApplication::setFont(currentFont);
-        // 使用非内置主题时由于样式表的存在，改变字体不会刷新已有窗口部件
     });
     //
-    int built_in_len = ui->theme->count();
     ui->theme->addItems(QStyleFactory::keys());
-    //
-    bool ok;
-    auto themeId = NekoGui::dataStore->theme.toInt(&ok);
-    if (ok) {
-        ui->theme->setCurrentIndex(themeId);
-    } else {
-        ui->theme->setCurrentText(NekoGui::dataStore->theme);
-    }
-    //
-    connect(ui->theme, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=, this](int index) {
-        if (index + 1 <= built_in_len) {
-            themeManager->ApplyTheme(Int2String(index));
-            NekoGui::dataStore->theme = Int2String(index);
-        } else {
-            themeManager->ApplyTheme(ui->theme->currentText());
-            NekoGui::dataStore->theme = ui->theme->currentText();
-        }
-        NekoGui::dataStore->Save();
+    ui->theme->setCurrentText(NekoGui::dataStore->theme);
+    connect(ui->theme, &QComboBox::currentTextChanged, this, [=, this](const QString &theme) {
+        QApplication::setStyle(theme);
     });
 
     // Subscription
@@ -256,6 +238,7 @@ void DialogBasicSettings::accept() {
         default: NekoGui::dataStore->language = "en";
     }
     NekoGui::dataStore->font = ui->font->currentText();
+    NekoGui::dataStore->theme = ui->theme->currentText();
     D_SAVE_BOOL(check_include_pre)
     D_SAVE_BOOL(start_minimal)
 

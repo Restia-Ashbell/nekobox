@@ -152,7 +152,6 @@ set(PROJECT_SOURCES
         sys/AdminHelper.cpp
         sys/AutoRun.cpp
 
-        ui/ThemeManager.cpp
         ui/Icon.cpp
 
         ui/mainwindow_grpc.cpp
@@ -233,7 +232,6 @@ set(PROJECT_SOURCES
         ui/widget/GroupItem.ui
 
         res/neko.qrc
-        res/theme/feiyangqingyun/qss.qrc
         ${QV2RAY_RC}
 )
 

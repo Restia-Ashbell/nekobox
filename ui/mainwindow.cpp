@@ -33,7 +33,6 @@
 #include "sys/AutoRun.hpp"
 #include "sys/AdminHelper.hpp"
 
-#include "ui/ThemeManager.hpp"
 #include "ui/Icon.hpp"
 #include "ui/edit/dialog_edit_group.h"
 #include "ui/edit/dialog_edit_profile.h"
@@ -56,8 +55,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     NekoGui::profileManager->LoadManager();
 
     // Setup misc UI
-    if (NekoGui::dataStore->theme.isEmpty()) NekoGui::dataStore->theme = QApplication::style()->name();
-    themeManager->ApplyTheme(NekoGui::dataStore->theme);
     ui->setupUi(this);
     //
     connect(ui->menu_start, &QAction::triggered, this, [=, this] { neko_start(); });

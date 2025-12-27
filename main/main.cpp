@@ -115,6 +115,10 @@ int main(int argc, char *argv[]) {
         QApplication::setFont(currentFont);
     }
 
+    // Theme
+    if (NekoGui::dataStore->theme.isEmpty()) NekoGui::dataStore->theme = QApplication::style()->name();
+    QApplication::setStyle(NekoGui::dataStore->theme);
+
     // Signals
     signal(SIGTERM, signal_handler);
     signal(SIGINT, signal_handler);
