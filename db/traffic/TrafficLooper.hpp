@@ -10,7 +10,6 @@ namespace NekoGui_traffic {
     class TrafficLooper {
     public:
         bool loop_enabled = false;
-        bool looping = false;
 
         QList<std::shared_ptr<TrafficData>> items;
         TrafficData *proxy = nullptr;

@@ -564,28 +564,14 @@ bool MainWindow::get_elevated_permissions() {
 }
 
 void MainWindow::refresh_status(const QString &traffic_update) {
-    auto refresh_speed_label = [=, this] {
-        if (NekoGui::dataStore->traffic_loop_interval == 0) {
-            ui->label_speed->setText("");
-        } else if (traffic_update_cache == "") {
-            ui->label_speed->setText(QObject::tr("Proxy: %1\nDirect: %2").arg("", ""));
-        } else {
-            ui->label_speed->setText(traffic_update_cache);
-        }
-    };
-
-    // From TrafficLooper
-    if (!traffic_update.isEmpty() && NekoGui::dataStore->traffic_loop_interval > 0) {
-        traffic_update_cache = traffic_update;
-        if (traffic_update == "STOP") {
-            traffic_update_cache = "";
-        } else {
-            refresh_speed_label();
-            return;
-        }
+    if (NekoGui::dataStore->traffic_loop_interval == 0) {
+        ui->label_speed->setText("");
+    } else if (!running) {
+        ui->label_speed->setText(QObject::tr("Proxy: %1\nDirect: %2").arg("", ""));
+    } else if (!traffic_update.isEmpty()) {
+        ui->label_speed->setText(traffic_update);
+        return;
     }
-
-    refresh_speed_label();
 
     // From UI
     QString group_name;
@@ -615,7 +601,6 @@ void MainWindow::refresh_status(const QString &traffic_update) {
         QStringList tt;
         if (!isTray && isRunningAsAdmin()) tt << "[Admin]";
         if (select_mode) tt << "[" + tr("Select") + "]";
-        if (!title_error.isEmpty()) tt << "[" + title_error + "]";
         if (NekoGui::dataStore->spmode_vpn && !NekoGui::dataStore->spmode_system_proxy) tt << "[Tun]";
         if (!NekoGui::dataStore->spmode_vpn && NekoGui::dataStore->spmode_system_proxy) tt << "[" + tr("System Proxy") + "]";
         if (NekoGui::dataStore->spmode_vpn && NekoGui::dataStore->spmode_system_proxy) tt << "[Tun+" + tr("System Proxy") + "]";

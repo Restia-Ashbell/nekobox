@@ -45,32 +45,11 @@ namespace NekoGui_traffic {
     void TrafficLooper::Loop() {
         elapsedTimer.start();
         while (true) {
-            auto sleep_ms = NekoGui::dataStore->traffic_loop_interval;
-            if (sleep_ms < 500 || sleep_ms > 5000) sleep_ms = 1000;
-            QThread::msleep(sleep_ms);
+            QThread::msleep(qBound(500, NekoGui::dataStore->traffic_loop_interval, 5000));
             if (NekoGui::dataStore->traffic_loop_interval == 0) continue; // user disabled
 
             // profile start and stop
-            if (!loop_enabled) {
-                // 停止
-                if (looping) {
-                    looping = false;
-                    runOnUiThread([=, this] {
-                        auto m = MainWindow::instance();
-                        m->refresh_status("STOP");
-                        for (const auto &item: items) {
-                            NekoGui::profileManager->GetProfile(item->id)->Save();
-                            m->refresh_proxy(item->id);
-                        }
-                    });
-                }
-                continue;
-            } else {
-                // 开始
-                if (!looping) {
-                    looping = true;
-                }
-            }
+            if (!loop_enabled) continue;
 
             // do update
             UpdateAll();

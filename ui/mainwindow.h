@@ -124,10 +124,8 @@ private:
     //
     bool qvLogAutoScoll = true;
     //
-    QString title_error;
     int icon_status = -1;
     std::shared_ptr<NekoGui::ProxyEntity> running;
-    QString traffic_update_cache;
     qint64 last_test_time = 0;
     //
     bool select_mode = false;

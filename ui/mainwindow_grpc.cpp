@@ -290,6 +290,9 @@ void MainWindow::neko_stop(bool crash) {
             DS_cores);
 
         NekoGui_traffic::trafficLooper->loop_enabled = false;
+        for (const auto &item: NekoGui_traffic::trafficLooper->items) {
+            NekoGui::profileManager->GetProfile(item->id)->Save();
+        }
 
         if (!crash) {
             auto BoxStopError = BoxStop();
