@@ -88,17 +88,10 @@ namespace NekoGui_fmt {
         if (!disable_log) result.arguments += "--log";
         result.arguments += "--listen=socks://127.0.0.1:" + Int2String(socks_port);
         result.arguments += "--proxy=" + proxy_url.toString(QUrl::FullyEncoded);
-        if (domain_address != connect_address)
-            result.arguments += "--host-resolver-rules=MAP " + domain_address + " " + connect_address;
+        if (domain_address != connect_address) result.arguments += "--host-resolver-rules=MAP " + domain_address + " " + connect_address;
         if (insecure_concurrency > 0) result.arguments += "--insecure-concurrency=" + Int2String(insecure_concurrency);
         if (!extra_headers.trimmed().isEmpty()) result.arguments += "--extra-headers=" + extra_headers;
-        if (!certificate.trimmed().isEmpty()) {
-            result.env += "SSL_CERT_FILE=" + WriteTempFile("naive_XXXXXXXXXX.crt", certificate, result.error);
-        }
-
-        auto config_export = QStringList{result.program};
-        config_export += result.arguments;
-        result.config_export = QStringList2Command(config_export);
+        if (!certificate.trimmed().isEmpty()) result.env += "SSL_CERT_FILE=" + WriteTempFile("naive_XXXXXXXXXX.crt", certificate, result.error);
 
         return result;
     }
@@ -126,9 +119,9 @@ namespace NekoGui_fmt {
 
             // The most confused part of TUIC......
             if (serverAddress == sni) {
-                relay["server"] = serverAddress + ":" + Int2String(serverPort);
+                relay["server"] = MakeHostPort(serverAddress, serverPort);
             } else {
-                relay["server"] = sni + ":" + Int2String(serverPort);
+                relay["server"] = MakeHostPort(sni, serverPort);
                 relay["ip"] = serverAddress;
             }
 

@@ -337,7 +337,7 @@ namespace NekoGui_sub {
                         bean->stream->security = "tls";
                     }
                     bean->stream->network = Node2Value<QString>(proxy["network"]);
-                    bean->stream->sni = FIRST_OR_SECOND(Node2Value<QString>(proxy["sni"]), Node2Value<QString>(proxy["servername"]));
+                    bean->stream->sni = firstOrSecond(Node2Value<QString>(proxy["sni"]), Node2Value<QString>(proxy["servername"]));
                     bean->stream->alpn = Node2Value<QList<QString>>(proxy["alpn"]).join(",");
                     bean->stream->allow_insecure = Node2Value<bool>(proxy["skip-cert-verify"]);
                     bean->stream->utlsFingerprint = Node2Value<QString>(proxy["client-fingerprint"]);
@@ -399,7 +399,7 @@ namespace NekoGui_sub {
                     bean->aid = Node2Value<int>(proxy["alterId"]);
                     bean->security = Node2Value<QString>(proxy["cipher"], bean->security);
                     bean->stream->network = Node2Value<QString>(proxy["network"]);
-                    bean->stream->sni = FIRST_OR_SECOND(Node2Value<QString>(proxy["sni"]), Node2Value<QString>(proxy["servername"]));
+                    bean->stream->sni = firstOrSecond(Node2Value<QString>(proxy["sni"]), Node2Value<QString>(proxy["servername"]));
                     bean->stream->alpn = Node2Value<QList<QString>>(proxy["alpn"]).join(",");
                     if (Node2Value<bool>(proxy["tls"])) bean->stream->security = "tls";
                     if (Node2Value<bool>(proxy["skip-cert-verify"])) bean->stream->allow_insecure = true;
@@ -469,7 +469,7 @@ namespace NekoGui_sub {
                     bean->alpn = Node2Value<QList<QString>>(proxy["alpn"]).join(",");
                     bean->sni = Node2Value<QString>(proxy["sni"]);
 
-                    auto auth_str = FIRST_OR_SECOND(Node2Value<QString>(proxy["auth_str"]), Node2Value<QString>(proxy["auth-str"]));
+                    auto auth_str = firstOrSecond(Node2Value<QString>(proxy["auth_str"]), Node2Value<QString>(proxy["auth-str"]));
                     auto auth = Node2Value<QString>(proxy["auth"]);
                     if (!auth_str.isEmpty()) {
                         bean->authPayloadType = NekoGui_fmt::QUICBean::hysteria_auth_string;
@@ -532,7 +532,7 @@ namespace NekoGui_sub {
                 } else if (type == "anytls") {
                     auto bean = ent->AnyTLSBean();
                     bean->password = Node2Value<QString>(proxy["password"]);
-                    bean->stream->sni = FIRST_OR_SECOND(Node2Value<QString>(proxy["sni"]), Node2Value<QString>(proxy["servername"]));
+                    bean->stream->sni = firstOrSecond(Node2Value<QString>(proxy["sni"]), Node2Value<QString>(proxy["servername"]));
                     bean->stream->allow_insecure = Node2Value<bool>(proxy["skip-cert-verify"]);
                 } else if (type == "ssh") {
                     auto bean = ent->SSHBean();
@@ -750,10 +750,10 @@ void serialUpdateSubscription(const QList<int> &groupsTabOrder, int index, bool 
             NekoGui_sub::groupUpdater->AsyncUpdate(g->url, g->id, [=] {
                 serialUpdateSubscription(groupsTabOrder, index + 1, isAutoUpdate);
             });
-        return;
-    }
-        ++index;
+            return;
         }
+        ++index;
+    }
 
     UI_update_all_groups_Updating = false;
 }

@@ -39,7 +39,7 @@ void MainWindow::speedtest_current_group(int mode) {
         return;
     }
 
-    speedtestProfiles = get_selected_or_group();
+    speedtestProfiles = get_now_selected_list();
     if (speedtestProfiles.isEmpty()) return;
     auto group = NekoGui::profileManager->CurrentGroup();
     if (group->archive) return;

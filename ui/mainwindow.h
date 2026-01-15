@@ -148,8 +148,6 @@ private:
 
     QList<std::shared_ptr<NekoGui::ProxyEntity>> get_now_selected_list();
 
-    QList<std::shared_ptr<NekoGui::ProxyEntity>> get_selected_or_group();
-
     void dialog_message_impl(const QString &sender, const QString &info);
 
     void updateTableRow(int row, int id, QTableWidget *tableWidget);

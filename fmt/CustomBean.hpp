@@ -36,7 +36,7 @@ namespace NekoGui_fmt {
         QString DisplayAddress() override {
             if (core == "internal") {
                 auto obj = QString2QJsonObject(config_simple);
-                return ::DisplayAddress(obj["server"].toString(), obj["server_port"].toInt());
+                return MakeHostPort(obj["server"].toString(), obj["server_port"].toInt());
             } else if (core == "internal-full") {
                 return {};
             }

@@ -453,7 +453,7 @@ namespace NekoGui {
             }
 
             // custom inbound
-            QJSONARRAY_ADD(status->inbounds, QString2QJsonObject(dataStore->custom_inbound)["inbounds"].toArray())
+            status->inbounds = mergeJsonArray(status->inbounds, QString2QJsonObject(dataStore->custom_inbound)["inbounds"].toArray());
         }
 
         // Outbounds

@@ -116,9 +116,9 @@ void EditCustom::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
             return;
         }
         for (const auto &extR: result->extRs) {
-            auto command = QStringList{extR->program};
-            command += extR->arguments;
-            MessageBoxInfo(tr("Preview config"), QString("Command: %1\n\n%2").arg(QStringList2Command(command), extR->config_export));
+            auto command = extR->arguments;
+            command.prepend(extR->program);
+            MessageBoxInfo(tr("Preview command/config"), QString("%1\n\n%2").arg(command.join(" "), extR->config_export));
         }
     });
 }

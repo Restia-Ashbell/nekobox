@@ -1357,7 +1357,7 @@ End: %2</source>
     </message>
     <message>
         <source>Remove Unavailable</source>
-        <translation>删除不可用的配置</translation>
+        <translation>删除无效配置</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -1401,11 +1401,11 @@ End: %2</source>
     </message>
     <message>
         <source>Reset Traffic</source>
-        <translation>重置流量</translation>
+        <translation>重置流量统计</translation>
     </message>
     <message>
         <source>Remove Duplicates</source>
-        <translation>删除重复的配置</translation>
+        <translation>删除重复配置</translation>
     </message>
     <message>
         <source>Select All</source>
@@ -1469,7 +1469,7 @@ End: %2</source>
     </message>
     <message>
         <source>Resolve domain</source>
-        <translation>将服务器域名解析为 IP</translation>
+        <translation>解析域名</translation>
     </message>
     <message>
         <source>Resolving domain to IP, if support.</source>

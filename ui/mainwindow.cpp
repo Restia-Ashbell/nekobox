@@ -178,14 +178,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             ui->menuActive_Server->removeAction(old);
             old->deleteLater();
         }
-        int active_server_item_count = 0;
-        for (const auto &pf: NekoGui::profileManager->CurrentGroup()->ProfilesWithOrder()) {
+        for (const auto &pf: NekoGui::profileManager->CurrentGroup()->ProfilesWithOrder().mid(0, 100)) {
             auto a = new QAction(pf->bean->DisplayTypeAndName(), this);
             a->setProperty("id", pf->id);
             a->setCheckable(true);
-            if (NekoGui::dataStore->started_id == pf->id) a->setChecked(true);
+            a->setChecked(NekoGui::dataStore->started_id == pf->id);
             ui->menuActive_Server->addAction(a);
-            if (++active_server_item_count == 100) break;
         }
         // active routing
         for (const auto &old: ui->menuActive_Routing->actions()) {
@@ -254,37 +252,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->menu_full_test, &QAction::triggered, this, [=, this]() { speedtest_current_group(999); });
     connect(ui->menu_stop_testing, &QAction::triggered, this, [=, this]() { speedtestFuture.cancel(); });
     //
-    auto set_selected_or_group = [=, this](int mode) {
-        // 0=group 1=select 2=unknown(menu is hide)
-        ui->menu_server->setProperty("selected_or_group", mode);
-    };
-    auto move_tests_to_menu = [=, this](bool menuCurrent_Select) {
-        return [=, this] {
-            if (menuCurrent_Select) {
-                ui->menuCurrent_Select->insertAction(ui->actionfake_4, ui->menu_tcp_ping);
-                ui->menuCurrent_Select->insertAction(ui->actionfake_4, ui->menu_url_test);
-                ui->menuCurrent_Select->insertAction(ui->actionfake_4, ui->menu_full_test);
-                ui->menuCurrent_Select->insertAction(ui->actionfake_4, ui->menu_stop_testing);
-                ui->menuCurrent_Select->insertAction(ui->actionfake_4, ui->menu_clear_test_result);
-                ui->menuCurrent_Select->insertAction(ui->actionfake_4, ui->menu_resolve_domain);
-            } else {
-                ui->menuCurrent_Group->insertAction(ui->actionfake_5, ui->menu_tcp_ping);
-                ui->menuCurrent_Group->insertAction(ui->actionfake_5, ui->menu_url_test);
-                ui->menuCurrent_Group->insertAction(ui->actionfake_5, ui->menu_full_test);
-                ui->menuCurrent_Group->insertAction(ui->actionfake_5, ui->menu_stop_testing);
-                ui->menuCurrent_Group->insertAction(ui->actionfake_5, ui->menu_clear_test_result);
-                ui->menuCurrent_Group->insertAction(ui->actionfake_5, ui->menu_resolve_domain);
-            }
-            set_selected_or_group(menuCurrent_Select ? 1 : 0);
-        };
-    };
-    connect(ui->menuCurrent_Select, &QMenu::aboutToShow, this, move_tests_to_menu(true));
-    connect(ui->menuCurrent_Group, &QMenu::aboutToShow, this, move_tests_to_menu(false));
-    connect(ui->menu_server, &QMenu::aboutToHide, this, [=, this] {
-        setTimeout([=, this] { set_selected_or_group(2); }, this, 200);
-    });
-    set_selected_or_group(2);
-    //
     connect(ui->menu_share_item, &QMenu::aboutToShow, this, [=, this] {
         QString name;
         auto selected = get_now_selected_list();
@@ -308,7 +275,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(qApp, &QGuiApplication::commitDataRequest, this, &MainWindow::on_commitDataRequest);
 
     auto t = new QTimer(this);
-    connect(t, &QTimer::timeout, this, [=, this]() { refresh_status(); });
+    connect(t, &QTimer::timeout, this, [this] { refresh_status(); });
     t->start(2000);
 
     autoUpdateSubscriptionTimer = new QTimer(this);
@@ -584,7 +551,7 @@ void MainWindow::refresh_status(const QString &traffic_update) {
         ui->label_running->setText(running ? QString("[%1] %2").arg(group_name, running->bean->DisplayName()).left(30) : tr("Not Running"));
     }
     //
-    auto display_socks = DisplayAddress(NekoGui::dataStore->inbound_address, NekoGui::dataStore->inbound_port);
+    auto display_socks = MakeHostPort(NekoGui::dataStore->inbound_address, NekoGui::dataStore->inbound_port);
     auto inbound_txt = QString("Mixed: %1").arg(display_socks);
     ui->label_inbound->setText(inbound_txt);
     //
@@ -829,9 +796,7 @@ void MainWindow::on_menu_delete_triggered() {
 }
 
 void MainWindow::on_menu_reset_traffic_triggered() {
-    auto ents = get_now_selected_list();
-    if (ents.count() == 0) return;
-    for (const auto &ent: ents) {
+    for (const auto &ent: get_now_selected_list()) {
         ent->traffic_data->Reset();
         ent->Save();
         refresh_proxy(ent->id);
@@ -981,34 +946,34 @@ void MainWindow::on_menu_scan_qr_triggered() {
     hide();
 
     QTimer::singleShot(200, this, [this] {
-    auto screen = QGuiApplication::primaryScreen();
+        auto screen = QGuiApplication::primaryScreen();
         auto qpx = screen->grabWindow();
 
-    show();
+        show();
 
-    auto hints = ReaderOptions()
-                     .setFormats(BarcodeFormat::QRCode)
-                     .setTryRotate(false)
-                     .setBinarizer(Binarizer::FixedThreshold);
+        auto hints = ReaderOptions()
+                         .setFormats(BarcodeFormat::QRCode)
+                         .setTryRotate(false)
+                         .setBinarizer(Binarizer::FixedThreshold);
 
-    auto result = ReadBarcode(qpx.toImage(), hints);
-    const auto &text = result.text();
-    if (text.isEmpty()) {
-        MessageBoxInfo(software_name, tr("QR Code not found"));
-    } else {
-        show_log_impl("QR Code Result:\n" + text);
-        NekoGui_sub::groupUpdater->AsyncUpdate(text);
-    }
+        auto result = ReadBarcode(qpx.toImage(), hints);
+        const auto &text = result.text();
+        if (text.isEmpty()) {
+            MessageBoxInfo(software_name, tr("QR Code not found"));
+        } else {
+            show_log_impl("QR Code Result:\n" + text);
+            NekoGui_sub::groupUpdater->AsyncUpdate(text);
+        }
     });
 }
 
 void MainWindow::on_menu_clear_test_result_triggered() {
-    for (const auto &profile: get_selected_or_group()) {
+    for (const auto &profile: get_now_selected_list()) {
         profile->latency = 0;
         profile->full_test_report = "";
         profile->Save();
+        refresh_proxy(profile->id);
     }
-    refresh_group();
 }
 
 void MainWindow::on_menu_select_all_triggered() {
@@ -1081,7 +1046,7 @@ void MainWindow::on_menu_remove_unavailable_triggered() {
 }
 
 void MainWindow::on_menu_resolve_domain_triggered() {
-    auto profiles = get_selected_or_group();
+    auto profiles = get_now_selected_list();
     if (profiles.isEmpty()) return;
 
     if (QMessageBox::question(this,
@@ -1112,18 +1077,6 @@ QList<std::shared_ptr<NekoGui::ProxyEntity>> MainWindow::get_now_selected_list()
         if (ent != nullptr && !list.contains(ent)) list += ent;
     }
     return list;
-}
-
-QList<std::shared_ptr<NekoGui::ProxyEntity>> MainWindow::get_selected_or_group() {
-    auto selected_or_group = ui->menu_server->property("selected_or_group").toInt();
-    QList<std::shared_ptr<NekoGui::ProxyEntity>> profiles;
-    if (selected_or_group > 0) {
-        profiles = get_now_selected_list();
-        if (profiles.isEmpty() && selected_or_group == 2) profiles = NekoGui::profileManager->CurrentGroup()->ProfilesWithOrder();
-    } else {
-        profiles = NekoGui::profileManager->CurrentGroup()->ProfilesWithOrder();
-    }
-    return profiles;
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {

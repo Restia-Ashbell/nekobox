@@ -339,19 +339,16 @@
      <property name="title">
       <string>Preferences</string>
      </property>
-     <addaction name="actionfake"/>
     </widget>
     <widget class="QMenu" name="menuActive_Server">
      <property name="title">
       <string>Active Server</string>
      </property>
-     <addaction name="actionfake_2"/>
     </widget>
     <widget class="QMenu" name="menuActive_Routing">
      <property name="title">
       <string>Active Routing</string>
      </property>
-     <addaction name="actionfake_3"/>
     </widget>
     <addaction name="actionShow_window"/>
     <addaction name="menu_open_config_folder"/>
@@ -392,29 +389,6 @@
      <addaction name="menu_copy_links"/>
      <addaction name="menu_copy_links_nkr"/>
     </widget>
-    <widget class="QMenu" name="menuCurrent_Group">
-     <property name="title">
-      <string>Current Group</string>
-     </property>
-     <addaction name="actionfake_5"/>
-     <addaction name="menu_tcp_ping"/>
-     <addaction name="menu_url_test"/>
-     <addaction name="menu_full_test"/>
-     <addaction name="menu_stop_testing"/>
-     <addaction name="menu_clear_test_result"/>
-     <addaction name="menu_resolve_domain"/>
-     <addaction name="separator"/>
-     <addaction name="menu_remove_unavailable"/>
-     <addaction name="menu_delete_repeat"/>
-     <addaction name="separator"/>
-     <addaction name="menu_update_subscription"/>
-    </widget>
-    <widget class="QMenu" name="menuCurrent_Select">
-     <property name="title">
-      <string>Current Select</string>
-     </property>
-     <addaction name="actionfake_4"/>
-    </widget>
     <addaction name="menu_add_from_input"/>
     <addaction name="menu_add_from_clipboard"/>
     <addaction name="separator"/>
@@ -424,13 +398,22 @@
     <addaction name="menu_select_all"/>
     <addaction name="menu_move"/>
     <addaction name="menu_clone"/>
-    <addaction name="menu_reset_traffic"/>
     <addaction name="menu_delete"/>
     <addaction name="separator"/>
     <addaction name="menu_share_item"/>
     <addaction name="separator"/>
-    <addaction name="menuCurrent_Select"/>
-    <addaction name="menuCurrent_Group"/>
+    <addaction name="menu_tcp_ping"/>
+    <addaction name="menu_url_test"/>
+    <addaction name="menu_full_test"/>
+    <addaction name="menu_stop_testing"/>
+    <addaction name="menu_clear_test_result"/>
+    <addaction name="menu_reset_traffic"/>
+    <addaction name="menu_resolve_domain"/>
+    <addaction name="separator"/>
+    <addaction name="menu_remove_unavailable"/>
+    <addaction name="menu_delete_repeat"/>
+    <addaction name="separator"/>
+    <addaction name="menu_update_subscription"/>
     <addaction name="separator"/>
     <addaction name="menu_profile_debug_info"/>
     <addaction name="separator"/>
@@ -514,17 +497,12 @@
     <string notr="true">Ctrl+Q</string>
    </property>
   </action>
-  <action name="menu_copy_link">
-   <property name="text">
-    <string>Copy Link</string>
-   </property>
-  </action>
   <action name="menu_tcp_ping">
    <property name="text">
     <string notr="true">Tcp Ping</string>
    </property>
    <property name="shortcut">
-    <string notr="true">Ctrl+Shift+T</string>
+    <string notr="true">Ctrl+Shift+P</string>
    </property>
   </action>
   <action name="menu_url_test">
@@ -556,7 +534,7 @@
     <string>Reset Traffic</string>
    </property>
    <property name="shortcut">
-    <string notr="true">Ctrl+R</string>
+    <string notr="true">Ctrl+Shift+T</string>
    </property>
   </action>
   <action name="menu_scan_qr">
@@ -586,14 +564,6 @@
    </property>
    <property name="shortcut">
     <string notr="true">Ctrl+Shift+D</string>
-   </property>
-  </action>
-  <action name="actionfake">
-   <property name="text">
-    <string>fake</string>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
    </property>
   </action>
   <action name="menu_move">
@@ -657,22 +627,6 @@
     <string notr="true">Ctrl+Alt+C</string>
    </property>
   </action>
-  <action name="actionfake_2">
-   <property name="text">
-    <string>fake</string>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
-   </property>
-  </action>
-  <action name="actionfake_3">
-   <property name="text">
-    <string>fake</string>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
-   </property>
-  </action>
   <action name="menu_copy_links">
    <property name="text">
     <string>Copy links of selected</string>
@@ -723,22 +677,6 @@
     <string>Open Config Folder</string>
    </property>
   </action>
-  <action name="actionfake_4">
-   <property name="text">
-    <string notr="true">fake</string>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
-   </property>
-  </action>
-  <action name="actionfake_5">
-   <property name="text">
-    <string notr="true">fake</string>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
-   </property>
-  </action>
   <action name="actionRestart_Proxy">
    <property name="text">
     <string>Restart Proxy</string>
@@ -747,6 +685,9 @@
   <action name="menu_stop_testing">
    <property name="text">
     <string>Stop Testing</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
    </property>
   </action>
  </widget>

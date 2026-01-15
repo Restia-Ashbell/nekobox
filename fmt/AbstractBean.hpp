@@ -93,7 +93,7 @@ namespace NekoGui_fmt {
         }
 
         [[nodiscard]] virtual QString DisplayAddress() {
-            return ::DisplayAddress(serverAddress, serverPort);
+            return MakeHostPort(serverAddress, serverPort);
         }
 
         [[nodiscard]] virtual QString DisplayName() {

@@ -99,8 +99,7 @@ namespace NekoGui_fmt {
         };
 
         QString DisplayAddress() override {
-            if (!hopPort.trimmed().isEmpty()) return WrapIPV6Host(serverAddress) + ":" + hopPort;
-            return ::DisplayAddress(serverAddress, serverPort);
+            return !hopPort.trimmed().isEmpty() ? WrapIPV6Host(serverAddress) + ":" + hopPort : MakeHostPort(serverAddress, serverPort);
         }
 
         QString DisplayCoreType() override {

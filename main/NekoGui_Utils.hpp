@@ -36,11 +36,15 @@ inline QThread *DS_cores;
 
 // String
 
-#define FIRST_OR_SECOND(a, b) a.isEmpty() ? b : a
-
 inline const QString UNICODE_LRO = QString::fromUtf8(QByteArray::fromHex("E280AD"));
 
-#define Int2String(num) QString::number(num)
+inline QString Int2String(int num) {
+    return QString::number(num);
+}
+
+inline QString firstOrSecond(const QString &a, const QString &b) {
+    return a.isEmpty() ? b : a;
+}
 
 inline QString SubStrBefore(const QString &str, const QString &sub) {
     int idx = str.indexOf(sub);
@@ -65,12 +69,6 @@ inline QStringList SplitLinesSkipSharp(const QString &str, int maxLine = 0) {
         if (maxLine > 0 && ++count >= maxLine) break;
     }
     return res;
-}
-
-inline QString QStringList2Command(const QStringList &list) {
-    QStringList new_list;
-    for (auto str: list) new_list << "\"" + str.replace("\"", "\\\"") + "\"";
-    return new_list.join(" ");
 }
 
 // Base64
@@ -125,9 +123,7 @@ inline QList<T> QJsonArray2QList(const QJsonArray &arr) {
 
 inline QJsonArray QString2QJsonArray(const QString &str) {
     QJsonArray jsonArray;
-    QStringList list = str.split(",", Qt::SkipEmptyParts);
-
-    for (const QString &item: list) {
+    for (const QString &item: str.split(",", Qt::SkipEmptyParts)) {
         QString trimmedItem = item.trimmed();
 
         bool isInt, isDouble;
@@ -145,21 +141,15 @@ inline QJsonArray QString2QJsonArray(const QString &str) {
     return jsonArray;
 }
 
-#define QJSONARRAY_ADD(arr, add) \
-    for (const auto &a: (add)) { \
-        (arr) += a;              \
+inline QJsonArray mergeJsonArray(const QJsonArray &arr1, const QJsonArray &arr2) {
+    QJsonArray result = arr1;
+    for (const QJsonValue &v: arr2) {
+        result.append(v);
     }
-#define QJSONOBJECT_COPY(src, dst, key) \
-    if (src.contains(key)) dst[key] = src[key];
-#define QJSONOBJECT_COPY2(src, dst, src_key, dst_key) \
-    if (src.contains(src_key)) dst[dst_key] = src[src_key];
+    return result;
+}
 
 // Files
-
-inline QString ReadFileText(const QString &path) {
-    QFile file(path);
-    return file.open(QFile::ReadOnly | QFile::Text) ? QTextStream(&file).readAll() : QString{};
-}
 
 inline QString WriteTempFile(const QString &fileName, const QString &content, QString &error) {
     QDir tempDir("temp");
@@ -174,7 +164,19 @@ inline QString WriteTempFile(const QString &fileName, const QString &content, QS
     return tempFile.fileName();
 }
 
-// Validators
+// Network
+
+inline quint16 MkPort() {
+    QTcpServer s;
+    s.listen();
+    quint16 port = s.serverPort();
+    s.close();
+    return port;
+}
+
+inline bool IsValidPort(int port) {
+    return 0 <= port && port <= 65535;
+}
 
 inline bool IsIpAddress(const QString &str) {
     return QHostAddress(str).protocol() != QAbstractSocket::UnknownNetworkLayerProtocol;
@@ -188,51 +190,27 @@ inline bool IsIpAddressV6(const QString &str) {
     return QHostAddress(str).protocol() == QAbstractSocket::IPv6Protocol;
 }
 
-// [2001:4860:4860::8888] -> 2001:4860:4860::8888
-inline QString UnwrapIPV6Host(QString &str) {
-    return str.remove('[').remove(']');
+inline QString WrapIPV6Host(const QString &str) {
+    return IsIpAddressV6(str) ? QString("[%1]").arg(str) : str;
 }
 
-// [2001:4860:4860::8888] or 2001:4860:4860::8888 -> [2001:4860:4860::8888]
-inline QString WrapIPV6Host(QString &str) {
-    return IsIpAddressV6(str) ? QString("[%1]").arg(UnwrapIPV6Host(str)) : str;
-}
-
-inline QString DisplayAddress(QString addr, int port) {
-    return addr.isEmpty() && port == 0 ? QString{} : QString("%1:%2").arg(WrapIPV6Host(addr)).arg(port);
+inline QString MakeHostPort(const QString &host, int port) {
+    return host.isEmpty() && !IsValidPort(port) ? host : QString("%1:%2").arg(WrapIPV6Host(host)).arg(port);
 };
-
-// Format & Misc
-
-inline quint16 MkPort() {
-    QTcpServer s;
-    s.listen();
-    quint16 port = s.serverPort();
-    s.close();
-    return port;
-}
 
 inline QString DisplayTime(qint64 time, QLocale::FormatType format = QLocale::LongFormat) {
     return QLocale().toString(QDateTime::fromSecsSinceEpoch(time), format);
 }
 
-inline QString ReadableSize(const qint64 &size) {
-    static QStringList units{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
-    double s = size;
+inline QString ReadableSize(qint64 bytes) {
+    static const QStringList units{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
+    double s = bytes;
     int i = 0;
     while (s >= 1024.0 && i < units.size() - 1) {
         s /= 1024.0;
         ++i;
     }
     return QString("%1 %2").arg(s, 0, 'f', 2).arg(units[i]);
-}
-
-inline bool InRange(unsigned x, unsigned low, unsigned high) {
-    return low <= x && x <= high;
-}
-
-inline bool IsValidPort(int port) {
-    return InRange(port, 1, 65535);
 }
 
 // UI
@@ -285,15 +263,4 @@ inline void connectOnce(EMITTER *emitter, SIGNAL signal, RECEIVER *receiver, Rec
     };
 
     *connection = QObject::connect(emitter, signal, receiver, onTriggered, connectionType);
-}
-
-inline void setTimeout(const std::function<void()> &callback, QObject *obj, int timeout = 0) {
-    auto t = new QTimer;
-    QObject::connect(t, &QTimer::timeout, obj, [=] {
-        callback();
-        t->deleteLater();
-    });
-    t->setSingleShot(true);
-    t->setInterval(timeout);
-    t->start();
 }
