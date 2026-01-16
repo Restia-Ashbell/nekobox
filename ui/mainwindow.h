@@ -114,7 +114,7 @@ private slots:
 
     void on_tabWidget_currentChanged(int index);
 
-    void on_tabWidget_customContextMenuRequested(const QPoint &p);
+    void onTabBarContextMenuRequested(const QPoint &pos);
 
 private:
     Ui::MainWindow *ui;

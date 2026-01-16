@@ -59,6 +59,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //
     connect(ui->menu_start, &QAction::triggered, this, [=, this] { neko_start(); });
     connect(ui->menu_stop, &QAction::triggered, this, [=, this] { neko_stop(); });
+    //
+    ui->tabWidget->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->tabWidget->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::onTabBarContextMenuRequested);
     connect(ui->tabWidget->tabBar(), &QTabBar::tabMoved, this, [=, this](int from, int to) {
         // use tabData to track tab & gid
         NekoGui::profileManager->groupsTabOrder.clear();
@@ -1149,7 +1152,7 @@ void MainWindow::on_tabWidget_currentChanged(int index) {
     }
 }
 
-void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
+void MainWindow::onTabBarContextMenuRequested(const QPoint &pos) {
     int clickedIndex = ui->tabWidget->tabBar()->tabAt(pos);
     QMenu menu(this);
 
