@@ -34,7 +34,7 @@ namespace NekoGui {
         _add(new configItem("hk_route", &hotkey_route, itemType::string));
         _add(new configItem("hk_spmenu", &hotkey_system_proxy_menu, itemType::string));
         _add(new configItem("active_routing", &active_routing, itemType::string));
-        _add(new configItem("mw_size", &mw_size, itemType::string));
+        _add(new configItem("mw_geometry", &mw_geometry, itemType::string));
         _add(new configItem("tun_stack", &tun_stack, itemType::string));
         _add(new configItem("tun_mtu", &tun_mtu, itemType::integer));
         _add(new configItem("tun_ipv6", &tun_ipv6, itemType::boolean));

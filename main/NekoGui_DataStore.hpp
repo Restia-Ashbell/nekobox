@@ -98,13 +98,13 @@ namespace NekoGui {
         QString theme = "";
         QString language = "";
         QString font = "";
-        QString mw_size = "";
         bool check_include_pre = false;
         QString system_proxy_format = "";
         QStringList log_ignore = {};
         bool start_minimal = false;
         int max_log_line = 200;
         QString splitter_state = "";
+        QString mw_geometry = "";
 
         // Subscription
         QString user_agent = "";

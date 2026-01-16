@@ -74,14 +74,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //
     RegisterHotkey(false);
     //
-    auto last_size = NekoGui::dataStore->mw_size.split("x");
-    if (last_size.length() == 2) {
-        auto w = last_size[0].toInt();
-        auto h = last_size[1].toInt();
-        if (w > 0 && h > 0) {
-            resize(w, h);
-        }
-    }
+    restoreGeometry(DecodeB64IfValid(NekoGui::dataStore->mw_geometry));
 
     // top bar
     ui->toolButton_program->setMenu(ui->menu_program);
@@ -408,14 +401,7 @@ void MainWindow::on_menu_hotkey_settings_triggered() {
 void MainWindow::on_commitDataRequest() {
     qDebug() << "Start of data save";
     //
-    if (!isMaximized()) {
-        auto olds = NekoGui::dataStore->mw_size;
-        auto news = QString("%1x%2").arg(size().width()).arg(size().height());
-        if (olds != news) {
-            NekoGui::dataStore->mw_size = news;
-        }
-    }
-    //
+    NekoGui::dataStore->mw_geometry = saveGeometry().toBase64();
     NekoGui::dataStore->splitter_state = ui->splitter->saveState().toBase64();
     //
     NekoGui::dataStore->remember_id = NekoGui::dataStore->started_id;
