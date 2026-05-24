@@ -6,57 +6,40 @@ namespace NekoGui_sys {
 
     ExternalProcess::ExternalProcess() : QProcess() {
         // qDebug() << "[Debug] ExternalProcess()" << this << running_ext;
-        this->env = QProcessEnvironment::systemEnvironment().toStringList();
+        setProcessChannelMode(QProcess::MergedChannels);
+        connect(this, &QProcess::readyRead, this, [this] {
+            MW_show_log_ext_vt100(readAll());
+        });
+        connect(this, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
+            if (!killed) {
+                MW_show_log_ext(tag, "errorOccurred:" + errorString());
+                if (QThread::currentThread() == qApp->thread()) {
+                    MW_dialog_message("ExternalProcess", "Crashed");
+                }
+            }
+        });
+        connect(this, &QProcess::stateChanged, this, [this](QProcess::ProcessState state) {
+            if (state == QProcess::Starting) {
+                MW_show_log_ext(tag, QString("External core starting: %1 %2").arg(program(), arguments().join(" ")));
+            } else if (state == QProcess::NotRunning) {
+                if (killed) { // 用户命令退出
+                    MW_show_log_ext(tag, "External core stopped");
+                } else { // 异常退出
+                    MW_show_log_ext(tag, "Program exited accidentally");
+                    if (QThread::currentThread() == qApp->thread()) {
+                        MW_dialog_message("ExternalProcess", "Crashed");
+                    }
+                }
+            }
+        });
     }
 
     ExternalProcess::~ExternalProcess() {
         // qDebug() << "[Debug] ~ExternalProcess()" << this << running_ext;
-    }
-
-    void ExternalProcess::Start() {
-        if (started) return;
-        started = true;
-
-        if (managed) {
-            connect(this, &QProcess::readyReadStandardOutput, this, [&]() {
-                MW_show_log_ext_vt100(readAllStandardOutput());
-            });
-            connect(this, &QProcess::readyReadStandardError, this, [&]() {
-                MW_show_log_ext_vt100(readAllStandardError());
-            });
-            connect(this, &QProcess::errorOccurred, this, [&](QProcess::ProcessError error) {
-                if (!killed) {
-                    crashed = true;
-                    MW_show_log_ext(tag, "errorOccurred:" + errorString());
-                    MW_dialog_message("ExternalProcess", "Crashed");
-                }
-            });
-            connect(this, &QProcess::stateChanged, this, [&](QProcess::ProcessState state) {
-                if (state == QProcess::NotRunning) {
-                    if (killed) { // 用户命令退出
-                        MW_show_log_ext(tag, "External core stopped");
-                    } else if (!crashed) { // 异常退出
-                        crashed = true;
-                        MW_show_log_ext(tag, "[Error] Program exited accidentally: " + errorString());
-                        Kill();
-                        MW_dialog_message("ExternalProcess", "Crashed");
-                    }
-                }
-            });
-            MW_show_log_ext(tag, "External core starting: " + env.join(" ") + " " + program + " " + arguments.join(" "));
-        }
-
-        QProcess::setEnvironment(env);
-        QProcess::start(program, arguments);
-    }
-
-    void ExternalProcess::Kill() {
-        if (killed) return;
-        killed = true;
-
-        if (!crashed) {
-            QProcess::kill();
-            QProcess::waitForFinished(500);
+        if (state() != QProcess::NotRunning) {
+            killed = true;
+            kill();
+            waitForFinished();
         }
     }
 

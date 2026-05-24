@@ -6,6 +6,7 @@
 #include "main/GuiUtils.hpp"
 #include "ui/widget/GroupItem.h"
 #include "ui/edit/dialog_edit_group.h"
+#include "ui/mainwindow.h"
 
 #include <QInputDialog>
 #include <QListWidgetItem>
@@ -22,9 +23,22 @@ DialogManageGroups::DialogManageGroups(QWidget *parent, int index) : QDialog(par
     connect(ui->listWidget->model(), &QAbstractItemModel::rowsInserted, this, &DialogManageGroups::updateWindowTitle);
     connect(ui->listWidget->model(), &QAbstractItemModel::rowsRemoved, this, &DialogManageGroups::updateWindowTitle);
 
-    connect(ui->listWidget, &QListWidget::itemDoubleClicked, this, [=, this](QListWidgetItem *wI) {
+    connect(ui->listWidget, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem *wI) {
         auto w = dynamic_cast<GroupItem *>(ui->listWidget->itemWidget(wI));
-        emit w->edit_clicked();
+        w->on_edit_clicked();
+    });
+
+    connect(MainWindow::instance(), &MainWindow::groupUpdated, this, [this](int gid) {
+        for (int i = 0; i < ui->listWidget->count(); ++i) {
+            auto item = ui->listWidget->item(i);
+            if (item->data(114514).toInt() == gid) {
+                if (!NekoGui::profileManager->GetGroup(gid)) {
+                    delete ui->listWidget->takeItem(i);
+                }
+                return;
+            }
+        }
+        addGroupToList(gid);
     });
 
     if (index >= 0 && index < ui->listWidget->count()) {

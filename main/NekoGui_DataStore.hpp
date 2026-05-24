@@ -74,7 +74,6 @@ namespace NekoGui {
         QStringList ignoreConnTag = {};
 
         std::unique_ptr<Routing> routing;
-        int imported_count = 0;
         int resolve_count = 0;
 
         // Flags
@@ -109,18 +108,12 @@ namespace NekoGui {
         // Subscription
         QString user_agent = "";
         bool sub_use_proxy = false;
-        bool sub_clear = false;
         bool sub_insecure = false;
         int sub_auto_update = -30;
 
         // Security
         bool skip_cert = false;
         QString utlsFingerprint = "";
-
-        // Remember
-        int remember_id = -1919;
-        bool remember_spmode_vpn = false;
-        bool remember_spmode_system_proxy = false;
 
         // Mixed Inbound
         QString inbound_address = "127.0.0.1";

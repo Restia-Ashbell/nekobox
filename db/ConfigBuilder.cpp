@@ -48,9 +48,7 @@ namespace NekoGui {
     QJsonObject parseLinesToJson(const QString &text) {
         QJsonObject result;
 
-        const auto lines = text.split('\n', Qt::SkipEmptyParts);
-
-        for (const auto &raw: lines) {
+        for (const auto &raw: text.split('\n', Qt::SkipEmptyParts)) {
             QString line = raw.trimmed();
             if (line.isEmpty() || line.startsWith('#')) continue;
 
@@ -102,22 +100,15 @@ namespace NekoGui {
     }
 
     QPair<QString, QString> parseDnsAddress(const QString &input) {
+        QUrl url(input);
         if (input == "local") {
-            return qMakePair("local", "");
-        } else if (input.startsWith("dncp://")) {
-            return qMakePair("dhcp", "");
-        } else if (input.startsWith("tcp://")) {
-            return qMakePair("tcp", input.mid(6));
-        } else if (input.startsWith("tls://")) {
-            return qMakePair("tls", input.mid(6));
-        } else if (input.startsWith("https://")) {
-            return qMakePair("https", input.mid(8).split("/").first());
-        } else if (input.startsWith("h3://")) {
-            return qMakePair("h3", input.mid(5).split("/").first());
-        } else if (input.startsWith("quic://")) {
-            return qMakePair("quic", input.mid(7));
+            return {input, ""};
+        } else if (url.scheme() == "dhcp") {
+            return {url.scheme(), ""};
+        } else if (!url.scheme().isEmpty()) {
+            return {url.scheme(), url.host()};
         } else {
-            return qMakePair("udp", input);
+            return {"udp", input};
         }
     }
 
@@ -346,8 +337,7 @@ namespace NekoGui {
             }
 
             if (ent->type == "wireguard") {
-                if (ent->WireGuardBean()->useSystemInterface && !isRunningAsAdmin()) {
-                    MW_dialog_message("configBuilder", "NeedAdmin");
+                if (ent->WireGuardBean()->useSystemInterface && !isRunAsAdmin()) {
                     status->result->error = "using wireguard system interface requires elevated permissions";
                     return {};
                 }

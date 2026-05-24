@@ -131,14 +131,12 @@ namespace NekoGui_fmt {
                 name = query.queryItemValue("remarks");
                 uuid = url.password();
                 security = url.userName();
-                stream->network = GetQueryValue(query, "obfs");
                 if (GetQueryValue(query, "tls") == "1") stream->security = "tls";
             } else {
                 // https://github.com/XTLS/Xray-core/discussions/716
                 name = url.fragment(QUrl::FullyDecoded);
                 uuid = url.userName();
                 security = GetQueryValue(query, "encryption", "auto");
-                stream->network = GetQueryValue(query, "type");
                 stream->security = GetQueryValue(query, "security");
             }
             serverAddress = url.host();
@@ -158,6 +156,7 @@ namespace NekoGui_fmt {
             }
 
             // type
+            stream->network = query.hasQueryItem("type") ? query.queryItemValue("type") : query.queryItemValue("obfs");
             if (GetQueryValue(query, "headerType") == "http") stream->network = "http";
             if (stream->network == "grpc") {
                 stream->path = query.hasQueryItem("serviceName") ? query.queryItemValue("serviceName") : query.queryItemValue("path");
@@ -182,12 +181,10 @@ namespace NekoGui_fmt {
         if (!url.password().isEmpty()) {
             name = query.queryItemValue("remarks");
             password = url.password();
-            stream->network = GetQueryValue(query, "obfs");
             if (GetQueryValue(query, "tls") == "1") stream->security = "tls";
         } else {
             name = url.fragment(QUrl::FullyDecoded);
             password = url.userName();
-            stream->network = GetQueryValue(query, "type");
             if (proxy_type == proxy_Trojan) {
                 stream->security = GetQueryValue(query, "security", "tls");
             } else {
@@ -210,6 +207,7 @@ namespace NekoGui_fmt {
         }
 
         // type
+        stream->network = query.hasQueryItem("type") ? query.queryItemValue("type") : query.queryItemValue("obfs");
         if (GetQueryValue(query, "headerType") == "http") stream->network = "http";
         if (stream->network == "grpc") {
             stream->path = query.hasQueryItem("serviceName") ? query.queryItemValue("serviceName") : query.queryItemValue("path");

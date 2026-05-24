@@ -14,20 +14,18 @@
 #include "db/ProfileManager.hpp"
 #include "db/ConfigBuilder.hpp"
 #include "db/traffic/TrafficLooper.hpp"
-#include "sys/ExternalProcess.hpp"
 
 // ext core
 
-std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> CreateExtCFromExtR(const std::list<std::shared_ptr<NekoGui_fmt::ExternalBuildResult>> &extRs, bool start) {
+std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> CreateExtCFromExtR(const std::list<std::shared_ptr<NekoGui_fmt::ExternalBuildResult>> &extRs) {
     // plz run and start in same thread
     std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> processes;
     for (const auto &extR: extRs) {
         auto extC = std::make_shared<NekoGui_sys::ExternalProcess>();
         extC->tag = extR->tag;
-        extC->program = extR->program;
-        extC->arguments = extR->arguments;
-        extC->env = extR->env;
-        if (start) extC->Start();
+        extC->setProgram(extR->program);
+        extC->setArguments(extR->arguments);
+        extC->setEnvironment(QProcess::systemEnvironment() + extR->env);
         processes.emplace_back(extC);
     }
     return processes;
@@ -44,12 +42,7 @@ void MainWindow::speedtest_current_group(int mode) {
     auto group = NekoGui::profileManager->CurrentGroup();
     if (group->archive) return;
 
-    int full_test_flags = 0;
-    if (mode == 0) {
-        full_test_flags |= TcpPing;
-    } else if (mode == 1) {
-        full_test_flags |= UrlTest;
-    } else if (mode == 999) {
+    if (!mode) {
         QDialog dialog(this);
         QVBoxLayout layout(&dialog);
         dialog.setWindowTitle(tr("Test Options"));
@@ -70,18 +63,17 @@ void MainWindow::speedtest_current_group(int mode) {
         layout.addWidget(&box);
         if (dialog.exec() != QDialog::Accepted) return;
         //
-        if (l1.isChecked()) full_test_flags |= UrlTest;
-        if (l2.isChecked()) full_test_flags |= UdpTest;
-        if (l3.isChecked()) full_test_flags |= SpeedTest;
-        if (l4.isChecked()) full_test_flags |= IpTest;
+        if (l1.isChecked()) mode |= UrlTest;
+        if (l2.isChecked()) mode |= UdpTest;
+        if (l3.isChecked()) mode |= SpeedTest;
+        if (l4.isChecked()) mode |= IpTest;
         //
-        if (full_test_flags == 0) return;
+        if (mode == 0) return;
     }
 
     QThreadPool::globalInstance()->setMaxThreadCount(NekoGui::dataStore->test_concurrent);
     speedtestFuture = QtConcurrent::map(speedtestProfiles, [=, this](std::shared_ptr<NekoGui::ProxyEntity> &profile) {
         std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> extCs;
-        QSemaphore extSem;
 
         QByteArray Address = profile->bean->DisplayAddress().toUtf8();
         QByteArray Url = NekoGui::dataStore->test_latency_url.toUtf8();
@@ -89,7 +81,7 @@ void MainWindow::speedtest_current_group(int mode) {
         QByteArray SpeedUrl = NekoGui::dataStore->test_download_url.toUtf8();
         int SpeedTimeout = NekoGui::dataStore->test_download_timeout;
         QByteArray CoreConfig;
-        if (full_test_flags != TcpPing) {
+        if (mode != TcpPing) {
             auto c = BuildConfig(profile, true, false);
             if (!c->error.isEmpty()) {
                 profile->full_test_report = c->error;
@@ -102,38 +94,23 @@ void MainWindow::speedtest_current_group(int mode) {
             }
             //
             if (!c->extRs.empty()) {
-                runOnUiThread(
-                    [&] {
-                        extCs = CreateExtCFromExtR(c->extRs, true);
-                        QThread::msleep(500);
-                        extSem.release();
-                    },
-                    DS_cores);
-                extSem.acquire();
+                extCs = CreateExtCFromExtR(c->extRs);
+                for (const auto &extC: extCs) {
+                    extC->start();
+                    extC->waitForReadyRead();
+                }
             }
             //
             CoreConfig = QJsonObject2QString(c->coreConfig, false).toUtf8();
         }
 
-        auto boxTestResult = BoxTest(full_test_flags, Address.data(), Url.data(), Timeout, SpeedUrl.data(), SpeedTimeout, CoreConfig.data());
+        auto boxTestResult = BoxTest(mode, Address.data(), Url.data(), Timeout, SpeedUrl.data(), SpeedTimeout, CoreConfig.data());
         QStringList testResultList = QString(boxTestResult).split("\n");
         free(boxTestResult);
         //
-        if (!extCs.empty()) {
-            runOnUiThread(
-                [&] {
-                    for (const auto &extC: extCs) {
-                        extC->Kill();
-                    }
-                    extSem.release();
-                },
-                DS_cores);
-            extSem.acquire();
-        }
-        //
         bool testOK;
         QStringList full_test_result;
-        if (full_test_flags == TcpPing || full_test_flags == UrlTest || full_test_flags == UdpTest) {
+        if (mode == TcpPing || mode == UrlTest || mode == UdpTest) {
             auto testResult = testResultList.takeFirst();
             profile->full_test_report.clear();
             profile->latency = testResult.toInt(&testOK);
@@ -143,7 +120,7 @@ void MainWindow::speedtest_current_group(int mode) {
                 MW_show_log(tr("[%1] test error: %2").arg(profile->bean->DisplayTypeAndName(), testResult));
             }
         } else {
-            if (full_test_flags & UrlTest) {
+            if (mode & UrlTest) {
                 auto testResult = testResultList.takeFirst();
                 testResult.toInt(&testOK);
                 if (testOK)
@@ -151,7 +128,7 @@ void MainWindow::speedtest_current_group(int mode) {
                 else
                     full_test_result.append("Latency: Error");
             }
-            if (full_test_flags & UdpTest) {
+            if (mode & UdpTest) {
                 auto testResult = testResultList.takeFirst();
                 testResult.toInt(&testOK);
                 if (testOK)
@@ -159,7 +136,7 @@ void MainWindow::speedtest_current_group(int mode) {
                 else
                     full_test_result.append("UDPLatency: Error");
             }
-            if (full_test_flags & SpeedTest) {
+            if (mode & SpeedTest) {
                 auto testResult = testResultList.takeFirst();
                 testResult.toFloat(&testOK);
                 if (testOK)
@@ -167,9 +144,13 @@ void MainWindow::speedtest_current_group(int mode) {
                 else
                     full_test_result.append("Speed: Error");
             }
-            if (full_test_flags & IpTest) {
+            if (mode & IpTest) {
                 auto testResult = testResultList.takeFirst();
                 full_test_result.append(testResult);
+                auto emoji = testResultList.takeFirst();
+                if (!profile->bean->name.startsWith(emoji)) {
+                    profile->bean->name = emoji + (profile->bean->name.isEmpty() ? "" : " " + profile->bean->name);
+                }
             }
         }
 
@@ -184,7 +165,6 @@ void MainWindow::speedtest_current_group(int mode) {
 }
 
 void MainWindow::speedtest_current() {
-    last_test_time = QDateTime::currentSecsSinceEpoch();
     ui->label_running->setText(tr("Testing"));
 
     runOnNewThread([=, this] {
@@ -192,7 +172,6 @@ void MainWindow::speedtest_current() {
         auto boxTestResult = BoxTest(UrlTest, nullptr, Url.data(), 3000, nullptr, -1, nullptr);
         QString testResult(boxTestResult);
         free(boxTestResult);
-        last_test_time = QDateTime::currentSecsSinceEpoch();
 
         runOnUiThread([=, this] {
             bool testOK;
@@ -203,6 +182,7 @@ void MainWindow::speedtest_current() {
                 ui->label_running->setText(tr("Test Result") + ": " + tr("Unavailable"));
                 MW_show_log(QString("UrlTest : %1").arg(testResult));
             }
+            refreshTimer->start(2000);
         });
     });
 }
@@ -231,7 +211,7 @@ void MainWindow::neko_start(int _id) {
     }
 
     // stop current running
-    if (NekoGui::dataStore->started_id >= 0) {
+    if (running) {
         neko_stop();
     }
 
@@ -255,7 +235,10 @@ void MainWindow::neko_start(int _id) {
         NekoGui::dataStore->ignoreConnTag = result->ignoreConnTag;
         NekoGui_traffic::trafficLooper->loop_enabled = true;
 
-        runOnUiThread([result] { NekoGui_sys::running_ext = CreateExtCFromExtR(result->extRs, true); }, DS_cores);
+        runOnUiThread([result, this] {
+            running_ext = CreateExtCFromExtR(result->extRs);
+            for (const auto &extC: running_ext) extC->start();
+        });
 
         NekoGui::dataStore->started_id = ent->id;
         running = ent;
@@ -274,20 +257,17 @@ void MainWindow::neko_start(int _id) {
 }
 
 void MainWindow::neko_stop(bool crash) {
-    auto id = NekoGui::dataStore->started_id;
-    if (id < 0) return;
+    if (!running) return;
+    auto id = running->id;
 
     mu_state.lock();
 
     auto neko_stop_stage2 = [=, this] {
         MW_show_log(">>>>>>>> " + tr("Stopping profile %1").arg(running->bean->DisplayTypeAndName()));
 
-        runOnUiThread(
-            [] {
-                for (const auto &extC: NekoGui_sys::running_ext) extC->Kill();
-                NekoGui_sys::running_ext.clear();
-            },
-            DS_cores);
+        runOnUiThread([this] {
+            running_ext.clear();
+        });
 
         NekoGui_traffic::trafficLooper->loop_enabled = false;
         for (const auto &item: NekoGui_traffic::trafficLooper->items) {

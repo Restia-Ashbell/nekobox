@@ -23,9 +23,9 @@ namespace NekoGui {
         _add(new configItem("theme", &theme, itemType::string));
         _add(new configItem("custom_inbound", &custom_inbound, itemType::string));
         _add(new configItem("sub_use_proxy", &sub_use_proxy, itemType::boolean));
-        _add(new configItem("remember_id", &remember_id, itemType::integer));
-        _add(new configItem("remember_spmode_vpn", &remember_spmode_vpn, itemType::boolean));
-        _add(new configItem("remember_spmode_system_proxy", &remember_spmode_system_proxy, itemType::boolean));
+        _add(new configItem("started_id", &started_id, itemType::integer));
+        _add(new configItem("spmode_vpn", &spmode_vpn, itemType::boolean));
+        _add(new configItem("spmode_system_proxy", &spmode_system_proxy, itemType::boolean));
         _add(new configItem("language", &language, itemType::string));
         _add(new configItem("font", &font, itemType::string));
         _add(new configItem("skip_cert", &skip_cert, itemType::boolean));
@@ -41,7 +41,6 @@ namespace NekoGui {
         _add(new configItem("tun_strict_route", &tun_strict_route, itemType::boolean));
         _add(new configItem("check_include_pre", &check_include_pre, itemType::boolean));
         _add(new configItem("sp_format", &system_proxy_format, itemType::string));
-        _add(new configItem("sub_clear", &sub_clear, itemType::boolean));
         _add(new configItem("sub_insecure", &sub_insecure, itemType::boolean));
         _add(new configItem("sub_auto_update", &sub_auto_update, itemType::integer));
         _add(new configItem("log_ignore", &log_ignore, itemType::stringList));

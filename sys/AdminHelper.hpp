@@ -2,6 +2,6 @@
 
 #include <QStringList>
 
-bool isRunningAsAdmin();
+bool isRunAsAdmin();
 
-void runAsAdmin(const QString &program, const QStringList &arguments);
+bool runAsAdmin(const QString &program, const QStringList &arguments);

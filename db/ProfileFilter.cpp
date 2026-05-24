@@ -2,74 +2,55 @@
 
 namespace NekoGui {
 
-    QString ProfileFilter_ent_key(const std::shared_ptr<NekoGui::ProxyEntity> &ent, bool by_address) {
-        by_address &= ent->type != "custom";
-        return by_address ? (ent->bean->DisplayAddress() + ent->bean->DisplayType())
-                          : QJsonObject2QString(ent->bean->ToJson({"c_cfg", "c_out"}), true) + ent->bean->DisplayType();
+    QString ProfileFilter::Key(const std::shared_ptr<ProxyEntity> &ent, bool by_address) {
+        return by_address && ent->type != "custom"
+                   ? ent->bean->DisplayAddress() + ent->bean->DisplayType()
+                   : QJsonObject2QString(ent->bean->ToJson({"c_cfg", "c_out"}), true) + ent->bean->DisplayType();
     }
 
-    void ProfileFilter::Uniq(const QList<std::shared_ptr<ProxyEntity>> &in,
-                             QList<std::shared_ptr<ProxyEntity>> &out,
-                             bool by_address, bool keep_last) {
-        QMap<QString, std::shared_ptr<ProxyEntity>> hashMap;
+    QList<std::shared_ptr<ProxyEntity>> ProfileFilter::Dup(const QList<std::shared_ptr<ProxyEntity>> &list) {
+        QList<std::shared_ptr<ProxyEntity>> result;
+        QSet<QString> seen;
 
-        for (const auto &ent: in) {
-            QString key = ProfileFilter_ent_key(ent, by_address);
-            if (hashMap.contains(key)) {
-                if (keep_last) {
-                    out.removeAll(hashMap[key]);
-                    hashMap[key] = ent;
-                    out += ent;
-                }
+        for (const auto &ent: list) {
+            QString key = Key(ent, true);
+            if (seen.contains(key)) {
+                result.append(ent);
             } else {
-                hashMap[key] = ent;
-                out += ent;
+                seen.insert(key);
             }
         }
+
+        return result;
     }
 
-    void ProfileFilter::Common(const QList<std::shared_ptr<ProxyEntity>> &src,
-                               const QList<std::shared_ptr<ProxyEntity>> &dst,
-                               QList<std::shared_ptr<ProxyEntity>> &outSrc,
-                               QList<std::shared_ptr<ProxyEntity>> &outDst,
-                               bool by_address) {
-        QMap<QString, std::shared_ptr<ProxyEntity>> hashMap;
+    std::tuple<QList<std::shared_ptr<ProxyEntity>>, QList<std::shared_ptr<ProxyEntity>>,
+               QList<std::shared_ptr<ProxyEntity>>, QList<std::shared_ptr<ProxyEntity>>>
+    ProfileFilter::Diff(const QList<std::shared_ptr<ProxyEntity>> &list1, const QList<std::shared_ptr<ProxyEntity>> &list2) {
+        QList<std::shared_ptr<ProxyEntity>> common1, common2, only1, only2;
+        QHash<QString, std::shared_ptr<ProxyEntity>> map1, map2;
 
-        for (const auto &ent: src) {
-            QString key = ProfileFilter_ent_key(ent, by_address);
-            hashMap[key] = ent;
-        }
-        for (const auto &ent: dst) {
-            QString key = ProfileFilter_ent_key(ent, by_address);
-            if (hashMap.contains(key)) {
-                outDst += ent;
-                outSrc += hashMap[key];
+        for (const auto &ent: list1)
+            map1.insert(Key(ent, false), ent);
+
+        for (const auto &ent: list2) {
+            QString key = Key(ent, false);
+            map2.insert(key, ent);
+            if (map1.contains(key)) {
+                common1.append(map1[key]);
+                common2.append(ent);
+            } else {
+                only2.append(ent);
             }
         }
-    }
 
-    void ProfileFilter::OnlyInSrc(const QList<std::shared_ptr<ProxyEntity>> &src,
-                                  const QList<std::shared_ptr<ProxyEntity>> &dst,
-                                  QList<std::shared_ptr<ProxyEntity>> &out,
-                                  bool by_address) {
-        QMap<QString, bool> hashMap;
+        for (const auto &ent: list1) {
+            QString key = Key(ent, false);
+            if (!map2.contains(key))
+                only1.append(ent);
+        }
 
-        for (const auto &ent: dst) {
-            QString key = ProfileFilter_ent_key(ent, by_address);
-            hashMap[key] = true;
-        }
-        for (const auto &ent: src) {
-            QString key = ProfileFilter_ent_key(ent, by_address);
-            if (!hashMap.contains(key)) out += ent;
-        }
-    }
-
-    void ProfileFilter::OnlyInSrc_ByPointer(const QList<std::shared_ptr<ProxyEntity>> &src,
-                                            const QList<std::shared_ptr<ProxyEntity>> &dst,
-                                            QList<std::shared_ptr<ProxyEntity>> &out) {
-        for (const auto &ent: src) {
-            if (!dst.contains(ent)) out += ent;
-        }
+        return {common1, common2, only1, only2};
     }
 
 } // namespace NekoGui

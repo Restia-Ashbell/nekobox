@@ -44,6 +44,8 @@ namespace NekoGui_fmt {
             _add(new configItem("c_out", &custom_outbound, itemType::string));
         }
 
+        virtual ~AbstractBean() = default;
+
         //
 
         template<typename T>

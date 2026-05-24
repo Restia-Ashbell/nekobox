@@ -11,6 +11,7 @@
 #include "db/ProxyEntity.hpp"
 #include "main/GuiUtils.hpp"
 #include "main/NekoGui_DataStore.hpp"
+#include "sys/ExternalProcess.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -60,6 +61,8 @@ signals:
 
     void profile_selected(int id);
 
+    void groupUpdated(int gid);
+
 public slots:
 
     void on_commitDataRequest();
@@ -69,6 +72,8 @@ public slots:
 private slots:
 
     void on_masterLogBrowser_customContextMenuRequested(const QPoint &pos);
+
+    void on_menu_manage_groups_triggered();
 
     void on_menu_basic_settings_triggered();
 
@@ -100,8 +105,6 @@ private slots:
 
     void on_menu_clear_test_result_triggered();
 
-    void on_menu_manage_groups_triggered();
-
     void on_menu_select_all_triggered();
 
     void on_menu_delete_repeat_triggered();
@@ -119,22 +122,20 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QSystemTrayIcon *tray;
-    QShortcut *shortcut_ctrl_f = new QShortcut(QKeySequence("Ctrl+F"), this);
-    QShortcut *shortcut_esc = new QShortcut(QKeySequence("Esc"), this);
     //
     bool qvLogAutoScoll = true;
-    //
     int icon_status = -1;
+    //
     std::shared_ptr<NekoGui::ProxyEntity> running;
-    qint64 last_test_time = 0;
+    std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> running_ext;
     //
     bool select_mode = false;
     QMutex mu_state;
     int exit_reason = 0;
     //
-    bool dialog_is_using = false;
     bool mw_sub_updating = false;
     QTimer *autoUpdateSubscriptionTimer;
+    QTimer *refreshTimer;
     //
     enum TestMode {
         TcpPing = 1 << 0,

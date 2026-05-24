@@ -119,7 +119,7 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
         LOAD_TYPE("chain")
 
         // type changed
-        connect(ui->type, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int index) {
+        connect(ui->type, &QComboBox::currentIndexChanged, this, [this](int index) {
             this->type = ui->type->itemData(index).toString();
             typeSelected();
         });
@@ -145,38 +145,27 @@ void DialogEditProfile::typeSelected() {
     QString customType;
 
     if (type == "socks" || type == "http") {
-        auto _innerWidget = new EditSocksHttp(this);
-        innerEditor = _innerWidget;
+        innerEditor = new EditSocksHttp(this);
     } else if (type == "shadowsocks") {
-        auto _innerWidget = new EditShadowSocks(this);
-        innerEditor = _innerWidget;
+        innerEditor = new EditShadowSocks(this);
     } else if (type == "shadowsocksr") {
-        auto _innerWidget = new EditShadowSocksR(this);
-        innerEditor = _innerWidget;
+        innerEditor = new EditShadowSocksR(this);
     } else if (type == "chain") {
-        auto _innerWidget = new EditChain(this);
-        innerEditor = _innerWidget;
+        innerEditor = new EditChain(this);
     } else if (type == "vmess") {
-        auto _innerWidget = new EditVMess(this);
-        innerEditor = _innerWidget;
+        innerEditor = new EditVMess(this);
     } else if (type == "trojan" || type == "vless") {
-        auto _innerWidget = new EditTrojanVLESS(this);
-        innerEditor = _innerWidget;
+        innerEditor = new EditTrojanVLESS(this);
     } else if (type == "naive") {
-        auto _innerWidget = new EditNaive(this);
-        innerEditor = _innerWidget;
+        innerEditor = new EditNaive(this);
     } else if (type == "hysteria" || type == "hysteria2" || type == "tuic") {
-        auto _innerWidget = new EditQUIC(this);
-        innerEditor = _innerWidget;
+        innerEditor = new EditQUIC(this);
     } else if (type == "anytls") {
-        auto _innerWidget = new EditAnyTLS(this);
-        innerEditor = _innerWidget;
+        innerEditor = new EditAnyTLS(this);
     } else if (type == "ssh") {
-        auto _innerWidget = new EditSSH(this);
-        innerEditor = _innerWidget;
+        innerEditor = new EditSSH(this);
     } else if (type == "wireguard") {
-        auto _innerWidget = new EditWireGuard(this);
-        innerEditor = _innerWidget;
+        innerEditor = new EditWireGuard(this);
     } else if (type == "custom" || type == "internal" || type == "internal-full") {
         auto _innerWidget = new EditCustom(this);
         innerEditor = _innerWidget;

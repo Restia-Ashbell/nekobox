@@ -55,7 +55,7 @@ namespace NekoGui_fmt {
                 tls["reality"] = QJsonObject{
                     {"enabled", true},
                     {"public_key", reality_pbk},
-                    {"short_id", reality_sid.split(",")[0]},
+                    {"short_id", reality_sid},
                 };
                 if (fp.isEmpty()) fp = "random";
             }

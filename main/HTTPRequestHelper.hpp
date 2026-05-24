@@ -1,31 +1,18 @@
 #pragma once
 
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QObject>
-#include <functional>
+#include <QUrl>
 
 namespace NekoGui_network {
     struct NekoHTTPResponse {
         QString error;
         QByteArray data;
-        QList<QPair<QByteArray, QByteArray>> header;
+        QList<QPair<QByteArray, QByteArray>> headers;
     };
 
-    class NetworkRequestHelper : QObject {
-        Q_OBJECT
-
-        explicit NetworkRequestHelper(QObject *parent) : QObject(parent){};
-
-        ~NetworkRequestHelper() override = default;
-        ;
-
+    class NetworkRequestHelper {
     public:
         static NekoHTTPResponse HttpGet(const QUrl &url);
 
-        static QString GetHeader(const QList<QPair<QByteArray, QByteArray>> &header, const QString &name);
+        static QByteArray GetHeader(const QList<QPair<QByteArray, QByteArray>> &header, const QByteArray &name);
     };
 } // namespace NekoGui_network
-
-using namespace NekoGui_network;

@@ -11,7 +11,7 @@ DialogEditGroup::DialogEditGroup(const std::shared_ptr<NekoGui::Group> &ent, QWi
     ui->setupUi(this);
     this->ent = ent;
 
-    connect(ui->type, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=, this](int index) {
+    connect(ui->type, &QComboBox::currentIndexChanged, this, [=, this](int index) {
         ui->cat_sub->setHidden(index == 0);
         ADJUST_SIZE
     });

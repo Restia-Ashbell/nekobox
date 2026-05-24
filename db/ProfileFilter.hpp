@@ -5,31 +5,13 @@
 namespace NekoGui {
     class ProfileFilter {
     public:
-        static void Uniq(
-            const QList<std::shared_ptr<ProxyEntity>> &in,
-            QList<std::shared_ptr<ProxyEntity>> &out,
-            bool by_address = false, // def by bean
-            bool keep_last = false   // def keep first
-        );
+        static std::tuple<QList<std::shared_ptr<ProxyEntity>>, QList<std::shared_ptr<ProxyEntity>>,
+                          QList<std::shared_ptr<ProxyEntity>>, QList<std::shared_ptr<ProxyEntity>>>
+        Diff(const QList<std::shared_ptr<ProxyEntity>> &list1, const QList<std::shared_ptr<ProxyEntity>> &list2);
 
-        static void Common(
-            const QList<std::shared_ptr<ProxyEntity>> &src,
-            const QList<std::shared_ptr<ProxyEntity>> &dst,
-            QList<std::shared_ptr<ProxyEntity>> &outSrc,
-            QList<std::shared_ptr<ProxyEntity>> &outDst,
-            bool by_address = false // def by bean
-        );
+        static QList<std::shared_ptr<ProxyEntity>> Dup(const QList<std::shared_ptr<ProxyEntity>> &list);
 
-        static void OnlyInSrc(
-            const QList<std::shared_ptr<ProxyEntity>> &src,
-            const QList<std::shared_ptr<ProxyEntity>> &dst,
-            QList<std::shared_ptr<ProxyEntity>> &out,
-            bool by_address = false // def by bean
-        );
-
-        static void OnlyInSrc_ByPointer(
-            const QList<std::shared_ptr<ProxyEntity>> &src,
-            const QList<std::shared_ptr<ProxyEntity>> &dst,
-            QList<std::shared_ptr<ProxyEntity>> &out);
+    private:
+        static QString Key(const std::shared_ptr<ProxyEntity> &ent, bool by_address);
     };
 } // namespace NekoGui

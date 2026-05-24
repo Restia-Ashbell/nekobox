@@ -48,9 +48,9 @@ namespace NekoGui {
 
         [[nodiscard]] int NewGroupID() const;
 
-        static std::shared_ptr<ProxyEntity> LoadProxyEntity(const QString &jsonPath);
+        std::shared_ptr<ProxyEntity> LoadProxyEntity(const QString &jsonPath);
 
-        static std::shared_ptr<Group> LoadGroup(const QString &jsonPath);
+        std::shared_ptr<Group> LoadGroup(const QString &jsonPath);
     };
 
     extern ProfileManager *profileManager;

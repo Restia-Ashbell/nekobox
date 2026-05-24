@@ -2,6 +2,7 @@
 #include "ui_GroupItem.h"
 
 #include "ui/edit/dialog_edit_group.h"
+#include "ui/mainwindow.h"
 #include "main/GuiUtils.hpp"
 #include "sub/GroupUpdater.hpp"
 
@@ -60,8 +61,9 @@ GroupItem::GroupItem(QWidget *parent, const std::shared_ptr<NekoGui::Group> &ent
     this->item = item;
     if (ent == nullptr) return;
 
-    connect(this, &GroupItem::edit_clicked, this, &GroupItem::on_edit_clicked);
-    connect(NekoGui_sub::groupUpdater, &NekoGui_sub::GroupUpdater::asyncUpdateCallback, this, [this](int gid) { if (gid == this->ent->id) refresh_data(); });
+    connect(MainWindow::instance(), &MainWindow::groupUpdated, this, [this](int gid) {
+        if (gid == this->ent->id) refresh_data();
+    });
 
     refresh_data();
 }

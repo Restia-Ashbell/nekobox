@@ -17,7 +17,7 @@
 #include <QHeaderView>
 #include <QHotkey>
 
-#include "ZxingQtReader.h"
+#include "ZXingQtReader.h"
 #include "MultiFormatWriter.h"
 #include "BarcodeFormat.h"
 #include "BitMatrix.h"
@@ -41,7 +41,6 @@
 #include "ui/dialog_manage_routes.h"
 #include "ui/dialog_hotkey.h"
 
-#include "3rdparty/VT100Parser.hpp"
 #include "3rdparty/qv2ray/v2/components/proxy/QvProxyConfigurator.hpp"
 #include "3rdparty/qv2ray/v2/ui/LogHighlighter.hpp"
 
@@ -102,7 +101,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(vBar, &QScrollBar::valueChanged, this, [vBar, this](int value) {
         qvLogAutoScoll = vBar->maximum() == value;
     });
-    connect(ui->masterLogBrowser, &QTextBrowser::textChanged, this, [vBar, this]() {
+    connect(ui->masterLogBrowser, &QTextBrowser::textChanged, this, [vBar, this] {
         if (qvLogAutoScoll) vBar->setValue(vBar->maximum());
     });
     MW_show_log = [this](const QString &log) {
@@ -117,22 +116,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // search box
     ui->search->setVisible(false);
-    connect(shortcut_ctrl_f, &QShortcut::activated, this, [=, this] {
-        ui->search->setVisible(true);
-        ui->search->setFocus();
-    });
-    connect(shortcut_esc, &QShortcut::activated, this, [=, this] {
-        if (ui->search->isVisible()) {
-            ui->search->setText("");
-            ui->search->textChanged("");
-            ui->search->setVisible(false);
-        }
-        if (select_mode) {
-            emit profile_selected(-1);
-            select_mode = false;
-            refresh_status();
-        }
-    });
     connect(ui->search, &QLineEdit::textChanged, this, [this](const QString &text) {
         for (int index = 0; index < ui->tabWidget->count(); ++index) {
             auto proxyListTable = qobject_cast<QTableWidget *>(ui->tabWidget->widget(index));
@@ -142,6 +125,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             for (auto *item: proxyListTable->findItems(text, Qt::MatchContains)) {
                 if (item) proxyListTable->setRowHidden(item->row(), false);
             }
+        }
+    });
+    QShortcut *shortcut_ctrl_f = new QShortcut(QKeySequence("Ctrl+F"), this);
+    connect(shortcut_ctrl_f, &QShortcut::activated, this, [this] {
+        if (!ui->search->isVisible()) {
+            ui->search->setVisible(true);
+            ui->search->setFocus();
+        }
+    });
+    QShortcut *shortcut_esc = new QShortcut(QKeySequence("Esc"), this);
+    connect(shortcut_esc, &QShortcut::activated, this, [this] {
+        if (ui->search->isVisible()) {
+            ui->search->clear();
+            ui->search->setVisible(false);
+        }
+        if (select_mode) {
+            emit profile_selected(-1);
+            select_mode = false;
+            refresh_status();
         }
     });
 
@@ -243,9 +245,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         neko_set_spmode_vpn(false);
     });
     connect(ui->menu_qr, &QAction::triggered, this, [=, this]() { display_qr_link(false); });
-    connect(ui->menu_tcp_ping, &QAction::triggered, this, [=, this]() { speedtest_current_group(0); });
-    connect(ui->menu_url_test, &QAction::triggered, this, [=, this]() { speedtest_current_group(1); });
-    connect(ui->menu_full_test, &QAction::triggered, this, [=, this]() { speedtest_current_group(999); });
+    connect(ui->menu_tcp_ping, &QAction::triggered, this, [=, this]() { speedtest_current_group(TcpPing); });
+    connect(ui->menu_url_test, &QAction::triggered, this, [=, this]() { speedtest_current_group(UrlTest); });
+    connect(ui->menu_full_test, &QAction::triggered, this, [=, this]() { speedtest_current_group(0); });
     connect(ui->menu_stop_testing, &QAction::triggered, this, [=, this]() { speedtestFuture.cancel(); });
     //
     connect(ui->menu_share_item, &QMenu::aboutToShow, this, [=, this] {
@@ -264,15 +266,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     runOnNewThread([=, this] { NekoGui_traffic::trafficLooper->Loop(); });
 
     // Remember
-    neko_set_spmode_vpn(NekoGui::dataStore->remember_spmode_vpn || NekoGui::dataStore->flag_restart_tun_on);
-    neko_set_spmode_system_proxy(NekoGui::dataStore->remember_spmode_system_proxy);
-    neko_start(NekoGui::dataStore->remember_id);
+    QTimer::singleShot(0, [this] { // 事件循环启动后立即执行
+        neko_set_spmode_vpn(NekoGui::dataStore->spmode_vpn || NekoGui::dataStore->flag_restart_tun_on);
+        neko_set_spmode_system_proxy(NekoGui::dataStore->spmode_system_proxy);
+        neko_start(NekoGui::dataStore->started_id);
+    });
 
     connect(qApp, &QGuiApplication::commitDataRequest, this, &MainWindow::on_commitDataRequest);
 
-    auto t = new QTimer(this);
-    connect(t, &QTimer::timeout, this, [this] { refresh_status(); });
-    t->start(2000);
+    refreshTimer = new QTimer(this);
+    refreshTimer->setSingleShot(true);
+    connect(refreshTimer, &QTimer::timeout, this, [this] { refresh_status(); });
 
     autoUpdateSubscriptionTimer = new QTimer(this);
     connect(autoUpdateSubscriptionTimer, &QTimer::timeout, this, [this] { UI_update_all_groups(true); });
@@ -331,9 +335,6 @@ void MainWindow::dialog_message_impl(const QString &sender, const QString &info)
     } else if (info == "Raise") {
         ActivateWindow(this);
     }
-    if (info == "NeedAdmin") {
-        get_elevated_permissions();
-    }
     // sender
     if (sender == Dialog_DialogEditProfile) {
         auto msg = info.split(",");
@@ -347,14 +348,6 @@ void MainWindow::dialog_message_impl(const QString &sender, const QString &info)
         }
     } else if (sender == Dialog_DialogManageGroups) {
         if (info.startsWith("refresh")) {
-            refresh_groups();
-        }
-    } else if (sender == "SubUpdater") {
-        if (info.startsWith("finish")) {
-            if (!info.contains("dingyue")) {
-                show_log_impl(tr("Imported %1 profile(s)").arg(NekoGui::dataStore->imported_count));
-            }
-        } else if (info == "NewGroup") {
             refresh_groups();
         }
     } else if (sender == "ExternalProcess") {
@@ -372,22 +365,23 @@ void MainWindow::dialog_message_impl(const QString &sender, const QString &info)
 
 template<typename DialogType, typename... Args>
 void MainWindow::openDialog(Args &&...args) {
-    if (dialog_is_using) return;
-    dialog_is_using = true;
+    for (auto w: QApplication::topLevelWidgets()) {
+        if (auto dlg = qobject_cast<DialogType *>(w)) {
+            dlg->raise();
+            return;
+        }
+    }
     auto dialog = new DialogType(this, std::forward<Args>(args)...);
-    connect(dialog, &QDialog::finished, this, [this, dialog] {
-        dialog->deleteLater();
-        dialog_is_using = false;
-    });
+    connect(dialog, &QDialog::finished, dialog, &QDialog::deleteLater);
     dialog->show();
-}
-
-void MainWindow::on_menu_basic_settings_triggered() {
-    openDialog<DialogBasicSettings>();
 }
 
 void MainWindow::on_menu_manage_groups_triggered() {
     openDialog<DialogManageGroups>(ui->tabWidget->currentIndex());
+}
+
+void MainWindow::on_menu_basic_settings_triggered() {
+    openDialog<DialogBasicSettings>();
 }
 
 void MainWindow::on_menu_routing_settings_triggered() {
@@ -403,10 +397,6 @@ void MainWindow::on_commitDataRequest() {
     //
     NekoGui::dataStore->mw_geometry = saveGeometry().toBase64();
     NekoGui::dataStore->splitter_state = ui->splitter->saveState().toBase64();
-    //
-    NekoGui::dataStore->remember_id = NekoGui::dataStore->started_id;
-    NekoGui::dataStore->remember_spmode_vpn = NekoGui::dataStore->spmode_vpn;
-    NekoGui::dataStore->remember_spmode_system_proxy = NekoGui::dataStore->spmode_system_proxy;
     //
     NekoGui::dataStore->Save();
     NekoGui::profileManager->SaveManager();
@@ -426,8 +416,6 @@ void MainWindow::on_menu_exit_triggered() {
     //
     neko_set_spmode_system_proxy(false);
     neko_set_spmode_vpn(false);
-    //
-    hide();
     //
     if (exit_reason == 1) {
         QDir::setCurrent(QApplication::applicationDirPath());
@@ -454,74 +442,52 @@ void MainWindow::on_menu_exit_triggered() {
             QProcess::startDetached(program, arguments);
         }
     }
-    tray->hide();
     QApplication::quit();
 }
 
 void MainWindow::neko_set_spmode_vpn(bool enable) {
-    if (enable != NekoGui::dataStore->spmode_vpn) {
-        if (enable) {
-            if (!isRunningAsAdmin()) {
-                if (!get_elevated_permissions()) {
-                    refresh_status();
-                    return;
-                }
-            }
+    if (enable) {
+        if (!get_elevated_permissions()) {
+            refresh_status();
+            return;
         }
-        NekoGui::dataStore->spmode_vpn = enable;
-        if (NekoGui::dataStore->started_id >= 0) neko_start(NekoGui::dataStore->started_id);
     }
+    NekoGui::dataStore->spmode_vpn = enable;
+    if (running) neko_start(running->id);
     refresh_status();
 }
 
 void MainWindow::neko_set_spmode_system_proxy(bool enable) {
-    if (enable != NekoGui::dataStore->spmode_system_proxy) {
-        if (enable) {
-            auto socks_port = NekoGui::dataStore->inbound_port;
-            SetSystemProxy(socks_port, socks_port);
-        } else {
-            ClearSystemProxy();
-        }
-        NekoGui::dataStore->spmode_system_proxy = enable;
+    if (enable) {
+        auto socks_port = NekoGui::dataStore->inbound_port;
+        SetSystemProxy(socks_port, socks_port);
+    } else {
+        ClearSystemProxy();
     }
+    NekoGui::dataStore->spmode_system_proxy = enable;
     refresh_status();
 }
 
 bool MainWindow::get_elevated_permissions() {
-    if (isRunningAsAdmin()) return true;
-#ifdef Q_OS_LINUX
-    if (!Linux_HavePkexec()) {
-        MessageBoxWarning(software_name, "Please install \"pkexec\" first.");
-    } else {
-        auto ret = Linux_Pkexec_SetCapString(QApplication::applicationFilePath(), "cap_net_admin=ep");
-        if (ret == 0) {
-            this->exit_reason = 3;
-            on_menu_exit_triggered();
-        } else {
-            MessageBoxWarning(software_name, "Setcap for Tun mode failed.\n\n1. You may canceled the dialog.\n2. You may be using an incompatible environment like AppImage.");
-            if (QProcessEnvironment::systemEnvironment().contains("APPIMAGE")) {
-                MW_show_log("If you are using AppImage, it's impossible to start a Tun. Please use other package instead.");
-            }
-        }
-    }
-#endif
-#ifdef Q_OS_WIN
-    auto n = QMessageBox::warning(GetMessageBoxParent(), software_name, tr("Please run Nekoray as admin"), QMessageBox::Yes | QMessageBox::No);
-    if (n == QMessageBox::Yes) {
+    if (isRunAsAdmin()) return true;
+
+    QString title = "Permission Required";
+    QString text =
+        "Enabling TUN mode requires administrator privileges or equivalent permissions.\n"
+        "On Windows/macOS, the application will prompt to restart as administrator.\n"
+        "On Linux, it will attempt to grant CAP_NET_ADMIN capability.";
+
+    if (QMessageBox::warning(GetMessageBoxParent(), title, text, QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
         this->exit_reason = 3;
         on_menu_exit_triggered();
     }
-#endif
-#ifdef Q_OS_MACOS
-    MessageBoxWarning("Need administrator privilege", "Enabling TUN mode requires elevated privileges, please run Nekoray as root.");
-#endif
 
     return false;
 }
 
 void MainWindow::refresh_status(const QString &traffic_update) {
     if (NekoGui::dataStore->traffic_loop_interval == 0) {
-        ui->label_speed->setText("");
+        ui->label_speed->clear();
     } else if (!running) {
         ui->label_speed->setText(QObject::tr("Proxy: %1\nDirect: %2").arg("", ""));
     } else if (!traffic_update.isEmpty()) {
@@ -536,13 +502,11 @@ void MainWindow::refresh_status(const QString &traffic_update) {
         if (group != nullptr) group_name = group->name;
     }
 
-    if (QDateTime::currentSecsSinceEpoch() - last_test_time > 2) {
-        ui->label_running->setText(running ? QString("[%1] %2").arg(group_name, running->bean->DisplayName()).left(30) : tr("Not Running"));
-    }
+    QFontMetrics fm(ui->label_running->font());
+    QString text = running ? QString("[%1] %2").arg(group_name, running->bean->DisplayName()) : tr("Not Running");
+    ui->label_running->setText(fm.elidedText(text, Qt::ElideRight, ui->label_running->width()));
     //
-    auto display_socks = MakeHostPort(NekoGui::dataStore->inbound_address, NekoGui::dataStore->inbound_port);
-    auto inbound_txt = QString("Mixed: %1").arg(display_socks);
-    ui->label_inbound->setText(inbound_txt);
+    ui->label_inbound->setText(QString("Mixed: %1").arg(MakeHostPort(NekoGui::dataStore->inbound_address, NekoGui::dataStore->inbound_port)));
     //
     ui->checkBox_VPN->setChecked(NekoGui::dataStore->spmode_vpn);
     ui->checkBox_SystemProxy->setChecked(NekoGui::dataStore->spmode_system_proxy);
@@ -553,22 +517,17 @@ void MainWindow::refresh_status(const QString &traffic_update) {
         ui->label_running->setToolTip({});
     }
 
-    auto make_title = [=, this](bool isTray) {
-        QStringList tt;
-        if (!isTray && isRunningAsAdmin()) tt << "[Admin]";
-        if (select_mode) tt << "[" + tr("Select") + "]";
-        if (NekoGui::dataStore->spmode_vpn && !NekoGui::dataStore->spmode_system_proxy) tt << "[Tun]";
-        if (!NekoGui::dataStore->spmode_vpn && NekoGui::dataStore->spmode_system_proxy) tt << "[" + tr("System Proxy") + "]";
-        if (NekoGui::dataStore->spmode_vpn && NekoGui::dataStore->spmode_system_proxy) tt << "[Tun+" + tr("System Proxy") + "]";
-        tt << software_name;
-        if (!isTray) tt << "(" + QString(NKR_VERSION) + ")";
-        if (!NekoGui::dataStore->active_routing.isEmpty() && NekoGui::dataStore->active_routing != "Default") {
-            tt << "[" + NekoGui::dataStore->active_routing + "]";
-        }
-        if (running != nullptr) tt << running->bean->DisplayTypeAndName() + "@" + group_name;
-        return tt.join(isTray ? "\n" : " ");
-    };
+    QStringList tt;
+    if (isRunAsAdmin()) tt << "[Admin]";
+    if (NekoGui::dataStore->spmode_vpn && !NekoGui::dataStore->spmode_system_proxy) tt << "[Tun]";
+    if (!NekoGui::dataStore->spmode_vpn && NekoGui::dataStore->spmode_system_proxy) tt << "[" + tr("System Proxy") + "]";
+    if (NekoGui::dataStore->spmode_vpn && NekoGui::dataStore->spmode_system_proxy) tt << "[Tun+" + tr("System Proxy") + "]";
+    tt << software_name << "(" + QString(NKR_VERSION) + ")";
+    if (!NekoGui::dataStore->active_routing.isEmpty() && NekoGui::dataStore->active_routing != "Default") {
+        tt << "[" + NekoGui::dataStore->active_routing + "]";
+    }
 
+    auto title = tt.join(" ");
     auto icon_status_new = Icon::NONE;
 
     if (running != nullptr) {
@@ -582,12 +541,13 @@ void MainWindow::refresh_status(const QString &traffic_update) {
     }
 
     // refresh title & window icon
-    setWindowTitle(make_title(false));
+    setWindowTitle(title);
     if (icon_status_new != icon_status) QApplication::setWindowIcon(Icon::GetTrayIcon(Icon::NONE));
 
     // refresh tray
     if (tray != nullptr) {
-        tray->setToolTip(make_title(true));
+        if (running) title += "\n" + running->bean->DisplayTypeAndName() + "@" + group_name;
+        tray->setToolTip(title);
         if (icon_status_new != icon_status) tray->setIcon(Icon::GetTrayIcon(icon_status_new));
     }
 
@@ -759,7 +719,7 @@ void MainWindow::on_menu_move_triggered() {
     }
 
     bool ok;
-    auto a = QInputDialog::getItem(nullptr,
+    auto a = QInputDialog::getItem(this,
                                    tr("Move"),
                                    tr("Move %1 item(s)").arg(ents.count()),
                                    items, 0, false, &ok);
@@ -843,31 +803,51 @@ void MainWindow::on_menu_export_config_triggered() {
     if (ent->bean->DisplayCoreType() != software_core_name) return;
 
     auto result = BuildConfig(ent, false, true);
-    QString config_core = QJsonObject2QString(result->coreConfig, true);
-    QApplication::clipboard()->setText(config_core);
+    auto configText = QJsonObject2QString(result->coreConfig, false);
 
-    QMessageBox msg(QMessageBox::NoIcon, tr("Config copied"), config_core, QMessageBox::Ok, this);
-    QPushButton *button_1 = msg.addButton("Copy core config", QMessageBox::YesRole);
-    QPushButton *button_2 = msg.addButton("Copy test config", QMessageBox::YesRole);
-    msg.setEscapeButton(QMessageBox::Ok);
-    msg.setDefaultButton(QMessageBox::Ok);
-    msg.exec();
-    if (msg.clickedButton() == button_1) {
+    QDialog dialog(this);
+    dialog.setWindowTitle("Export Config");
+    auto layout = new QVBoxLayout(&dialog);
+
+    auto editor = new QPlainTextEdit(configText, &dialog);
+    editor->setReadOnly(true);
+    editor->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    editor->setMinimumSize(600, 400);
+    editor->setWordWrapMode(QTextOption::NoWrap);
+    layout->addWidget(editor);
+
+    auto btnCore = new QPushButton("Copy Core Config");
+    connect(btnCore, &QPushButton::clicked, [&] {
         result = BuildConfig(ent, false, false);
-        config_core = QJsonObject2QString(result->coreConfig, true);
-        QApplication::clipboard()->setText(config_core);
-    } else if (msg.clickedButton() == button_2) {
+        configText = QJsonObject2QString(result->coreConfig, false);
+        editor->setPlainText(configText);
+        QApplication::clipboard()->setText(configText);
+    });
+    auto btnTest = new QPushButton("Copy Test Config");
+    connect(btnTest, &QPushButton::clicked, [&] {
         result = BuildConfig(ent, true, false);
-        config_core = QJsonObject2QString(result->coreConfig, true);
-        QApplication::clipboard()->setText(config_core);
-    }
+        configText = QJsonObject2QString(result->coreConfig, false);
+        editor->setPlainText(configText);
+        QApplication::clipboard()->setText(configText);
+    });
+
+    auto btnLayout = new QHBoxLayout();
+    btnLayout->addStretch();
+    btnLayout->addWidget(btnCore);
+    btnLayout->addWidget(btnTest);
+    layout->addLayout(btnLayout);
+
+    dialog.exec();
 }
 
 void MainWindow::display_qr_link(bool nkrFormat) {
     auto ents = get_now_selected_list();
     if (ents.count() != 1) return;
+    auto ent = ents.first();
+    QString link = ent->bean->ToShareLink();
+    QString link_nk = ent->bean->ToNekorayShareLink(ent->type);
 
-    class W : public QDialog {
+    class QRDialog : public QDialog {
     public:
         QLabel *qrLabel = nullptr;
         QCheckBox *cb = nullptr;
@@ -875,7 +855,7 @@ void MainWindow::display_qr_link(bool nkrFormat) {
         QImage qrImage;
         QString link, link_nk;
 
-        W(const QString &link_, const QString &link_nk_, bool nkrFormat)
+        QRDialog(const QString &link_, const QString &link_nk_, bool nkrFormat)
             : link(link_), link_nk(link_nk_) {
             auto *layout = new QVBoxLayout(this);
 
@@ -893,7 +873,7 @@ void MainWindow::display_qr_link(bool nkrFormat) {
             textEdit->setReadOnly(true);
             layout->addWidget(textEdit);
 
-            connect(cb, &QCheckBox::toggled, this, &W::refresh);
+            connect(cb, &QCheckBox::toggled, this, &QRDialog::refresh);
             refresh();
         }
 
@@ -922,11 +902,9 @@ void MainWindow::display_qr_link(bool nkrFormat) {
         }
     };
 
-    QString link = ents.first()->bean->ToShareLink();
-    QString link_nk = ents.first()->bean->ToNekorayShareLink(ents.first()->type);
-    W w(link, link_nk, nkrFormat);
-    w.setWindowTitle(ents.first()->bean->DisplayTypeAndName());
-    w.exec();
+    QRDialog dlg(link, link_nk, nkrFormat);
+    dlg.setWindowTitle(ents.first()->bean->DisplayTypeAndName());
+    dlg.exec();
 }
 
 void MainWindow::on_menu_scan_qr_triggered() {
@@ -968,17 +946,13 @@ void MainWindow::on_menu_clear_test_result_triggered() {
 void MainWindow::on_menu_select_all_triggered() {
     if (ui->masterLogBrowser->hasFocus()) {
         ui->masterLogBrowser->selectAll();
-        return;
+    } else {
+        qobject_cast<QTableWidget *>(ui->tabWidget->currentWidget())->selectAll();
     }
-    qobject_cast<QTableWidget *>(ui->tabWidget->currentWidget())->selectAll();
 }
 
 void MainWindow::on_menu_delete_repeat_triggered() {
-    QList<std::shared_ptr<NekoGui::ProxyEntity>> out;
-    QList<std::shared_ptr<NekoGui::ProxyEntity>> out_del;
-
-    NekoGui::ProfileFilter::Uniq(NekoGui::profileManager->CurrentGroup()->Profiles(), out, true, false);
-    NekoGui::ProfileFilter::OnlyInSrc_ByPointer(NekoGui::profileManager->CurrentGroup()->Profiles(), out, out_del);
+    auto out_del = NekoGui::ProfileFilter::Dup(NekoGui::profileManager->CurrentGroup()->Profiles());
 
     int remove_display_count = 0;
     QString remove_display;
@@ -1114,7 +1088,7 @@ void MainWindow::on_masterLogBrowser_customContextMenuRequested(const QPoint &po
         auto newStr = ui->masterLogBrowser->textCursor().selectedText().trimmed();
         if (!newStr.isEmpty()) list << newStr;
         bool ok;
-        newStr = QInputDialog::getMultiLineText(GetMessageBoxParent(), tr("Set ignore keyword"), tr("Set the following keywords to ignore?\nSplit by line."), list.join("\n"), &ok);
+        newStr = QInputDialog::getMultiLineText(this, tr("Set ignore keyword"), tr("Set the following keywords to ignore?\nSplit by line."), list.join("\n"), &ok);
         if (ok) {
             NekoGui::dataStore->log_ignore = SplitLines(newStr);
             NekoGui::dataStore->Save();
@@ -1149,6 +1123,7 @@ void MainWindow::onTabBarContextMenuRequested(const QPoint &pos) {
         if (dialog.exec() == QDialog::Accepted) {
             NekoGui::profileManager->AddGroup(ent);
             refresh_groups();
+            emit groupUpdated(ent->id);
         }
     });
 
@@ -1162,6 +1137,7 @@ void MainWindow::onTabBarContextMenuRequested(const QPoint &pos) {
                 if (dialog->result() == QDialog::Accepted) {
                     ent->Save();
                     refresh_group(id);
+                    emit groupUpdated(id);
                 }
                 dialog->deleteLater();
             });
@@ -1177,6 +1153,7 @@ void MainWindow::onTabBarContextMenuRequested(const QPoint &pos) {
                 QMessageBox::StandardButton::Yes) {
                 NekoGui::profileManager->DeleteGroup(id);
                 refresh_groups();
+                emit groupUpdated(id);
             }
         });
     }

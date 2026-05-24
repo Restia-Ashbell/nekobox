@@ -12,7 +12,6 @@
 #include <QFontDatabase>
 #include <QInputDialog>
 #include <QMessageBox>
-#include <QTimer>
 
 class ExtraCoreWidget : public QWidget {
 public:
@@ -81,43 +80,33 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     D_LOAD_BOOL(start_minimal)
     D_LOAD_INT(max_log_line)
     //
-    if (NekoGui::dataStore->traffic_loop_interval == 500) {
-        ui->rfsh_r->setCurrentIndex(0);
-    } else if (NekoGui::dataStore->traffic_loop_interval == 1000) {
-        ui->rfsh_r->setCurrentIndex(1);
-    } else if (NekoGui::dataStore->traffic_loop_interval == 2000) {
-        ui->rfsh_r->setCurrentIndex(2);
-    } else if (NekoGui::dataStore->traffic_loop_interval == 3000) {
-        ui->rfsh_r->setCurrentIndex(3);
-    } else if (NekoGui::dataStore->traffic_loop_interval == 5000) {
-        ui->rfsh_r->setCurrentIndex(4);
-    } else {
-        ui->rfsh_r->setCurrentIndex(5);
-    }
+    ui->rfsh_r->setItemData(0, 500);
+    ui->rfsh_r->setItemData(1, 1000);
+    ui->rfsh_r->setItemData(2, 2000);
+    ui->rfsh_r->setItemData(3, 3000);
+    ui->rfsh_r->setItemData(4, 5000);
+    ui->rfsh_r->setItemData(5, 0);
+    ui->rfsh_r->setCurrentIndex(ui->rfsh_r->findData(NekoGui::dataStore->traffic_loop_interval));
     //
-    if (NekoGui::dataStore->language == "zh_CN") {
-        ui->language->setCurrentIndex(1);
-    } else if (NekoGui::dataStore->language == "fa_IR") {
-        ui->language->setCurrentIndex(2);
-    } else if (NekoGui::dataStore->language == "ru_RU") {
-        ui->language->setCurrentIndex(3);
-    } else {
-        ui->language->setCurrentIndex(0);
-    }
-    connect(ui->language, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=, this](int index) {
+    ui->language->setItemData(0, "en");
+    ui->language->setItemData(1, "zh_CN");
+    ui->language->setItemData(2, "fa_IR");
+    ui->language->setItemData(3, "ru_RU");
+    ui->language->setCurrentIndex(ui->language->findData(NekoGui::dataStore->language));
+    connect(ui->language, &QComboBox::currentIndexChanged, this, [=, this](int index) {
         CACHE.needRestart = true;
     });
     //
     ui->font->addItems(QFontDatabase::families());
     ui->font->setCurrentText(QApplication::font().family());
-    connect(ui->font, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged), this, [=, this](const QString &fontName) {
-        QFont currentFont = QApplication::font();
-        currentFont.setFamily(fontName);
-        QApplication::setFont(currentFont);
+    connect(ui->font, &QComboBox::currentTextChanged, this, [=, this](const QString &fontName) {
+        QFont font = QApplication::font();
+        font.setFamily(fontName);
+        QApplication::setFont(font);
     });
     //
     ui->theme->addItems(QStyleFactory::keys());
-    ui->theme->setCurrentText(NekoGui::dataStore->theme);
+    ui->theme->setCurrentText(NekoGui::dataStore->theme); // QApplication::style()->name() BUG?
     connect(ui->theme, &QComboBox::currentTextChanged, this, [=, this](const QString &theme) {
         QApplication::setStyle(theme);
     });
@@ -127,7 +116,6 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     ui->user_agent->setText(NekoGui::dataStore->user_agent);
     ui->user_agent->setPlaceholderText(NekoGui::dataStore->GetUserAgent(true));
     D_LOAD_BOOL(sub_use_proxy)
-    D_LOAD_BOOL(sub_clear)
     D_LOAD_BOOL(sub_insecure)
     D_LOAD_INT_ENABLE(sub_auto_update, sub_auto_update_enable)
 
@@ -159,7 +147,7 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     //
     connect(ui->extra_core_add, &QPushButton::clicked, this, [=, this] {
         bool ok;
-        auto s = QInputDialog::getText(nullptr, tr("Add"), tr("Please input the core name."), QLineEdit::Normal, "", &ok).trimmed();
+        auto s = QInputDialog::getText(this, tr("Add"), tr("Please input the core name."), QLineEdit::Normal, "", &ok).trimmed();
         if (s.isEmpty() || !ok) return;
         if (CACHE.extraCore.contains(s)) return;
         extra_core_layout->addWidget(new ExtraCoreWidget(&CACHE.extraCore, s));
@@ -167,7 +155,7 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     });
     connect(ui->extra_core_del, &QPushButton::clicked, this, [=, this] {
         bool ok;
-        auto s = QInputDialog::getItem(nullptr, tr("Delete"), tr("Please select the core name."), CACHE.extraCore.keys(), 0, false, &ok);
+        auto s = QInputDialog::getItem(this, tr("Delete"), tr("Please select the core name."), CACHE.extraCore.keys(), 0, false, &ok);
         if (s.isEmpty() || !ok) return;
         for (int i = 0; i < extra_core_layout->count(); i++) {
             auto item = extra_core_layout->itemAt(i);
@@ -231,42 +219,21 @@ void DialogBasicSettings::accept() {
 
     // Style
 
-    switch (ui->language->currentIndex()) {
-        case 1: NekoGui::dataStore->language = "zh_CN"; break;
-        case 2: NekoGui::dataStore->language = "fa_IR"; break;
-        case 3: NekoGui::dataStore->language = "ru_RU"; break;
-        default: NekoGui::dataStore->language = "en";
-    }
+    NekoGui::dataStore->language = ui->language->currentData().toString();
+    NekoGui::dataStore->traffic_loop_interval = ui->rfsh_r->currentData().toInt();
+
     NekoGui::dataStore->font = ui->font->currentText();
     NekoGui::dataStore->theme = ui->theme->currentText();
     D_SAVE_BOOL(check_include_pre)
     D_SAVE_BOOL(start_minimal)
 
-    int oldValue = NekoGui::dataStore->max_log_line;
     D_SAVE_INT(max_log_line)
-    if (NekoGui::dataStore->max_log_line != oldValue) {
-        MainWindow::instance()->updateLogMaxLines();
-    }
-
-    if (ui->rfsh_r->currentIndex() == 0) {
-        NekoGui::dataStore->traffic_loop_interval = 500;
-    } else if (ui->rfsh_r->currentIndex() == 1) {
-        NekoGui::dataStore->traffic_loop_interval = 1000;
-    } else if (ui->rfsh_r->currentIndex() == 2) {
-        NekoGui::dataStore->traffic_loop_interval = 2000;
-    } else if (ui->rfsh_r->currentIndex() == 3) {
-        NekoGui::dataStore->traffic_loop_interval = 3000;
-    } else if (ui->rfsh_r->currentIndex() == 4) {
-        NekoGui::dataStore->traffic_loop_interval = 5000;
-    } else {
-        NekoGui::dataStore->traffic_loop_interval = 0;
-    }
+    MainWindow::instance()->updateLogMaxLines();
 
     // Subscription
 
     NekoGui::dataStore->user_agent = ui->user_agent->text();
     D_SAVE_BOOL(sub_use_proxy)
-    D_SAVE_BOOL(sub_clear)
     D_SAVE_BOOL(sub_insecure)
     D_SAVE_INT_ENABLE(sub_auto_update, sub_auto_update_enable)
     MainWindow::instance()->resetAutoUpdateSubscription(NekoGui::dataStore->sub_auto_update);
@@ -276,10 +243,8 @@ void DialogBasicSettings::accept() {
     D_SAVE_INT(inbound_port)
     NekoGui::dataStore->custom_inbound = CACHE.custom_inbound;
 
-    auto mtu = ui->tun_mtu->currentText().toInt();
-    if (mtu > 10000 || mtu < 1000) mtu = 9000;
     NekoGui::dataStore->tun_stack = ui->tun_stack->currentText();
-    NekoGui::dataStore->tun_mtu = mtu;
+    NekoGui::dataStore->tun_mtu = ui->tun_mtu->currentText().toInt();
     NekoGui::dataStore->tun_ipv6 = ui->tun_ipv6->isChecked();
     NekoGui::dataStore->tun_strict_route = ui->tun_strict_route->isChecked();
 

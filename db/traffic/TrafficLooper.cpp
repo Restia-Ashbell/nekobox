@@ -36,8 +36,7 @@ namespace NekoGui_traffic {
         free(boxStatsResult);
 
         for (const auto &item: items) {
-            auto data = item.get();
-            update_stats(data, stats);
+            update_stats(item.get(), stats);
         }
         update_stats(direct, stats);
     }

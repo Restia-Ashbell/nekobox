@@ -87,10 +87,6 @@ int main(int argc, char *argv[]) {
         QDir().mkdir(dir);
     }
 
-    // dispatchers
-    DS_cores = new QThread;
-    DS_cores->start();
-
     // Load dataStore
     NekoGui::dataStore->fn = "nekobox.json";
     if (!NekoGui::dataStore->Load()) NekoGui::dataStore->Save();

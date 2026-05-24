@@ -3,30 +3,22 @@
 #include "db/ProfileManager.hpp"
 
 namespace NekoGui_sub {
-    class RawUpdater {
-    public:
-        void update(const QString &str);
-
-        void updateLink(const QString &str, int index);
-
-        void updateClash(const QString &str);
-
-        int gid_add_to = -1; // 导入到指定组 -1 为当前选中组
-
-        QList<std::shared_ptr<NekoGui::ProxyEntity>> updated_order; // 新增的配置，按照导入时处理的先后排序
-    };
-
-    class GroupUpdater : public QObject {
-        Q_OBJECT
-
+    class GroupUpdater {
     public:
         void AsyncUpdate(const QString &str, int _sub_gid = -1, const std::function<void()> &finish = nullptr);
 
         void Update(QString content, int _sub_gid = -1, bool asURL = false);
 
-    signals:
+    private:
+        QList<std::shared_ptr<NekoGui::ProxyEntity>> update(const QString &str);
 
-        void asyncUpdateCallback(int gid);
+        QList<std::shared_ptr<NekoGui::ProxyEntity>> updateJson(const QString &str, const QJsonObject &obj);
+
+        QList<std::shared_ptr<NekoGui::ProxyEntity>> updateLink(const QString &str);
+
+        QList<std::shared_ptr<NekoGui::ProxyEntity>> updateClash(const QString &str);
+
+        void fixEnt(const std::shared_ptr<NekoGui::ProxyEntity> &ent);
     };
 
     extern GroupUpdater *groupUpdater;

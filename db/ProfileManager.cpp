@@ -29,39 +29,31 @@ namespace NekoGui {
 
     void ProfileManager::LoadManager() {
         JsonStore::Load();
-        //
-        profiles = {};
-        groups = {};
+        // Load Groups
+        groups.clear();
+        for (auto id: filterIntJsonFile("groups")) {
+            auto ent = LoadGroup(QString("groups/%1.json").arg(id));
+            // Corrupted group?
+            if (ent == nullptr) {
+                DeleteGroup(id);
+                continue;
+            }
+            groups[id] = ent;
+            if (!groupsTabOrder.contains(id)) {
+                groupsTabOrder << id;
+            }
+        }
+        groupsTabOrder.removeIf([this](int k) { return !groups.contains(k); });
         // Load Proxys
+        profiles.clear();
         for (auto id: filterIntJsonFile("profiles")) {
             auto ent = LoadProxyEntity(QString("profiles/%1.json").arg(id));
             // Corrupted profile?
-            if (ent == nullptr || ent->bean == nullptr) {
+            if (ent == nullptr || ent->bean == nullptr || !groups.contains(ent->gid)) {
                 DeleteProfile(id);
                 continue;
             }
             profiles[id] = ent;
-        }
-        // Load Groups
-        auto loadedOrder = groupsTabOrder;
-        groupsTabOrder = {};
-        for (auto id: filterIntJsonFile("groups")) {
-            auto ent = LoadGroup(QString("groups/%1.json").arg(id));
-            // Corrupted group?
-            if (ent->id != id) {
-                continue;
-            }
-            // Ensure order contains every group
-            if (!loadedOrder.contains(id)) {
-                loadedOrder << id;
-            }
-            groups[id] = ent;
-        }
-        // Ensure groups contains order
-        for (auto id: loadedOrder) {
-            if (groups.count(id)) {
-                groupsTabOrder << id;
-            }
         }
         // First setup
         if (groups.empty()) {
@@ -150,13 +142,13 @@ namespace NekoGui {
     std::shared_ptr<ProxyEntity> ProfileManager::NewProxyEntity(const QString &type) {
         NekoGui_fmt::AbstractBean *bean;
 
-        if (type == "socks") {
+        if (type == "socks5" || type == "socks4" || type == "socks4a" || type == "socks") {
             bean = new NekoGui_fmt::SocksHttpBean(NekoGui_fmt::SocksHttpBean::type_Socks5);
-        } else if (type == "http") {
+        } else if (type == "http" || type == "https") {
             bean = new NekoGui_fmt::SocksHttpBean(NekoGui_fmt::SocksHttpBean::type_HTTP);
-        } else if (type == "shadowsocks") {
+        } else if (type == "shadowsocks" || type == "ss") {
             bean = new NekoGui_fmt::ShadowSocksBean();
-        } else if (type == "shadowsocksr") {
+        } else if (type == "shadowsocksr" || type == "ssr") {
             bean = new NekoGui_fmt::ShadowSocksRBean();
         } else if (type == "chain") {
             bean = new NekoGui_fmt::ChainBean();
@@ -166,11 +158,11 @@ namespace NekoGui {
             bean = new NekoGui_fmt::TrojanVLESSBean(NekoGui_fmt::TrojanVLESSBean::proxy_Trojan);
         } else if (type == "vless") {
             bean = new NekoGui_fmt::TrojanVLESSBean(NekoGui_fmt::TrojanVLESSBean::proxy_VLESS);
-        } else if (type == "naive") {
+        } else if (type == "naive" || type == "naive+https" || type == "naive+quic") {
             bean = new NekoGui_fmt::NaiveBean();
-        } else if (type == "hysteria") {
+        } else if (type == "hysteria" || type == "hy") {
             bean = new NekoGui_fmt::QUICBean(NekoGui_fmt::QUICBean::proxy_Hysteria);
-        } else if (type == "hysteria2") {
+        } else if (type == "hysteria2" || type == "hy2") {
             bean = new NekoGui_fmt::QUICBean(NekoGui_fmt::QUICBean::proxy_Hysteria2);
         } else if (type == "tuic") {
             bean = new NekoGui_fmt::QUICBean(NekoGui_fmt::QUICBean::proxy_TUIC);
@@ -178,7 +170,7 @@ namespace NekoGui {
             bean = new NekoGui_fmt::AnyTLSBean();
         } else if (type == "ssh") {
             bean = new NekoGui_fmt::SSHBean();
-        } else if (type == "wireguard") {
+        } else if (type == "wireguard" || type == "wg") {
             bean = new NekoGui_fmt::WireGuardBean();
         } else if (type == "custom") {
             bean = new NekoGui_fmt::CustomBean();
@@ -191,50 +183,6 @@ namespace NekoGui {
 
     std::shared_ptr<Group> ProfileManager::NewGroup() {
         return std::make_shared<Group>();
-    }
-
-    // ProxyEntity
-
-    ProxyEntity::ProxyEntity(NekoGui_fmt::AbstractBean *bean_, const QString &type_) : type(type_) {
-        _add(new configItem("type", &type, itemType::string));
-        _add(new configItem("id", &id, itemType::integer));
-        _add(new configItem("gid", &gid, itemType::integer));
-        _add(new configItem("yc", &latency, itemType::integer));
-        _add(new configItem("report", &full_test_report, itemType::string));
-
-        // 可以不关联 bean，只加载 ProxyEntity 的信息
-        if (bean_) {
-            bean = std::shared_ptr<NekoGui_fmt::AbstractBean>(bean_);
-            traffic_data = std::make_shared<NekoGui_traffic::TrafficData>("");
-            // 有虚函数就要在这里 dynamic_cast
-            _add(new configItem("bean", dynamic_cast<JsonStore *>(bean.get()), itemType::jsonStore));
-            _add(new configItem("traffic", dynamic_cast<JsonStore *>(traffic_data.get()), itemType::jsonStore));
-        }
-    };
-
-    QVariant ProxyEntity::DisplayLatency() const {
-        if (latency < 0) {
-            return QObject::tr("Unavailable");
-        } else if (latency > 0) {
-            return latency;
-        } else {
-            return {};
-        }
-    }
-
-    QColor ProxyEntity::DisplayLatencyColor() const {
-        if (latency < 0) {
-            return Qt::red;
-        } else if (latency > 0) {
-            auto greenMs = dataStore->test_latency_url.startsWith("https://") ? 200 : 100;
-            if (latency < greenMs) {
-                return Qt::darkGreen;
-            } else {
-                return Qt::darkYellow;
-            }
-        } else {
-            return {};
-        }
     }
 
     // Profile
@@ -287,23 +235,10 @@ namespace NekoGui {
 
     // Group
 
-    Group::Group() {
-        _add(new configItem("id", &id, itemType::integer));
-        _add(new configItem("front_proxy_id", &front_proxy_id, itemType::integer));
-        _add(new configItem("archive", &archive, itemType::boolean));
-        _add(new configItem("skip_auto_update", &skip_auto_update, itemType::boolean));
-        _add(new configItem("name", &name, itemType::string));
-        _add(new configItem("order", &order, itemType::integerList));
-        _add(new configItem("url", &url, itemType::string));
-        _add(new configItem("info", &info, itemType::string));
-        _add(new configItem("lastup", &sub_last_update, itemType::integer64));
-    }
-
     std::shared_ptr<Group> ProfileManager::LoadGroup(const QString &jsonPath) {
         auto ent = std::make_shared<Group>();
         ent->fn = jsonPath;
-        ent->Load();
-        return ent;
+        return ent->Load() ? ent : nullptr;
     }
 
     int ProfileManager::NewGroupID() const {

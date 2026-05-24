@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QString>
 #include <QThread>
-#include <QTimer>
 #include <QUrlQuery>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -29,10 +28,6 @@ inline std::function<void(const QString &)> MW_show_log;
 inline std::function<void(const QString &, const QString &)> MW_show_log_ext;
 inline std::function<void(const QString &)> MW_show_log_ext_vt100;
 inline std::function<void(const QString &, const QString &)> MW_dialog_message;
-
-// Dispatchers
-
-inline QThread *DS_cores;
 
 // String
 
@@ -69,6 +64,10 @@ inline QStringList SplitLinesSkipSharp(const QString &str, int maxLine = 0) {
         if (maxLine > 0 && ++count >= maxLine) break;
     }
     return res;
+}
+
+inline QString cleanVT100String(QString str) {
+    return str.remove(QRegularExpression("\x1B\\[[0-9;]*m"));
 }
 
 // Base64
@@ -217,9 +216,8 @@ inline QString ReadableSize(qint64 bytes) {
 
 inline QWidget *GetMessageBoxParent() {
     auto activeWindow = QApplication::activeWindow();
-    if (activeWindow == nullptr && mainwindow != nullptr) {
-        if (mainwindow->isVisible()) return mainwindow;
-        return nullptr;
+    if (activeWindow == nullptr && mainwindow != nullptr && mainwindow->isVisible()) {
+        return mainwindow;
     }
     return activeWindow;
 }
