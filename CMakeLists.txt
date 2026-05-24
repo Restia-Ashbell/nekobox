@@ -262,6 +262,12 @@ endif ()
 
 if (WIN32)
     set_target_properties(nekoray PROPERTIES WIN32_EXECUTABLE TRUE)
+
+    qt_add_resources(nekoray "emoji_fonts"
+        BASE "res"
+        FILES
+            res/fonts/NotoColorEmoji-flagsonly.ttf
+    )
 endif ()
 
 # Target Source Translations

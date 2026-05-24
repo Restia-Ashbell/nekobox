@@ -8,6 +8,7 @@
 #include <QLocalSocket>
 #include <QLocalServer>
 #include <QCryptographicHash>
+#include <QFontDatabase>
 
 #include "ui/mainwindow.h"
 
@@ -109,6 +110,12 @@ int main(int argc, char *argv[]) {
     if (trans.load(NekoGui::dataStore->language, ":/i18n")) QApplication::installTranslator(&trans);
 
     // Font
+#ifdef Q_OS_WIN
+    if (QSysInfo::productVersion().toInt() >= 11) { // win10似乎不支持该字体格式会将国旗显示为空白
+        int fontId = QFontDatabase::addApplicationFont(":fonts/NotoColorEmoji-flagsonly.ttf");
+        QFontDatabase::setApplicationEmojiFontFamilies(QFontDatabase::applicationFontFamilies(fontId));
+    }
+#endif
     if (!NekoGui::dataStore->font.isEmpty()) {
         QFont currentFont = QApplication::font();
         currentFont.setFamily(NekoGui::dataStore->font);
