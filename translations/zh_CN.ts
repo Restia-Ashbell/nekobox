@@ -188,8 +188,12 @@
         <translation>启用 hook.js 功能</translation>
     </message>
     <message>
-        <source>Hide dashboard at startup</source>
-        <translation>启动时不显示仪表盘</translation>
+        <source>Launch at startup</source>
+        <translation>开机自启</translation>
+    </message>
+    <message>
+        <source>Start minimized to tray</source>
+        <translation>静默启动</translation>
     </message>
     <message>
         <source>Max log lines</source>
@@ -1166,10 +1170,6 @@ This needs to be run NekoBox with administrator privileges.</source>
         <translation>推广</translation>
     </message>
     <message>
-        <source>Dashboard</source>
-        <translation>面板</translation>
-    </message>
-    <message>
         <source>Type</source>
         <translation>类型</translation>
     </message>
@@ -1498,6 +1498,10 @@ End: %2</source>
     <message>
         <source>Current server is incompatible with Tun. Please stop the server first, enable Tun Mode, and then restart.</source>
         <translation>当前服务器与 Tun 不兼容。请先停止服务器，打开 Tun 模式后再启动。</translation>
+    </message>
+    <message>
+        <source>Open Dashboard</source>
+        <translation>打开仪表板</translation>
     </message>
     <message>
         <source>Open Config Folder</source>

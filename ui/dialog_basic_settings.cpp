@@ -6,6 +6,7 @@
 #include "ui/mainwindow.h"
 #include "ui/Icon.hpp"
 #include "main/GuiUtils.hpp"
+#include "sys/AutoRun.hpp"
 
 #include <QStyleFactory>
 #include <QFileDialog>
@@ -79,6 +80,8 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     D_LOAD_BOOL(check_include_pre)
     D_LOAD_BOOL(start_minimal)
     D_LOAD_INT(max_log_line)
+
+    ui->launch_at_startup->setChecked(AutoRun_IsEnabled());
     //
     ui->rfsh_r->setItemData(0, 500);
     ui->rfsh_r->setItemData(1, 1000);
@@ -122,7 +125,7 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     // Inbound
 
     refresh_auth();
-    D_LOAD_STRING(inbound_address)
+    D_LOAD_COMBO_STRING(inbound_address)
     D_LOAD_INT(inbound_port)
     CACHE.custom_inbound = NekoGui::dataStore->custom_inbound;
 
@@ -229,6 +232,7 @@ void DialogBasicSettings::accept() {
 
     D_SAVE_INT(max_log_line)
     MainWindow::instance()->updateLogMaxLines();
+    AutoRun_SetEnabled(ui->launch_at_startup->isChecked());
 
     // Subscription
 
@@ -239,7 +243,7 @@ void DialogBasicSettings::accept() {
     MainWindow::instance()->resetAutoUpdateSubscription(NekoGui::dataStore->sub_auto_update);
 
     // Inbound
-    D_SAVE_STRING(inbound_address)
+    D_SAVE_COMBO_STRING(inbound_address)
     D_SAVE_INT(inbound_port)
     NekoGui::dataStore->custom_inbound = CACHE.custom_inbound;
 

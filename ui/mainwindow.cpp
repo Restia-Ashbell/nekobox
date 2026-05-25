@@ -30,7 +30,6 @@
 #include "db/traffic/TrafficLooper.hpp"
 #include "sub/GroupUpdater.hpp"
 #include "sys/ExternalProcess.hpp"
-#include "sys/AutoRun.hpp"
 #include "sys/AdminHelper.hpp"
 
 #include "ui/Icon.hpp"
@@ -80,13 +79,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->toolButton_preferences->setMenu(ui->menu_preferences);
     ui->toolButton_server->setMenu(ui->menu_server);
     ui->menubar->setVisible(false);
-    connect(ui->toolButton_dashboard, &QToolButton::clicked, this, [=, this] {
-        if (!NekoGui::dataStore->clash_api_external_controller.isEmpty() && NekoGui::dataStore->started_id >= 0) {
-            QDesktopServices::openUrl(QUrl("http://" + NekoGui::dataStore->clash_api_external_controller));
-        } else {
-            QMessageBox::warning(this, tr("Unable to Open Dashboard"), tr("Please configure the Clash API and start first."));
-        }
-    });
     connect(ui->toolButton_document, &QToolButton::clicked, this, [=, this] { QDesktopServices::openUrl(QUrl("https://matsuridayo.github.io/")); });
     connect(ui->toolButton_update, &QToolButton::clicked, this, [=, this] { runOnNewThread([=, this] { CheckUpdate(); }); });
 
@@ -162,15 +154,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     });
 
     // Misc menu
+    connect(ui->actionOpen_Dashboard, &QAction::triggered, this, [=, this] {
+        if (!NekoGui::dataStore->clash_api_external_controller.isEmpty() && NekoGui::dataStore->started_id >= 0) {
+            QDesktopServices::openUrl(QUrl("http://" + NekoGui::dataStore->clash_api_external_controller));
+        } else {
+            QMessageBox::warning(this, tr("Unable to Open Dashboard"), tr("Please configure the Clash API and start first."));
+        }
+    });
     connect(ui->menu_open_config_folder, &QAction::triggered, this, [=, this] { QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath())); });
-    ui->menu_program_preference->addActions(ui->menu_preferences->actions());
     connect(ui->actionRestart_Proxy, &QAction::triggered, this, [=, this] { if (NekoGui::dataStore->started_id>=0) neko_start(NekoGui::dataStore->started_id); });
     connect(ui->actionRestart_Program, &QAction::triggered, this, [=, this] { MW_dialog_message("", "RestartProgram"); });
-    connect(ui->actionShow_window, &QAction::triggered, this, [=, this] { tray->activated(QSystemTrayIcon::ActivationReason::Trigger); });
+    ui->menu_program_preference->addActions(ui->menu_preferences->actions());
     //
     connect(ui->menu_program, &QMenu::aboutToShow, this, [=, this]() {
-        ui->actionStart_with_system->setChecked(AutoRun_IsEnabled());
-        ui->actionAllow_LAN->setChecked(QStringList{"::", "0.0.0.0"}.contains(NekoGui::dataStore->inbound_address));
         // active server
         for (const auto &old: ui->menuActive_Server->actions()) {
             ui->menuActive_Server->removeAction(old);
@@ -222,13 +218,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 }
             }
         }
-    });
-    connect(ui->actionStart_with_system, &QAction::triggered, this, [=, this](bool checked) {
-        AutoRun_SetEnabled(checked);
-    });
-    connect(ui->actionAllow_LAN, &QAction::triggered, this, [=, this](bool checked) {
-        NekoGui::dataStore->inbound_address = checked ? "::" : "127.0.0.1";
-        MW_dialog_message("", "UpdateDataStore");
     });
     //
     connect(ui->checkBox_VPN, &QCheckBox::clicked, this, [=, this](bool checked) { neko_set_spmode_vpn(checked); });

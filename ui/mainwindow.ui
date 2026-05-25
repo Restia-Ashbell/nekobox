@@ -108,34 +108,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QToolButton" name="toolButton_dashboard">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Dashboard</string>
-        </property>
-        <property name="icon">
-         <iconset theme="applications-internet"/>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-        <property name="popupMode">
-         <enum>QToolButton::ToolButtonPopupMode::InstantPopup</enum>
-        </property>
-        <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QToolButton" name="toolButton_document">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -347,13 +319,11 @@
       <string>Active Routing</string>
      </property>
     </widget>
-    <addaction name="actionShow_window"/>
+    <addaction name="actionOpen_Dashboard"/>
     <addaction name="menu_open_config_folder"/>
     <addaction name="separator"/>
     <addaction name="menu_scan_qr"/>
     <addaction name="separator"/>
-    <addaction name="actionStart_with_system"/>
-    <addaction name="actionAllow_LAN"/>
     <addaction name="menuActive_Server"/>
     <addaction name="menuActive_Routing"/>
     <addaction name="menu_spmode"/>
@@ -422,11 +392,6 @@
   <action name="menu_exit">
    <property name="text">
     <string>Exit</string>
-   </property>
-  </action>
-  <action name="actionShow_window">
-   <property name="text">
-    <string>Show Window</string>
    </property>
   </action>
   <action name="menu_basic_settings">
@@ -571,22 +536,6 @@
     <string notr="true">Ctrl+M</string>
    </property>
   </action>
-  <action name="actionStart_with_system">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Start with system</string>
-   </property>
-  </action>
-  <action name="actionAllow_LAN">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Allow other devices to connect</string>
-   </property>
-  </action>
   <action name="menu_remove_unavailable">
    <property name="text">
     <string>Remove Unavailable</string>
@@ -685,6 +634,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="actionOpen_Dashboard">
+   <property name="text">
+    <string>Open Dashboard</string>
    </property>
   </action>
  </widget>
