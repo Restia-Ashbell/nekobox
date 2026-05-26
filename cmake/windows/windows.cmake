@@ -1,5 +1,5 @@
 set(PLATFORM_SOURCES sys/windows/MiniDump.cpp)
-set(PLATFORM_LIBRARIES wininet wsock32 ws2_32 user32 rasapi32 iphlpapi)
+set(PLATFORM_LIBRARIES wininet rasapi32 dbghelp)
 
 include(cmake/windows/generate_product_version.cmake)
 generate_product_version(
