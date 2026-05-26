@@ -1,8 +1,8 @@
 #pragma once
 
-#include <QString>
-#include <QList>
 #include <QElapsedTimer>
+#include <QList>
+#include <QString>
 
 #include "TrafficData.hpp"
 

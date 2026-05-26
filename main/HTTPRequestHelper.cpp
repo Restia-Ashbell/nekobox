@@ -1,10 +1,10 @@
 #include "HTTPRequestHelper.hpp"
 
+#include <QEventLoop>
 #include <QNetworkAccessManager>
 #include <QNetworkProxy>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QEventLoop>
 
 #include "main/NekoGui_DataStore.hpp"
 

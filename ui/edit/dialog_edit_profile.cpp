@@ -1,26 +1,24 @@
 #include "dialog_edit_profile.h"
 #include "ui_dialog_edit_profile.h"
 
-#include "ui/edit/edit_socks_http.h"
-#include "ui/edit/edit_shadowsocks.h"
-#include "ui/edit/edit_shadowsocksr.h"
-#include "ui/edit/edit_chain.h"
-#include "ui/edit/edit_vmess.h"
-#include "ui/edit/edit_trojan_vless.h"
-#include "ui/edit/edit_naive.h"
-#include "ui/edit/edit_quic.h"
-#include "ui/edit/edit_anytls.h"
-#include "ui/edit/edit_ssh.h"
-#include "ui/edit/edit_wireguard.h"
-#include "ui/edit/edit_custom.h"
-
-#include "fmt/includes.h"
-#include "fmt/Preset.hpp"
+#include <QInputDialog>
 
 #include "3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp"
+#include "fmt/Preset.hpp"
+#include "fmt/includes.h"
 #include "main/GuiUtils.hpp"
-
-#include <QInputDialog>
+#include "ui/edit/edit_anytls.h"
+#include "ui/edit/edit_chain.h"
+#include "ui/edit/edit_custom.h"
+#include "ui/edit/edit_naive.h"
+#include "ui/edit/edit_quic.h"
+#include "ui/edit/edit_shadowsocks.h"
+#include "ui/edit/edit_shadowsocksr.h"
+#include "ui/edit/edit_socks_http.h"
+#include "ui/edit/edit_ssh.h"
+#include "ui/edit/edit_trojan_vless.h"
+#include "ui/edit/edit_vmess.h"
+#include "ui/edit/edit_wireguard.h"
 
 #define LOAD_TYPE(a) ui->type->addItem(NekoGui::ProfileManager::NewProxyEntity(a)->bean->DisplayType(), a);
 

@@ -1,16 +1,16 @@
 #include "dialog_manage_groups.h"
 #include "ui_dialog_manage_groups.h"
 
-#include "db/ProfileManager.hpp"
-#include "sub/GroupUpdater.hpp"
-#include "main/GuiUtils.hpp"
-#include "ui/widget/GroupItem.h"
-#include "ui/edit/dialog_edit_group.h"
-#include "ui/mainwindow.h"
-
 #include <QInputDialog>
 #include <QListWidgetItem>
 #include <QMessageBox>
+
+#include "db/ProfileManager.hpp"
+#include "main/GuiUtils.hpp"
+#include "sub/GroupUpdater.hpp"
+#include "ui/edit/dialog_edit_group.h"
+#include "ui/mainwindow.h"
+#include "ui/widget/GroupItem.h"
 
 DialogManageGroups::DialogManageGroups(QWidget *parent, int index) : QDialog(parent), ui(new Ui::DialogManageGroups) {
     ui->setupUi(this);

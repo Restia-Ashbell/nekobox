@@ -35,7 +35,7 @@ namespace NekoGui_ConfigItem {
             case itemType::integer64:
                 *(long long *) item->ptr = *(long long *) p;
                 break;
-            // others...
+                // others...
         }
     }
 

@@ -1,10 +1,9 @@
 #include "ProfileManager.hpp"
 
-#include "fmt/includes.h"
-
-#include <QFile>
 #include <QDir>
-#include <QColor>
+#include <QFile>
+
+#include "fmt/includes.h"
 
 namespace NekoGui {
 

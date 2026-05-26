@@ -1,7 +1,8 @@
 BasedOnStyle: Google
 ColumnLimit: 0
 IndentWidth: 4
-SortIncludes: Never
+SortIncludes: true
+IncludeBlocks: Preserve
 SpacesBeforeTrailingComments: 1
 NamespaceIndentation: All
 AccessModifierOffset: -4

@@ -2,13 +2,10 @@
 #include "ui_edit_custom.h"
 
 #include "3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp"
-#include "fmt/CustomBean.hpp"
-#include "fmt/Preset.hpp"
 #include "db/ConfigBuilder.hpp"
 #include "db/ProfileManager.hpp"
-
-#include <QMessageBox>
-#include <QClipboard>
+#include "fmt/CustomBean.hpp"
+#include "fmt/Preset.hpp"
 
 EditCustom::EditCustom(QWidget *parent) : QWidget(parent), ui(new Ui::EditCustom) {
     ui->setupUi(this);

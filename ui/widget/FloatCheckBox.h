@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QEvent>
 #include <QCheckBox>
+#include <QEvent>
 
 class FloatCheckBox : public QCheckBox {
 public:

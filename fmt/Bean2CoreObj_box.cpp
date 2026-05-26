@@ -2,7 +2,7 @@
 #include "fmt/includes.h"
 
 namespace NekoGui_fmt {
-    void V2rayStreamSettings::BuildStreamSettingsSingBox(QJsonObject* outbound) {
+    void V2rayStreamSettings::BuildStreamSettingsSingBox(QJsonObject *outbound) {
         // https://sing-box.sagernet.org/configuration/shared/v2ray-transport
 
         if (network == "tcp") network.clear();
@@ -75,7 +75,7 @@ namespace NekoGui_fmt {
         }
     }
 
-    void MultiplexSettings::BuildMultiplexSettingsSingBox(QJsonObject* outbound) {
+    void MultiplexSettings::BuildMultiplexSettingsSingBox(QJsonObject *outbound) {
         if (enabled) {
             auto muxObj = QJsonObject{
                 {"enabled", enabled},

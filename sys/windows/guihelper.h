@@ -2,4 +2,4 @@
 
 class QWidget;
 
-void Windows_QWidget_SetForegroundWindow(QWidget* w);
+void Windows_QWidget_SetForegroundWindow(QWidget *w);

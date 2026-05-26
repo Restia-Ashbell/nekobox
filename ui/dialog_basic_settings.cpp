@@ -1,18 +1,18 @@
 #include "dialog_basic_settings.h"
 #include "ui_dialog_basic_settings.h"
 
-#include "3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp"
-#include "fmt/Preset.hpp"
-#include "ui/mainwindow.h"
-#include "ui/Icon.hpp"
-#include "main/GuiUtils.hpp"
-#include "sys/AutoRun.hpp"
-
-#include <QStyleFactory>
 #include <QFileDialog>
 #include <QFontDatabase>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QStyleFactory>
+
+#include "3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp"
+#include "fmt/Preset.hpp"
+#include "main/GuiUtils.hpp"
+#include "sys/AutoRun.hpp"
+#include "ui/Icon.hpp"
+#include "ui/mainwindow.h"
 
 class ExtraCoreWidget : public QWidget {
 public:

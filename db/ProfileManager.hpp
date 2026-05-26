@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ProxyEntity.hpp"
 #include "Group.hpp"
+#include "ProxyEntity.hpp"
 
 namespace NekoGui {
     class ProfileManager : private JsonStore {

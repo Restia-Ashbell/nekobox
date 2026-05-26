@@ -1,23 +1,23 @@
 #pragma once
 
 #include <QApplication>
-#include <QObject>
-#include <QString>
-#include <QThread>
-#include <QUrlQuery>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QTcpServer>
-#include <QMessageBox>
+#include <QDateTime>
 #include <QDir>
 #include <QFile>
-#include <QRegularExpression>
-#include <QDateTime>
-#include <QLocale>
 #include <QHostAddress>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QLocale>
+#include <QMessageBox>
+#include <QObject>
 #include <QRandomGenerator>
+#include <QRegularExpression>
+#include <QString>
+#include <QTcpServer>
 #include <QTemporaryFile>
+#include <QThread>
+#include <QUrlQuery>
 
 inline const QString software_name = "NekoBox";
 inline const QString software_core_name = "sing-box";

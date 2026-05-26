@@ -1,47 +1,42 @@
-#include "./ui_mainwindow.h"
 #include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 #include <QClipboard>
-#include <QLabel>
-#include <QTextBlock>
-#include <QScrollBar>
-#include <QScreen>
 #include <QDesktopServices>
-#include <QInputDialog>
-#include <QThread>
-#include <QTimer>
-#include <QMessageBox>
 #include <QDir>
 #include <QFileInfo>
-#include <QPlainTextEdit>
 #include <QHeaderView>
 #include <QHotkey>
+#include <QInputDialog>
+#include <QLabel>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QScrollBar>
+#include <QShortcut>
+#include <QTimer>
 
-#include "ZXingQtReader.h"
-#include "MultiFormatWriter.h"
 #include "BarcodeFormat.h"
 #include "BitMatrix.h"
-
+#include "MultiFormatWriter.h"
+#include "ZXingQtReader.h"
 #include "libbox.h"
-
-#include "fmt/Preset.hpp"
-#include "db/ProfileFilter.hpp"
-#include "db/ConfigBuilder.hpp"
-#include "db/traffic/TrafficLooper.hpp"
-#include "sub/GroupUpdater.hpp"
-#include "sys/ExternalProcess.hpp"
-#include "sys/AdminHelper.hpp"
-
-#include "ui/Icon.hpp"
-#include "ui/edit/dialog_edit_group.h"
-#include "ui/edit/dialog_edit_profile.h"
-#include "ui/dialog_basic_settings.h"
-#include "ui/dialog_manage_groups.h"
-#include "ui/dialog_manage_routes.h"
-#include "ui/dialog_hotkey.h"
 
 #include "3rdparty/qv2ray/v2/components/proxy/QvProxyConfigurator.hpp"
 #include "3rdparty/qv2ray/v2/ui/LogHighlighter.hpp"
+#include "db/ConfigBuilder.hpp"
+#include "db/ProfileFilter.hpp"
+#include "db/traffic/TrafficLooper.hpp"
+#include "fmt/Preset.hpp"
+#include "sub/GroupUpdater.hpp"
+#include "sys/AdminHelper.hpp"
+#include "sys/ExternalProcess.hpp"
+#include "ui/Icon.hpp"
+#include "ui/dialog_basic_settings.h"
+#include "ui/dialog_hotkey.h"
+#include "ui/dialog_manage_groups.h"
+#include "ui/dialog_manage_routes.h"
+#include "ui/edit/dialog_edit_group.h"
+#include "ui/edit/dialog_edit_profile.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     mainwindow = this;

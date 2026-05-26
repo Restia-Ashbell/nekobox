@@ -3,11 +3,11 @@
 #include <QInputDialog>
 
 #include "db/ProfileFilter.hpp"
-#include "fmt/includes.h"
 #include "fmt/Preset.hpp"
+#include "fmt/includes.h"
 #include "main/HTTPRequestHelper.hpp"
-#include "ui/widget/GroupItem.h"
 #include "ui/mainwindow.h"
+#include "ui/widget/GroupItem.h"
 
 #ifndef NKR_NO_YAML
 #include <yaml-cpp/yaml.h>

@@ -144,8 +144,8 @@ bool AutoRun_IsEnabled() {
 
 #ifdef Q_OS_LINUX
 
-#include <QStandardPaths>
 #include <QProcessEnvironment>
+#include <QStandardPaths>
 #include <QTextStream>
 
 #define NEWLINE "\n"

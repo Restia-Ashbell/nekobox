@@ -1,14 +1,14 @@
 #include <csignal>
 
 #include <QApplication>
+#include <QCryptographicHash>
 #include <QDir>
-#include <QTranslator>
+#include <QFontDatabase>
+#include <QLocalServer>
+#include <QLocalSocket>
 #include <QMessageBox>
 #include <QStandardPaths>
-#include <QLocalSocket>
-#include <QLocalServer>
-#include <QCryptographicHash>
-#include <QFontDatabase>
+#include <QTranslator>
 
 #include "ui/mainwindow.h"
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <QWidget>
 #include <QDialog>
 #include <QMenu>
 #include <QTableWidgetItem>
+#include <QWidget>
 
 #include "db/Group.hpp"
 

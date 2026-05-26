@@ -1,12 +1,11 @@
 #pragma once
 
-#include <QMainWindow>
 #include <QFuture>
-#include <QTableWidget>
 #include <QKeyEvent>
-#include <QSystemTrayIcon>
-#include <QShortcut>
+#include <QMainWindow>
 #include <QMutex>
+#include <QSystemTrayIcon>
+#include <QTableWidget>
 
 #include "db/ProxyEntity.hpp"
 #include "main/GuiUtils.hpp"

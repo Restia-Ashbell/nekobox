@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QWidget>
 #include <QListWidgetItem>
+#include <QWidget>
 
 #include "db/ProfileManager.hpp"
 

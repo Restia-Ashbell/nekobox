@@ -1,7 +1,7 @@
 #include "TrafficLooper.hpp"
 
-#include <QThread>
 #include <QJsonObject>
+#include <QThread>
 
 #include "libbox.h"
 

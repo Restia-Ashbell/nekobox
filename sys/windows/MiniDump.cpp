@@ -8,8 +8,8 @@
 #include <dbghelp.h>
 
 #include <QApplication>
-#include <QDir>
 #include <QDateTime>
+#include <QDir>
 #include <QMessageBox>
 
 typedef BOOL(WINAPI *MINIDUMPWRITEDUMP)(

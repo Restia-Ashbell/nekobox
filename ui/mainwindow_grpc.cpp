@@ -1,18 +1,13 @@
-#include "./ui_mainwindow.h"
 #include "mainwindow.h"
+#include "ui_mainwindow.h"
 
-#include <QThread>
-#include <QInputDialog>
-#include <QPushButton>
-#include <QDesktopServices>
-#include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QtConcurrent>
 
 #include "libbox.h"
 
-#include "db/ProfileManager.hpp"
 #include "db/ConfigBuilder.hpp"
+#include "db/ProfileManager.hpp"
 #include "db/traffic/TrafficLooper.hpp"
 
 // ext core

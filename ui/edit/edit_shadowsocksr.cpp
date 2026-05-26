@@ -1,8 +1,8 @@
 #include "edit_shadowsocksr.h"
 #include "ui_edit_shadowsocksr.h"
 
-#include "fmt/ShadowSocksRBean.hpp"
 #include "fmt/Preset.hpp"
+#include "fmt/ShadowSocksRBean.hpp"
 
 EditShadowSocksR::EditShadowSocksR(QWidget *parent) : QWidget(parent), ui(new Ui::EditShadowSocksR) {
     ui->setupUi(this);

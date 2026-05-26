@@ -1,7 +1,7 @@
 #include "db/ConfigBuilder.hpp"
 #include "db/ProfileManager.hpp"
-#include "fmt/includes.h"
 #include "fmt/Preset.hpp"
+#include "fmt/includes.h"
 #include "sys/AdminHelper.hpp"
 
 namespace NekoGui {

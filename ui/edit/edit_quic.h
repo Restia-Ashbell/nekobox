@@ -1,8 +1,7 @@
 #pragma once
 
 #include <QWidget>
-#include <QGridLayout>
-#include <QHBoxLayout>
+
 #include "profile_editor.h"
 
 QT_BEGIN_NAMESPACE

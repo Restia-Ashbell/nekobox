@@ -69,11 +69,11 @@
         NekoGui::dataStore->i = -ui->i->text().toInt(); \
     }
 
-#define C_EDIT_JSON_ALLOW_EMPTY(a)                                    \
-    auto editor = new JsonEditor(CACHE.a, this);                      \
-    auto result = editor->OpenEditor();                               \
-    CACHE.a = QJsonObject2QString(result, true);                      \
-    if (result.isEmpty()) CACHE.a = "";                               \
+#define C_EDIT_JSON_ALLOW_EMPTY(a)               \
+    auto editor = new JsonEditor(CACHE.a, this); \
+    auto result = editor->OpenEditor();          \
+    CACHE.a = QJsonObject2QString(result, true); \
+    if (result.isEmpty()) CACHE.a = "";          \
     editor->deleteLater();
 
 //

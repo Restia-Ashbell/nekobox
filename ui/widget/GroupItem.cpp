@@ -1,12 +1,12 @@
 #include "GroupItem.h"
 #include "ui_GroupItem.h"
 
-#include "ui/edit/dialog_edit_group.h"
-#include "ui/mainwindow.h"
+#include <QMessageBox>
+
 #include "main/GuiUtils.hpp"
 #include "sub/GroupUpdater.hpp"
-
-#include <QMessageBox>
+#include "ui/edit/dialog_edit_group.h"
+#include "ui/mainwindow.h"
 
 QString GroupItem::ParseSubInfo(const QString &info) {
     if (info.trimmed().isEmpty()) return {};
