@@ -11,7 +11,7 @@
 
 #define QRegExpValidator_Number new QRegularExpressionValidator(QRegularExpression("^[0-9]+$"), this)
 
-// NekoRay Save&Load
+// Save&Load
 
 #define P_C_LOAD_STRING(a) CACHE.a = bean->a;
 #define P_C_SAVE_STRING(a) bean->a = CACHE.a;

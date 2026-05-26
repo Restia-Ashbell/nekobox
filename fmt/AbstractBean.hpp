@@ -58,7 +58,7 @@ namespace NekoGui_fmt {
         QString ToNekorayShareLink(const QString &type) {
             auto b = ToJson();
             QUrl url;
-            url.setScheme("nekoray");
+            url.setScheme("nekobox");
             url.setHost(type);
             url.setFragment(QJsonObject2QString(b, true).toUtf8().toBase64(QByteArray::Base64UrlEncoding));
             return url.toString();

@@ -106,8 +106,7 @@ namespace NekoGui_sub {
             const QString scheme = link.scheme();
             bool ok = false;
 
-            // Nekoray format
-            if (scheme == "nekoray") {
+            if (scheme == "nekobox") {
                 if (!link.isValid()) continue;
                 ent = NekoGui::ProfileManager::NewProxyEntity(link.host());
                 if (!ent->bean) continue;

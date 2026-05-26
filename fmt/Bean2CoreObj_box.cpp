@@ -322,7 +322,7 @@ namespace NekoGui_fmt {
     CoreObjOutboundBuildResult WireGuardBean::BuildCoreObjSingBox() {
         CoreObjOutboundBuildResult result;
 
-        auto tun_name = "nekoray-wg";
+        auto tun_name = "nekobox-wg";
 #ifdef Q_OS_MACOS
         tun_name = "uwg9";
 #endif

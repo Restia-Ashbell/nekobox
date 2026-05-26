@@ -17,7 +17,7 @@ namespace NekoGui {
     }
 
     QString genTunName() {
-        auto tun_name = "nekoray-tun";
+        auto tun_name = "nekobox-tun";
 #ifdef Q_OS_MACOS
         tun_name = "utun9";
 #endif

@@ -80,10 +80,6 @@
         <translation>资源文件路径</translation>
     </message>
     <message>
-        <source>Default: dir of &quot;nekoray&quot;</source>
-        <translation>默认值：和 nekoray 同路径</translation>
-    </message>
-    <message>
         <source>Concurrent</source>
         <translation>并发</translation>
     </message>
@@ -226,14 +222,6 @@
     <message>
         <source>Override underlying DNS</source>
         <translation>覆盖底层 DNS</translation>
-    </message>
-    <message>
-        <source>It is recommended to leave it blank, but it sometimes does not work, at this time you can set this option.
-For NekoRay, this rewrites the underlying(localhost) DNS in Tun Mode.
-For NekoBox, this rewrites the underlying(localhost) DNS in Tun Mode, normal mode, and also URL Test.</source>
-        <translation>建议留空，但有时会出现问题，这时可以设置这个选项。
-对于 NekoRay 来说，在 Tun 模式下会重写 underlying(localhost) DNS。
-对于 NekoBox 来说，在 Tun 模式、正常模式和 URL 测试中会重写 underlying(localhost) DNS。</translation>
     </message>
     <message>
         <source>If you Tun Mode is not working, try to change this option.</source>

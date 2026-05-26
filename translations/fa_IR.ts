@@ -76,10 +76,6 @@
         <translation>مکان دارایی</translation>
     </message>
     <message>
-        <source>Default: dir of &quot;nekoray&quot;</source>
-        <translation type="unfinished">مسیر پیش فرض &quot;nekoray&quot;</translation>
-    </message>
-    <message>
         <source>Concurrent</source>
         <translation>هم زمان</translation>
     </message>
@@ -212,12 +208,6 @@
     <message>
         <source>Override underlying DNS</source>
         <translation type="unfinished">لغو دی ان اس زیربنایی</translation>
-    </message>
-    <message>
-        <source>It is recommended to leave it blank, but it sometimes does not work, at this time you can set this option.
-For NekoRay, this rewrites the underlying(localhost) DNS in Tun Mode.
-For NekoBox, this rewrites the underlying(localhost) DNS in Tun Mode, normal mode, and also URL Test.</source>
-        <translation type="unfinished">پیشنهاد میشود که این گزینه را انتخاب نشده باقی بگذارید ، اما گاهی اوقات کار نمیکند در این مواقع شما میتوانید این گزینه را انتخاب کنید ، برای Nekoray این گزینه دی ان اس زیربنایی را در حالت تونل بازنویسی میکند ، و برای NekoBox این گزینه دی ان اس زیربنایی را هم در حالت تونل و هم در حالت معمولی و تست آدرس بازنویسی میکند</translation>
     </message>
     <message>
         <source>If you Tun Mode is not working, try to change this option.</source>

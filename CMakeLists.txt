@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
-project(nekoray VERSION 0.1 LANGUAGES CXX)
+project(nekobox VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -236,34 +236,34 @@ set(PROJECT_SOURCES
 )
 
 # Qt exe
-qt_add_executable(nekoray
+qt_add_executable(nekobox
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
 )
-add_dependencies(nekoray BuildCore)
+add_dependencies(nekobox BuildCore)
 
 # Target
 
-set_property(TARGET nekoray PROPERTY AUTOUIC ON)
-set_property(TARGET nekoray PROPERTY AUTOMOC ON)
-set_property(TARGET nekoray PROPERTY AUTORCC ON)
+set_property(TARGET nekobox PROPERTY AUTOUIC ON)
+set_property(TARGET nekobox PROPERTY AUTOMOC ON)
+set_property(TARGET nekobox PROPERTY AUTORCC ON)
 
 if (APPLE)
-    set(MACOSX_ICON ${CMAKE_SOURCE_DIR}/res/nekoray.icns)
-    target_sources(nekoray PRIVATE ${MACOSX_ICON})
-    set_target_properties(nekoray PROPERTIES
-            MACOSX_BUNDLE_ICON_FILE "nekoray.icns"
+    set(MACOSX_ICON ${CMAKE_SOURCE_DIR}/res/nekobox.icns)
+    target_sources(nekobox PRIVATE ${MACOSX_ICON})
+    set_target_properties(nekobox PROPERTIES
+            MACOSX_BUNDLE_ICON_FILE "nekobox.icns"
             RESOURCE ${MACOSX_ICON}
             MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/MacOSXBundleInfo.plist
-            MACOSX_BUNDLE_GUI_IDENTIFIER moe.nekoray.macosx
+            MACOSX_BUNDLE_GUI_IDENTIFIER moe.nekobox.macosx
             MACOSX_BUNDLE TRUE
     )
 endif ()
 
 if (WIN32)
-    set_target_properties(nekoray PROPERTIES WIN32_EXECUTABLE TRUE)
+    set_target_properties(nekobox PROPERTIES WIN32_EXECUTABLE TRUE)
 
-    qt_add_resources(nekoray "emoji_fonts"
+    qt_add_resources(nekobox "emoji_fonts"
         BASE "res"
         FILES
             res/fonts/NotoColorEmoji-flagsonly.ttf
@@ -277,15 +277,15 @@ set(TS_FILES
         translations/fa_IR.ts
         translations/ru_RU.ts
 )
-qt_add_translations(nekoray TS_FILES ${TS_FILES} MERGE_QT_TRANSLATIONS)
+qt_add_translations(nekobox TS_FILES ${TS_FILES} MERGE_QT_TRANSLATIONS)
 
 # Target Link
 
-target_include_directories(nekoray PRIVATE
+target_include_directories(nekobox PRIVATE
         ${zxing-cpp_SOURCE_DIR}/example
 )
 
-target_link_libraries(nekoray PRIVATE
+target_link_libraries(nekobox PRIVATE
         Qt::Widgets
         Qt::Network
         Qt::Concurrent
@@ -297,4 +297,4 @@ target_link_libraries(nekoray PRIVATE
         ${LIBBOX_OUTPUT}
 )
 
-qt_finalize_executable(nekoray)
+qt_finalize_executable(nekobox)

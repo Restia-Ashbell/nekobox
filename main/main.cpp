@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     // dirs & clean
     QDir appDir(QApplication::applicationDirPath());
     if (NekoGui::dataStore->flag_use_appdata) {
-        QApplication::setApplicationName("nekoray");
+        QApplication::setApplicationName("nekobox");
         if (!NekoGui::dataStore->appdataDir.isEmpty()) {
             appDir.setPath(NekoGui::dataStore->appdataDir);
         } else {
