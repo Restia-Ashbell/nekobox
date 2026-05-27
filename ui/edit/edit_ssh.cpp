@@ -13,7 +13,7 @@ EditSSH::~EditSSH() {
 
 void EditSSH::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     this->ent = _ent;
-    auto bean = this->ent->SSHBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::SSHBean>();
 
     ui->user->setText(bean->user);
     ui->password->setText(bean->password);
@@ -26,7 +26,7 @@ void EditSSH::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
 }
 
 bool EditSSH::onEnd() {
-    auto bean = this->ent->SSHBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::SSHBean>();
 
     bean->user = ui->user->text();
     bean->password = ui->password->text();

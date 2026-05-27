@@ -82,7 +82,7 @@ namespace NekoGui_sub {
 
     QList<std::shared_ptr<NekoGui::ProxyEntity>> GroupUpdater::updateJson(const QString &str, const QJsonObject &obj) {
         auto ent = NekoGui::ProfileManager::NewProxyEntity("custom");
-        auto bean = ent->CustomBean();
+        auto bean = ent->Bean<NekoGui_fmt::CustomBean>();
         if (obj.contains("outbounds")) {
             bean->core = "internal-full";
             bean->config_simple = str;
@@ -180,7 +180,7 @@ namespace NekoGui_sub {
                 ent->bean->serverPort = Node2Value<int>(proxy["port"]);
 
                 if (type == "shadowsocks") {
-                    auto bean = ent->ShadowSocksBean();
+                    auto bean = ent->Bean<NekoGui_fmt::ShadowSocksBean>();
                     bean->method = Node2Value<QString>(proxy["cipher"]).replace("dummy", "none");
                     bean->password = Node2Value<QString>(proxy["password"]);
                     auto plugin_n = proxy["plugin"];
@@ -219,7 +219,7 @@ namespace NekoGui_sub {
                     auto smux = NodeChild(proxy, {"smux"});
                     bean->multiplex.enabled = Node2Value<bool>(smux["enabled"]);
                 } else if (type == "shadowsocksr") {
-                    auto bean = ent->ShadowSocksRBean();
+                    auto bean = ent->Bean<NekoGui_fmt::ShadowSocksRBean>();
                     bean->method = Node2Value<QString>(proxy["cipher"]).replace("dummy", "none");
                     bean->password = Node2Value<QString>(proxy["password"]);
                     bean->obfs = Node2Value<QString>(proxy["obfs"]);
@@ -227,7 +227,7 @@ namespace NekoGui_sub {
                     bean->protocol = Node2Value<QString>(proxy["protocol"]);
                     bean->protocolParam = Node2Value<QString>(proxy["protocol-param"]);
                 } else if (type == "socks" || type == "http") {
-                    auto bean = ent->SocksHTTPBean();
+                    auto bean = ent->Bean<NekoGui_fmt::SocksHttpBean>();
                     bean->username = Node2Value<QString>(proxy["username"]);
                     bean->password = Node2Value<QString>(proxy["password"]);
                     if (type == "http") {
@@ -236,7 +236,7 @@ namespace NekoGui_sub {
                     }
                 } else if (type == "trojan" || type == "vless") {
                     needFix = true;
-                    auto bean = ent->TrojanVLESSBean();
+                    auto bean = ent->Bean<NekoGui_fmt::TrojanVLESSBean>();
                     if (type == "vless") {
                         bean->flow = Node2Value<QString>(proxy["flow"]);
                         bean->password = Node2Value<QString>(proxy["uuid"]);
@@ -310,7 +310,7 @@ namespace NekoGui_sub {
                     }
                 } else if (type == "vmess") {
                     needFix = true;
-                    auto bean = ent->VMessBean();
+                    auto bean = ent->Bean<NekoGui_fmt::VMessBean>();
                     bean->uuid = Node2Value<QString>(proxy["uuid"]);
                     bean->aid = Node2Value<int>(proxy["alterId"]);
                     bean->security = Node2Value<QString>(proxy["cipher"], bean->security);
@@ -376,7 +376,7 @@ namespace NekoGui_sub {
                         bean->stream->reality_sid = Node2Value<QString>(reality["short-id"]);
                     }
                 } else if (type == "hysteria") {
-                    auto bean = ent->QUICBean();
+                    auto bean = ent->Bean<NekoGui_fmt::QUICBean>();
 
                     bean->hopPort = Node2Value<QString>(proxy["ports"]);
 
@@ -406,7 +406,7 @@ namespace NekoGui_sub {
                     if (upMbps > 0) bean->uploadMbps = upMbps;
                     if (downMbps > 0) bean->downloadMbps = downMbps;
                 } else if (type == "hysteria2") {
-                    auto bean = ent->QUICBean();
+                    auto bean = ent->Bean<NekoGui_fmt::QUICBean>();
 
                     bean->hopPort = Node2Value<QString>(proxy["ports"]);
 
@@ -420,7 +420,7 @@ namespace NekoGui_sub {
                     bean->uploadMbps = Node2Value<QString>(proxy["up"]).split(" ")[0].toInt();
                     bean->downloadMbps = Node2Value<QString>(proxy["down"]).split(" ")[0].toInt();
                 } else if (type == "tuic") {
-                    auto bean = ent->QUICBean();
+                    auto bean = ent->Bean<NekoGui_fmt::QUICBean>();
 
                     bean->uuid = Node2Value<QString>(proxy["uuid"]);
                     bean->password = Node2Value<QString>(proxy["password"]);
@@ -446,12 +446,12 @@ namespace NekoGui_sub {
                         bean->serverAddress = Node2Value<QString>(proxy["ip"]);
                     }
                 } else if (type == "anytls") {
-                    auto bean = ent->AnyTLSBean();
+                    auto bean = ent->Bean<NekoGui_fmt::AnyTLSBean>();
                     bean->password = Node2Value<QString>(proxy["password"]);
                     bean->stream->sni = firstOrSecond(Node2Value<QString>(proxy["sni"]), Node2Value<QString>(proxy["servername"]));
                     bean->stream->allow_insecure = Node2Value<bool>(proxy["skip-cert-verify"]);
                 } else if (type == "ssh") {
-                    auto bean = ent->SSHBean();
+                    auto bean = ent->Bean<NekoGui_fmt::SSHBean>();
                     bean->user = Node2Value<QString>(proxy["username"]);
                     bean->password = Node2Value<QString>(proxy["password"]);
                     bean->privateKey = Node2Value<QString>(proxy["private-key"]);
@@ -464,7 +464,7 @@ namespace NekoGui_sub {
                         return node.IsSequence() ? Node2Value<QList<QString>>(node).join(",") : Node2Value<QString>(node);
                     };
 
-                    auto bean = ent->WireGuardBean();
+                    auto bean = ent->Bean<NekoGui_fmt::WireGuardBean>();
                     bean->serverAddress = getFieldValue("server");
                     bean->serverPort = getFieldValue("port").toInt();
                     bean->publicKey = getFieldValue("public-key");

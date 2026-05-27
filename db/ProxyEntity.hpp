@@ -55,52 +55,9 @@ namespace NekoGui {
             }
         }
 
-        [[nodiscard]] NekoGui_fmt::ChainBean *ChainBean() const {
-            return (NekoGui_fmt::ChainBean *) bean.get();
-        };
-
-        [[nodiscard]] NekoGui_fmt::SocksHttpBean *SocksHTTPBean() const {
-            return (NekoGui_fmt::SocksHttpBean *) bean.get();
-        };
-
-        [[nodiscard]] NekoGui_fmt::ShadowSocksBean *ShadowSocksBean() const {
-            return (NekoGui_fmt::ShadowSocksBean *) bean.get();
-        };
-
-        [[nodiscard]] NekoGui_fmt::ShadowSocksRBean *ShadowSocksRBean() const {
-            return (NekoGui_fmt::ShadowSocksRBean *) bean.get();
-        };
-
-        [[nodiscard]] NekoGui_fmt::VMessBean *VMessBean() const {
-            return (NekoGui_fmt::VMessBean *) bean.get();
-        };
-
-        [[nodiscard]] NekoGui_fmt::TrojanVLESSBean *TrojanVLESSBean() const {
-            return (NekoGui_fmt::TrojanVLESSBean *) bean.get();
-        };
-
-        [[nodiscard]] NekoGui_fmt::NaiveBean *NaiveBean() const {
-            return (NekoGui_fmt::NaiveBean *) bean.get();
-        };
-
-        [[nodiscard]] NekoGui_fmt::QUICBean *QUICBean() const {
-            return (NekoGui_fmt::QUICBean *) bean.get();
-        };
-
-        [[nodiscard]] NekoGui_fmt::AnyTLSBean *AnyTLSBean() const {
-            return (NekoGui_fmt::AnyTLSBean *) bean.get();
-        };
-
-        [[nodiscard]] NekoGui_fmt::SSHBean *SSHBean() const {
-            return (NekoGui_fmt::SSHBean *) bean.get();
-        };
-
-        [[nodiscard]] NekoGui_fmt::WireGuardBean *WireGuardBean() const {
-            return (NekoGui_fmt::WireGuardBean *) bean.get();
-        };
-
-        [[nodiscard]] NekoGui_fmt::CustomBean *CustomBean() const {
-            return (NekoGui_fmt::CustomBean *) bean.get();
-        };
+        template<typename T>
+        [[nodiscard]] T *Bean() const {
+            return dynamic_cast<T *>(bean.get());
+        }
     };
 } // namespace NekoGui

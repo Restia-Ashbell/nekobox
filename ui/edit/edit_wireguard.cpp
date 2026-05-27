@@ -13,7 +13,7 @@ EditWireGuard::~EditWireGuard() {
 
 void EditWireGuard::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     this->ent = _ent;
-    auto bean = this->ent->WireGuardBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::WireGuardBean>();
 
 #ifndef Q_OS_LINUX
     ui->enable_gso->hide();
@@ -31,7 +31,7 @@ void EditWireGuard::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
 }
 
 bool EditWireGuard::onEnd() {
-    auto bean = this->ent->WireGuardBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::WireGuardBean>();
 
     bean->privateKey = ui->private_key->text();
     bean->publicKey = ui->public_key->text();

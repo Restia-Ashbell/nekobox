@@ -17,7 +17,7 @@ EditQUIC::~EditQUIC() {
 
 void EditQUIC::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     this->ent = _ent;
-    auto bean = this->ent->QUICBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::QUICBean>();
 
     P_LOAD_STRING(hopPort);
     P_LOAD_INT(hopInterval);
@@ -108,7 +108,7 @@ void EditQUIC::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
 }
 
 bool EditQUIC::onEnd() {
-    auto bean = this->ent->QUICBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::QUICBean>();
 
     P_SAVE_BOOL(forceExternal);
 

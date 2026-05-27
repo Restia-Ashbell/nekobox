@@ -16,7 +16,7 @@ EditVMess::~EditVMess() {
 
 void EditVMess::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     this->ent = _ent;
-    auto bean = this->ent->VMessBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::VMessBean>();
 
     ui->uuid->setText(bean->uuid);
     ui->aid->setText(Int2String(bean->aid));
@@ -24,7 +24,7 @@ void EditVMess::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
 }
 
 bool EditVMess::onEnd() {
-    auto bean = this->ent->VMessBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::VMessBean>();
 
     bean->uuid = ui->uuid->text();
     bean->aid = ui->aid->text().toInt();

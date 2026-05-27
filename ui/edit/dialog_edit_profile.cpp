@@ -167,7 +167,7 @@ void DialogEditProfile::typeSelected() {
     } else if (type == "custom" || type == "internal" || type == "internal-full") {
         auto _innerWidget = new EditCustom(this);
         innerEditor = _innerWidget;
-        customType = newEnt ? type : ent->CustomBean()->core;
+        customType = newEnt ? type : ent->Bean<NekoGui_fmt::CustomBean>()->core;
         if (customType != "custom") _innerWidget->preset_core = customType;
         type = "custom";
     } else {

@@ -14,7 +14,7 @@ EditSocksHttp::~EditSocksHttp() {
 
 void EditSocksHttp::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     this->ent = _ent;
-    auto bean = this->ent->SocksHTTPBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::SocksHttpBean>();
 
     if (bean->socks_http_type == NekoGui_fmt::SocksHttpBean::type_Socks4) {
         ui->version->setCurrentIndex(1);
@@ -31,7 +31,7 @@ void EditSocksHttp::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
 }
 
 bool EditSocksHttp::onEnd() {
-    auto bean = this->ent->SocksHTTPBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::SocksHttpBean>();
 
     if (ui->version->isVisible()) {
         if (ui->version->currentIndex() == 1) {

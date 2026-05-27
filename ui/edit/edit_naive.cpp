@@ -15,7 +15,7 @@ EditNaive::~EditNaive() {
 
 void EditNaive::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     this->ent = _ent;
-    auto bean = this->ent->NaiveBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::NaiveBean>();
 
     P_LOAD_STRING(username);
     P_LOAD_STRING(password);
@@ -28,7 +28,7 @@ void EditNaive::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
 }
 
 bool EditNaive::onEnd() {
-    auto bean = this->ent->NaiveBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::NaiveBean>();
 
     P_SAVE_STRING(username);
     P_SAVE_STRING(password);

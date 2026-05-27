@@ -13,7 +13,7 @@ EditAnyTLS::~EditAnyTLS() {
 
 void EditAnyTLS::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     this->ent = _ent;
-    auto bean = this->ent->AnyTLSBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::AnyTLSBean>();
 
     ui->password->setText(bean->password);
     ui->idleSessionCheckInterval->setText(bean->idleSessionCheckInterval);
@@ -22,7 +22,7 @@ void EditAnyTLS::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
 }
 
 bool EditAnyTLS::onEnd() {
-    auto bean = this->ent->AnyTLSBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::AnyTLSBean>();
 
     bean->password = ui->password->text();
     bean->idleSessionCheckInterval = ui->idleSessionCheckInterval->text();

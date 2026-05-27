@@ -17,7 +17,7 @@ EditChain::~EditChain() {
 
 void EditChain::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     this->ent = _ent;
-    auto bean = this->ent->ChainBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::ChainBean>();
 
     for (auto id: bean->list) {
         AddProfileToListIfExist(id);
@@ -25,7 +25,7 @@ void EditChain::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
 }
 
 bool EditChain::onEnd() {
-    auto bean = this->ent->ChainBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::ChainBean>();
 
     QList<int> idList;
     for (int i = 0; i < ui->listWidget->count(); i++) {

@@ -145,7 +145,7 @@ namespace NekoGui {
         auto resolveChain = [=](const std::shared_ptr<ProxyEntity> &ent) {
             QList<std::shared_ptr<ProxyEntity>> resolved;
             if (ent->type == "chain") {
-                auto list = ent->ChainBean()->list;
+                auto list = ent->Bean<NekoGui_fmt::ChainBean>()->list;
                 std::reverse(std::begin(list), std::end(list));
                 for (auto id: list) {
                     resolved += profileManager->GetProfile(id);
@@ -266,7 +266,7 @@ namespace NekoGui {
             // determine port
             if (thisExternalStat > 0) {
                 if (ent->type == "custom") {
-                    auto bean = ent->CustomBean();
+                    auto bean = ent->Bean<NekoGui_fmt::CustomBean>();
                     if (IsValidPort(bean->mapping_port)) {
                         ext_mapping_port = bean->mapping_port;
                     } else {
@@ -337,7 +337,7 @@ namespace NekoGui {
             }
 
             if (ent->type == "wireguard") {
-                if (ent->WireGuardBean()->useSystemInterface && !isRunAsAdmin()) {
+                if (ent->Bean<NekoGui_fmt::WireGuardBean>()->useSystemInterface && !isRunAsAdmin()) {
                     status->result->error = "using wireguard system interface requires elevated permissions";
                     return {};
                 }

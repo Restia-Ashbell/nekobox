@@ -15,7 +15,7 @@ EditShadowSocksR::~EditShadowSocksR() {
 
 void EditShadowSocksR::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     this->ent = _ent;
-    auto bean = this->ent->ShadowSocksRBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::ShadowSocksRBean>();
 
     ui->method->setCurrentText(bean->method);
     ui->password->setText(bean->password);
@@ -26,7 +26,7 @@ void EditShadowSocksR::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
 }
 
 bool EditShadowSocksR::onEnd() {
-    auto bean = this->ent->ShadowSocksRBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::ShadowSocksRBean>();
 
     bean->method = ui->method->currentText();
     bean->password = ui->password->text();

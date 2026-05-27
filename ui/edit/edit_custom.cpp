@@ -32,7 +32,7 @@ EditCustom::~EditCustom() {
 
 void EditCustom::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     this->ent = _ent;
-    auto bean = this->ent->CustomBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::CustomBean>();
 
     // load known core
     auto core_map = QString2QJsonObject(NekoGui::dataStore->extraCore->core_map);
@@ -100,7 +100,7 @@ void EditCustom::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
         MessageBoxInfo(tr("Preview replace"), th.join("\n"));
         // EditCustom::onEnd
         auto tmpEnt = NekoGui::ProfileManager::NewProxyEntity("custom");
-        auto bean = tmpEnt->CustomBean();
+        auto bean = tmpEnt->Bean<NekoGui_fmt::CustomBean>();
         SAVE_CUSTOM_BEAN
         // 补充
         bean->serverAddress = get_edit_text_serverAddress();
@@ -126,7 +126,7 @@ bool EditCustom::onEnd() {
         return false;
     }
 
-    auto bean = this->ent->CustomBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::CustomBean>();
 
     SAVE_CUSTOM_BEAN
 

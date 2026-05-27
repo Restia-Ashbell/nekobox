@@ -14,7 +14,7 @@ EditTrojanVLESS::~EditTrojanVLESS() {
 
 void EditTrojanVLESS::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     this->ent = _ent;
-    auto bean = this->ent->TrojanVLESSBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::TrojanVLESSBean>();
     if (bean->proxy_type == NekoGui_fmt::TrojanVLESSBean::proxy_VLESS) {
         ui->label->setText("UUID");
     }
@@ -28,7 +28,7 @@ void EditTrojanVLESS::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
 }
 
 bool EditTrojanVLESS::onEnd() {
-    auto bean = this->ent->TrojanVLESSBean();
+    auto bean = this->ent->Bean<NekoGui_fmt::TrojanVLESSBean>();
     bean->password = ui->password->text();
     bean->flow = ui->flow->currentText();
     return true;
