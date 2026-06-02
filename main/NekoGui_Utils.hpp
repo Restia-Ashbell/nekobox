@@ -43,12 +43,12 @@ inline QString firstOrSecond(const QString &a, const QString &b) {
 
 inline QString SubStrBefore(const QString &str, const QString &sub) {
     int idx = str.indexOf(sub);
-    return (idx >= 0) ? str.left(idx) : str;
+    return idx >= 0 ? str.left(idx) : str;
 }
 
 inline QString SubStrAfter(const QString &str, const QString &sub) {
     int idx = str.indexOf(sub);
-    return (idx >= 0) ? str.sliced(idx + sub.size()) : str;
+    return idx >= 0 ? str.sliced(idx + sub.size()) : str;
 }
 
 inline QStringList SplitLines(const QString &str) {
@@ -82,8 +82,17 @@ inline QByteArray DecodeBase64OrBase64Url(const QString &input) {
 
 // URL
 
-inline QString GetQueryValue(const QUrlQuery &q, const QString &key, const QString &def = {}) {
-    return q.hasQueryItem(key) ? q.queryItemValue(key) : def;
+inline QString GetQueryValue(const QUrlQuery &query, const QString &key, const QString &def = {}) {
+    return query.hasQueryItem(key) ? query.queryItemValue(key) : def;
+}
+
+inline QString FirstQueryValue(const QUrlQuery &query, const QStringList &keys) {
+    for (const auto &key: keys) {
+        if (query.hasQueryItem(key)) {
+            return query.queryItemValue(key);
+        }
+    }
+    return {};
 }
 
 // Random

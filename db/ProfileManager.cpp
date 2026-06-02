@@ -139,45 +139,63 @@ namespace NekoGui {
     //  新建的不给 fn 和 id
 
     std::shared_ptr<ProxyEntity> ProfileManager::NewProxyEntity(const QString &type) {
+        QString t;
         NekoGui_fmt::AbstractBean *bean;
 
         if (type == "socks5" || type == "socks4" || type == "socks4a" || type == "socks") {
+            t = "socks";
             bean = new NekoGui_fmt::SocksHttpBean(NekoGui_fmt::SocksHttpBean::type_Socks5);
         } else if (type == "http" || type == "https") {
+            t = "http";
             bean = new NekoGui_fmt::SocksHttpBean(NekoGui_fmt::SocksHttpBean::type_HTTP);
         } else if (type == "shadowsocks" || type == "ss") {
+            t = "shadowsocks";
             bean = new NekoGui_fmt::ShadowSocksBean();
         } else if (type == "shadowsocksr" || type == "ssr") {
+            t = "shadowsocksr";
             bean = new NekoGui_fmt::ShadowSocksRBean();
-        } else if (type == "chain") {
-            bean = new NekoGui_fmt::ChainBean();
         } else if (type == "vmess") {
+            t = "vmess";
             bean = new NekoGui_fmt::VMessBean();
         } else if (type == "trojan") {
+            t = "trojan";
             bean = new NekoGui_fmt::TrojanVLESSBean(NekoGui_fmt::TrojanVLESSBean::proxy_Trojan);
         } else if (type == "vless") {
+            t = "vless";
             bean = new NekoGui_fmt::TrojanVLESSBean(NekoGui_fmt::TrojanVLESSBean::proxy_VLESS);
         } else if (type == "naive" || type == "naive+https" || type == "naive+quic") {
+            t = "naive";
             bean = new NekoGui_fmt::NaiveBean();
         } else if (type == "hysteria" || type == "hy") {
+            t = "hysteria";
             bean = new NekoGui_fmt::QUICBean(NekoGui_fmt::QUICBean::proxy_Hysteria);
         } else if (type == "hysteria2" || type == "hy2") {
+            t = "hysteria2";
             bean = new NekoGui_fmt::QUICBean(NekoGui_fmt::QUICBean::proxy_Hysteria2);
         } else if (type == "tuic") {
+            t = "tuic";
             bean = new NekoGui_fmt::QUICBean(NekoGui_fmt::QUICBean::proxy_TUIC);
         } else if (type == "anytls") {
+            t = "anytls";
             bean = new NekoGui_fmt::AnyTLSBean();
         } else if (type == "ssh") {
+            t = "ssh";
             bean = new NekoGui_fmt::SSHBean();
         } else if (type == "wireguard" || type == "wg") {
+            t = "wireguard";
             bean = new NekoGui_fmt::WireGuardBean();
         } else if (type == "custom") {
+            t = "custom";
             bean = new NekoGui_fmt::CustomBean();
+        } else if (type == "chain") {
+            t = "chain";
+            bean = new NekoGui_fmt::ChainBean();
         } else {
+            t = type;
             bean = nullptr;
         }
 
-        return std::make_shared<ProxyEntity>(bean, type);
+        return std::make_shared<ProxyEntity>(bean, t);
     }
 
     std::shared_ptr<Group> ProfileManager::NewGroup() {

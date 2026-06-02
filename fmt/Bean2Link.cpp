@@ -63,14 +63,9 @@ namespace NekoGui_fmt {
             query.addQueryItem("headerType", "http");
         }
 
-        // mux
-        if (multiplex.enabled) query.addQueryItem("mux", "true");
-
         // protocol
         if (proxy_type == proxy_VLESS) {
-            if (!flow.isEmpty()) {
-                query.addQueryItem("flow", flow);
-            }
+            if (!flow.isEmpty()) query.addQueryItem("flow", flow);
             query.addQueryItem("encryption", "none");
         }
 
@@ -94,7 +89,6 @@ namespace NekoGui_fmt {
 
         QUrlQuery query;
         if (!plugin.isEmpty()) query.addQueryItem("plugin", plugin);
-        if (multiplex.enabled) query.addQueryItem("mux", "true");
         if (uot > 0) query.addQueryItem("uot", QString::number(uot));
 
         url.setQuery(query);
@@ -188,9 +182,6 @@ namespace NekoGui_fmt {
                 query.addQueryItem("type", "tcp");
                 query.addQueryItem("headerType", "http");
             }
-
-            // mux
-            if (multiplex.enabled) query.addQueryItem("mux", "true");
 
             url.setQuery(query);
             return url.toString(QUrl::FullyEncoded);

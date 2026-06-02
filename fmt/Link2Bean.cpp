@@ -66,7 +66,6 @@ namespace NekoGui_fmt {
         if (!query.queryItemValue("plugin").startsWith("none")) {
             plugin = query.queryItemValue("plugin").replace("simple-obfs;", "obfs-local;");
         }
-        multiplex.enabled = GetQueryValue(query, "mux") == "true";
 
         // *ray misnomer
         if (method == "chacha20-poly1305")
@@ -144,7 +143,7 @@ namespace NekoGui_fmt {
             aid = GetQueryValue(query, "alterId", "0").toInt();
 
             // security
-            stream->sni = query.hasQueryItem("sni") ? query.queryItemValue("sni") : query.queryItemValue("peer");
+            stream->sni = FirstQueryValue(query, {"sni", "peer"});
             stream->alpn = GetQueryValue(query, "alpn");
             if (!query.queryItemValue("allowInsecure").isEmpty()) stream->allow_insecure = true;
             stream->reality_pbk = GetQueryValue(query, "pbk", "");
@@ -156,17 +155,14 @@ namespace NekoGui_fmt {
             }
 
             // type
-            stream->network = query.hasQueryItem("type") ? query.queryItemValue("type") : query.queryItemValue("obfs");
+            stream->network = FirstQueryValue(query, {"type", "obfs"});
             if (GetQueryValue(query, "headerType") == "http") stream->network = "http";
             if (stream->network == "grpc") {
-                stream->path = query.hasQueryItem("serviceName") ? query.queryItemValue("serviceName") : query.queryItemValue("path");
+                stream->path = FirstQueryValue(query, {"serviceName", "path"});
             } else {
                 stream->path = GetQueryValue(query, "path");
                 stream->host = GetQueryValue(query, "host");
             }
-
-            // mux
-            multiplex.enabled = GetQueryValue(query, "mux") == "true";
         }
         return !(serverAddress.isEmpty() || uuid.isEmpty());
     }
@@ -195,7 +191,7 @@ namespace NekoGui_fmt {
         serverPort = url.port();
 
         // security
-        stream->sni = query.hasQueryItem("sni") ? query.queryItemValue("sni") : query.queryItemValue("peer");
+        stream->sni = FirstQueryValue(query, {"sni", "peer"});
         stream->alpn = GetQueryValue(query, "alpn");
         if (!query.queryItemValue("allowInsecure").isEmpty()) stream->allow_insecure = true;
         stream->reality_pbk = GetQueryValue(query, "pbk", "");
@@ -207,21 +203,18 @@ namespace NekoGui_fmt {
         }
 
         // type
-        stream->network = query.hasQueryItem("type") ? query.queryItemValue("type") : query.queryItemValue("obfs");
+        stream->network = FirstQueryValue(query, {"type", "obfs"});
         if (GetQueryValue(query, "headerType") == "http") stream->network = "http";
         if (stream->network == "grpc") {
-            stream->path = query.hasQueryItem("serviceName") ? query.queryItemValue("serviceName") : query.queryItemValue("path");
+            stream->path = FirstQueryValue(query, {"serviceName", "path"});
         } else {
             stream->path = GetQueryValue(query, "path");
             stream->host = GetQueryValue(query, "host");
         }
 
-        // mux
-        multiplex.enabled = GetQueryValue(query, "mux") == "true";
-
         // protocol
         if (proxy_type == proxy_VLESS) {
-            if (GetQueryValue(query, "flow") == "xtls-rprx-vision" || GetQueryValue(query, "xtls") == "2")
+            if (GetQueryValue(query, "flow").startsWith("xtls-rprx-vision") || GetQueryValue(query, "xtls") == "2")
                 flow = "xtls-rprx-vision";
         }
 
@@ -252,7 +245,7 @@ namespace NekoGui_fmt {
         serverAddress = url.host();
         serverPort = url.port();
         alpn = query.queryItemValue("alpn");
-        sni = query.hasQueryItem("sni") ? query.queryItemValue("sni") : query.queryItemValue("peer");
+        sni = FirstQueryValue(query, {"sni", "peer"});
         if (url.scheme() == "hysteria") {
             // https://hysteria.network/docs/uri-scheme/
             if (!query.hasQueryItem("upmbps") || !query.hasQueryItem("downmbps")) return false;
@@ -344,7 +337,7 @@ namespace NekoGui_fmt {
         privateKey = query.queryItemValue("privateKey");
         publicKey = query.queryItemValue("publicKey");
         preSharedKey = query.queryItemValue("presharedKey");
-        localAddress = query.hasQueryItem("address") ? query.queryItemValue("address") : query.queryItemValue("ip");
+        localAddress = FirstQueryValue(query, {"address", "ip"});
         reserved = query.queryItemValue("reserved");
         MTU = query.queryItemValue("mtu").toInt();
 

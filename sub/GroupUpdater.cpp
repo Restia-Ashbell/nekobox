@@ -240,13 +240,7 @@ namespace NekoGui_sub {
                     if (type == "vless") {
                         bean->flow = Node2Value<QString>(proxy["flow"]);
                         bean->password = Node2Value<QString>(proxy["uuid"]);
-                        // meta packet encoding
-                        if (Node2Value<bool>(proxy["packet-addr"])) {
-                            bean->stream->packet_encoding = "packetaddr";
-                        } else {
-                            // For VLESS, default to use xudp
-                            bean->stream->packet_encoding = "xudp";
-                        }
+                        bean->stream->packet_encoding = Node2Value<QString>(proxy["packet-encoding"]);
                         if (Node2Value<bool>(proxy["tls"])) bean->stream->security = "tls";
                     } else {
                         bean->password = Node2Value<QString>(proxy["password"]);
@@ -329,8 +323,7 @@ namespace NekoGui_sub {
                     bean->multiplex.enabled = Node2Value<bool>(smux["enabled"]);
 
                     // meta packet encoding
-                    if (Node2Value<bool>(proxy["xudp"])) bean->stream->packet_encoding = "xudp";
-                    if (Node2Value<bool>(proxy["packet-addr"])) bean->stream->packet_encoding = "packetaddr";
+                    bean->stream->packet_encoding = Node2Value<QString>(proxy["packet-encoding"]);
 
                     // opts
                     auto ws = NodeChild(proxy, {"ws-opts", "ws-opt"});
@@ -385,7 +378,7 @@ namespace NekoGui_sub {
                     bean->alpn = Node2Value<QList<QString>>(proxy["alpn"]).join(",");
                     bean->sni = Node2Value<QString>(proxy["sni"]);
 
-                    auto auth_str = firstOrSecond(Node2Value<QString>(proxy["auth_str"]), Node2Value<QString>(proxy["auth-str"]));
+                    auto auth_str = Node2Value<QString>(proxy["auth-str"]);
                     auto auth = Node2Value<QString>(proxy["auth"]);
                     if (!auth_str.isEmpty()) {
                         bean->authPayloadType = NekoGui_fmt::QUICBean::hysteria_auth_string;
@@ -397,7 +390,7 @@ namespace NekoGui_sub {
                     }
                     bean->obfsPassword = Node2Value<QString>(proxy["obfs"]);
 
-                    if (Node2Value<bool>(proxy["disable_mtu_discovery"]) || Node2Value<bool>(proxy["disable-mtu-discovery"])) bean->disableMtuDiscovery = true;
+                    bean->disableMtuDiscovery = Node2Value<bool>(proxy["disable-mtu-discovery"]);
                     bean->streamReceiveWindow = Node2Value<int>(proxy["recv-window"]);
                     bean->connectionReceiveWindow = Node2Value<int>(proxy["recv-window-conn"]);
 
@@ -448,7 +441,7 @@ namespace NekoGui_sub {
                 } else if (type == "anytls") {
                     auto bean = ent->Bean<NekoGui_fmt::AnyTLSBean>();
                     bean->password = Node2Value<QString>(proxy["password"]);
-                    bean->stream->sni = firstOrSecond(Node2Value<QString>(proxy["sni"]), Node2Value<QString>(proxy["servername"]));
+                    bean->stream->sni = Node2Value<QString>(proxy["sni"]);
                     bean->stream->allow_insecure = Node2Value<bool>(proxy["skip-cert-verify"]);
                 } else if (type == "ssh") {
                     auto bean = ent->Bean<NekoGui_fmt::SSHBean>();
