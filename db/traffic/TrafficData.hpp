@@ -16,8 +16,8 @@ namespace NekoGui_traffic {
         long long last_update = 0;
 
         explicit TrafficData(const QString &tag_) : tag(tag_) {
-            _add(new configItem("dl", &downlink, itemType::integer64));
-            _add(new configItem("ul", &uplink, itemType::integer64));
+            _add("dl", &downlink);
+            _add("ul", &uplink);
         };
 
         void Reset() {

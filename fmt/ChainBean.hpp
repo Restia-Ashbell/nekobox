@@ -8,7 +8,7 @@ namespace NekoGui_fmt {
         QList<int> list; // in to out
 
         ChainBean() : AbstractBean(0) {
-            _add(new configItem("list", &list, itemType::integerList));
+            _add("list", &list);
         };
 
         QString DisplayType() override { return QObject::tr("Chain Proxy"); };

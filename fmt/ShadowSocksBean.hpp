@@ -13,11 +13,11 @@ namespace NekoGui_fmt {
         MultiplexSettings multiplex;
 
         ShadowSocksBean() : AbstractBean(0) {
-            _add(new configItem("method", &method, itemType::string));
-            _add(new configItem("pass", &password, itemType::string));
-            _add(new configItem("plugin", &plugin, itemType::string));
-            _add(new configItem("uot", &uot, itemType::integer));
-            _add(new configItem("multiplex", &multiplex, itemType::jsonStore));
+            _add("method", &method);
+            _add("pass", &password);
+            _add("plugin", &plugin);
+            _add("uot", &uot);
+            _add("multiplex", dynamic_cast<JsonStore *>(&multiplex));
         };
 
         QString DisplayType() override { return "Shadowsocks"; };

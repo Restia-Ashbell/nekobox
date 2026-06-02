@@ -17,10 +17,10 @@ namespace NekoGui_fmt {
 
         explicit SocksHttpBean(int _socks_http_type) : AbstractBean(0) {
             this->socks_http_type = _socks_http_type;
-            _add(new configItem("v", &socks_http_type, itemType::integer));
-            _add(new configItem("username", &username, itemType::string));
-            _add(new configItem("password", &password, itemType::string));
-            _add(new configItem("stream", dynamic_cast<JsonStore *>(stream.get()), itemType::jsonStore));
+            _add("v", &socks_http_type);
+            _add("username", &username);
+            _add("password", &password);
+            _add("stream", dynamic_cast<JsonStore *>(stream.get()));
         };
 
         QString DisplayType() override { return socks_http_type == type_HTTP ? "HTTP" : "Socks"; };

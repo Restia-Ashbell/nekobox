@@ -16,14 +16,14 @@ namespace NekoGui_fmt {
 
         SSHBean() : AbstractBean(0) {
             serverPort = 22;
-            _add(new configItem("user", &user, itemType::string));
-            _add(new configItem("password", &password, itemType::string));
-            _add(new configItem("private_key", &privateKey, itemType::string));
-            _add(new configItem("private_key_path", &privateKeyPath, itemType::string));
-            _add(new configItem("private_key_passphrase", &privateKeyPassphrase, itemType::string));
-            _add(new configItem("host_key", &hostKey, itemType::string));
-            _add(new configItem("host_key_algorithms", &hostKeyAlgorithms, itemType::string));
-            _add(new configItem("client_version", &clientVersion, itemType::string));
+            _add("user", &user);
+            _add("password", &password);
+            _add("private_key", &privateKey);
+            _add("private_key_path", &privateKeyPath);
+            _add("private_key_passphrase", &privateKeyPassphrase);
+            _add("host_key", &hostKey);
+            _add("host_key_algorithms", &hostKeyAlgorithms);
+            _add("client_version", &clientVersion);
         };
 
         QString DisplayType() override { return "SSH"; };

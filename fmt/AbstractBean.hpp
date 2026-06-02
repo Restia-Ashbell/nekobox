@@ -36,24 +36,17 @@ namespace NekoGui_fmt {
         QString custom_outbound = "";
 
         explicit AbstractBean(int v) : version(v) {
-            _add(new configItem("_v", &version, itemType::integer));
-            _add(new configItem("name", &name, itemType::string));
-            _add(new configItem("addr", &serverAddress, itemType::string));
-            _add(new configItem("port", &serverPort, itemType::integer));
-            _add(new configItem("c_cfg", &custom_config, itemType::string));
-            _add(new configItem("c_out", &custom_outbound, itemType::string));
+            _add("_v", &version);
+            _add("name", &name);
+            _add("addr", &serverAddress);
+            _add("port", &serverPort);
+            _add("c_cfg", &custom_config);
+            _add("c_out", &custom_outbound);
         }
 
         virtual ~AbstractBean() = default;
 
         //
-
-        template<typename T>
-        T *GetConfigItemPtr(const QString &name) {
-            auto item = this->_get(name);
-            if (!item) return nullptr;
-            return (T *) (item->ptr);
-        }
 
         QString ToNekorayShareLink(const QString &type) {
             auto b = ToJson();
@@ -70,7 +63,7 @@ namespace NekoGui_fmt {
                     auto addr = host.addresses();
                     if (!addr.isEmpty()) {
                         // replace ws tls
-                        if (auto *stream = GetConfigItemPtr<V2rayStreamSettings>("stream")) {
+                        if (auto *stream = _get<V2rayStreamSettings>("stream")) {
                             if (stream->security == "tls" && stream->sni.isEmpty()) {
                                 stream->sni = serverAddress;
                             }
@@ -129,12 +122,12 @@ namespace NekoGui_fmt {
         int brutal_down = 0;
 
         MultiplexSettings() : JsonStore() {
-            _add(new configItem("enabled", &enabled, itemType::boolean));
-            _add(new configItem("padding", &padding, itemType::boolean));
-            _add(new configItem("protocol", &protocol, itemType::string));
-            _add(new configItem("max_streams", &max_streams, itemType::integer));
-            _add(new configItem("brutal_up", &brutal_up, itemType::integer));
-            _add(new configItem("brutal_down", &brutal_down, itemType::integer));
+            _add("enabled", &enabled);
+            _add("padding", &padding);
+            _add("protocol", &protocol);
+            _add("max_streams", &max_streams);
+            _add("brutal_up", &brutal_up);
+            _add("brutal_down", &brutal_down);
         }
 
         void BuildMultiplexSettingsSingBox(QJsonObject *outbound);

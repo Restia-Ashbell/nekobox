@@ -15,14 +15,14 @@ namespace NekoGui_fmt {
         bool enableGSO = false;
 
         WireGuardBean() : AbstractBean(0) {
-            _add(new configItem("private_key", &privateKey, itemType::string));
-            _add(new configItem("public_key", &publicKey, itemType::string));
-            _add(new configItem("pre_shared_key", &preSharedKey, itemType::string));
-            _add(new configItem("local_address", &localAddress, itemType::string));
-            _add(new configItem("reserved", &reserved, itemType::string));
-            _add(new configItem("mtu", &MTU, itemType::integer));
-            _add(new configItem("use_system_proxy", &useSystemInterface, itemType::boolean));
-            _add(new configItem("enable_gso", &enableGSO, itemType::boolean));
+            _add("private_key", &privateKey);
+            _add("public_key", &publicKey);
+            _add("pre_shared_key", &preSharedKey);
+            _add("local_address", &localAddress);
+            _add("reserved", &reserved);
+            _add("mtu", &MTU);
+            _add("use_system_proxy", &useSystemInterface);
+            _add("enable_gso", &enableGSO);
         };
 
         QString DisplayType() override { return "WireGuard"; };

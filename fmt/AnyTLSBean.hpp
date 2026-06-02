@@ -15,11 +15,11 @@ namespace NekoGui_fmt {
         AnyTLSBean() : AbstractBean(0) {
             serverPort = 443;
             stream->security = "tls";
-            _add(new configItem("password", &password, itemType::string));
-            _add(new configItem("idleSessionCheckInterval", &idleSessionCheckInterval, itemType::string));
-            _add(new configItem("idleSessionTimeout", &idleSessionTimeout, itemType::string));
-            _add(new configItem("minIdleSession", &minIdleSession, itemType::integer));
-            _add(new configItem("stream", dynamic_cast<JsonStore *>(stream.get()), itemType::jsonStore));
+            _add("password", &password);
+            _add("idleSessionCheckInterval", &idleSessionCheckInterval);
+            _add("idleSessionTimeout", &idleSessionTimeout);
+            _add("minIdleSession", &minIdleSession);
+            _add("stream", dynamic_cast<JsonStore *>(stream.get()));
         };
 
         QString DisplayType() override { return "AnyTLS"; };

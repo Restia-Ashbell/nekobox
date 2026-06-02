@@ -18,19 +18,19 @@ namespace NekoGui {
         QString full_test_report;
 
         ProxyEntity(NekoGui_fmt::AbstractBean *bean_, const QString &type_) : type(type_) {
-            _add(new configItem("type", &type, itemType::string));
-            _add(new configItem("id", &id, itemType::integer));
-            _add(new configItem("gid", &gid, itemType::integer));
-            _add(new configItem("yc", &latency, itemType::integer));
-            _add(new configItem("report", &full_test_report, itemType::string));
+            _add("type", &type);
+            _add("id", &id);
+            _add("gid", &gid);
+            _add("yc", &latency);
+            _add("report", &full_test_report);
 
             // 可以不关联 bean，只加载 ProxyEntity 的信息
             if (bean_) {
                 bean = std::shared_ptr<NekoGui_fmt::AbstractBean>(bean_);
                 traffic_data = std::make_shared<NekoGui_traffic::TrafficData>("");
                 // 有虚函数就要在这里 dynamic_cast
-                _add(new configItem("bean", dynamic_cast<JsonStore *>(bean.get()), itemType::jsonStore));
-                _add(new configItem("traffic", dynamic_cast<JsonStore *>(traffic_data.get()), itemType::jsonStore));
+                _add("bean", dynamic_cast<JsonStore *>(bean.get()));
+                _add("traffic", dynamic_cast<JsonStore *>(traffic_data.get()));
             }
         }
 

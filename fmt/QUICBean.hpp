@@ -63,39 +63,39 @@ namespace NekoGui_fmt {
         explicit QUICBean(int _proxy_type) : AbstractBean(0), proxy_type(_proxy_type) {
             serverPort = 443;
             if (proxy_type == proxy_Hysteria || proxy_type == proxy_Hysteria2) {
-                _add(new configItem("authPayload", &authPayload, itemType::string));
-                _add(new configItem("obfsPassword", &obfsPassword, itemType::string));
-                _add(new configItem("uploadMbps", &uploadMbps, itemType::integer));
-                _add(new configItem("downloadMbps", &downloadMbps, itemType::integer));
-                _add(new configItem("streamReceiveWindow", &streamReceiveWindow, itemType::integer64));
-                _add(new configItem("connectionReceiveWindow", &connectionReceiveWindow, itemType::integer64));
-                _add(new configItem("disableMtuDiscovery", &disableMtuDiscovery, itemType::boolean));
-                _add(new configItem("hopInterval", &hopInterval, itemType::integer));
-                _add(new configItem("hopPort", &hopPort, itemType::string));
+                _add("authPayload", &authPayload);
+                _add("obfsPassword", &obfsPassword);
+                _add("uploadMbps", &uploadMbps);
+                _add("downloadMbps", &downloadMbps);
+                _add("streamReceiveWindow", &streamReceiveWindow);
+                _add("connectionReceiveWindow", &connectionReceiveWindow);
+                _add("disableMtuDiscovery", &disableMtuDiscovery);
+                _add("hopInterval", &hopInterval);
+                _add("hopPort", &hopPort);
                 if (proxy_type == proxy_Hysteria) { // hy1
-                    _add(new configItem("authPayloadType", &authPayloadType, itemType::integer));
-                    _add(new configItem("protocol", &hyProtocol, itemType::integer));
+                    _add("authPayloadType", &authPayloadType);
+                    _add("protocol", &hyProtocol);
                 } else { // hy2
                     uploadMbps = 0;
                     downloadMbps = 0;
-                    _add(new configItem("password", &password, itemType::string));
+                    _add("password", &password);
                 }
             } else if (proxy_type == proxy_TUIC) {
-                _add(new configItem("uuid", &uuid, itemType::string));
-                _add(new configItem("password", &password, itemType::string));
-                _add(new configItem("congestionControl", &congestionControl, itemType::string));
-                _add(new configItem("udpRelayMode", &udpRelayMode, itemType::string));
-                _add(new configItem("zeroRttHandshake", &zeroRttHandshake, itemType::boolean));
-                _add(new configItem("heartbeat", &heartbeat, itemType::string));
-                _add(new configItem("uos", &uos, itemType::boolean));
+                _add("uuid", &uuid);
+                _add("password", &password);
+                _add("congestionControl", &congestionControl);
+                _add("udpRelayMode", &udpRelayMode);
+                _add("zeroRttHandshake", &zeroRttHandshake);
+                _add("heartbeat", &heartbeat);
+                _add("uos", &uos);
             }
-            _add(new configItem("forceExternal", &forceExternal, itemType::boolean));
+            _add("forceExternal", &forceExternal);
             // TLS
-            _add(new configItem("allowInsecure", &allowInsecure, itemType::boolean));
-            _add(new configItem("sni", &sni, itemType::string));
-            _add(new configItem("alpn", &alpn, itemType::string));
-            _add(new configItem("caText", &caText, itemType::string));
-            _add(new configItem("disableSni", &disableSni, itemType::boolean));
+            _add("allowInsecure", &allowInsecure);
+            _add("sni", &sni);
+            _add("alpn", &alpn);
+            _add("caText", &caText);
+            _add("disableSni", &disableSni);
         };
 
         QString DisplayAddress() override {

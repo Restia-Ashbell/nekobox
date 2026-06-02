@@ -2,74 +2,25 @@
 
 namespace NekoGui_ConfigItem {
 
-    // 添加关联
-    void JsonStore::_add(configItem *item) {
-        _map.insert(item->name, std::shared_ptr<configItem>(item));
-    }
-
-    QString JsonStore::_name(void *p) {
-        for (const auto &_item: _map) {
-            if (_item->ptr == p) return _item->name;
-        }
-        return {};
-    }
-
-    std::shared_ptr<configItem> JsonStore::_get(const QString &name) {
-        return _map.value(name);
-    }
-
-    void JsonStore::_setValue(const QString &name, void *p) {
-        auto item = _get(name);
-        if (item == nullptr) return;
-
-        switch (item->type) {
-            case itemType::string:
-                *(QString *) item->ptr = *(QString *) p;
-                break;
-            case itemType::boolean:
-                *(bool *) item->ptr = *(bool *) p;
-                break;
-            case itemType::integer:
-                *(int *) item->ptr = *(int *) p;
-                break;
-            case itemType::integer64:
-                *(long long *) item->ptr = *(long long *) p;
-                break;
-                // others...
-        }
-    }
-
     QJsonObject JsonStore::ToJson(const QStringList &without) {
         QJsonObject object;
-        for (const auto &_item: _map) {
-            auto item = _item.get();
-            if (without.contains(item->name)) continue;
-            switch (item->type) {
-                case itemType::string:
-                    // Allow Empty
-                    if (!((QString *) item->ptr)->isEmpty()) {
-                        object.insert(item->name, *(QString *) item->ptr);
-                    }
-                    break;
-                case itemType::integer:
-                    object.insert(item->name, *(int *) item->ptr);
-                    break;
-                case itemType::integer64:
-                    object.insert(item->name, *(long long *) item->ptr);
-                    break;
-                case itemType::boolean:
-                    object.insert(item->name, *(bool *) item->ptr);
-                    break;
-                case itemType::stringList:
-                    object.insert(item->name, QList2QJsonArray<QString>(*(QList<QString> *) item->ptr));
-                    break;
-                case itemType::integerList:
-                    object.insert(item->name, QList2QJsonArray<int>(*(QList<int> *) item->ptr));
-                    break;
-                case itemType::jsonStore:
-                    // _add 时应关联对应 JsonStore 的指针
-                    object.insert(item->name, ((JsonStore *) item->ptr)->ToJson());
-                    break;
+        for (const auto &[name, v]: _map.asKeyValueRange()) {
+            if (without.contains(name)) continue;
+            QString type(v.typeName());
+            if (type == "QString*") {
+                if (auto s = *v.value<QString *>(); !s.isEmpty()) object.insert(name, s);
+            } else if (type == "int*") {
+                object.insert(name, *v.value<int *>());
+            } else if (type == "qlonglong*") {
+                object.insert(name, *v.value<qlonglong *>());
+            } else if (type == "bool*") {
+                object.insert(name, *v.value<bool *>());
+            } else if (type == "QList<QString>*") {
+                object.insert(name, QList2QJsonArray<QString>(*v.value<QList<QString> *>()));
+            } else if (type == "QList<int>*") {
+                object.insert(name, QList2QJsonArray<int>(*v.value<QList<int> *>()));
+            } else if (type == "NekoGui_ConfigItem::JsonStore*") {
+                object.insert(name, v.value<JsonStore *>()->ToJson());
             }
         }
         return object;
@@ -82,40 +33,24 @@ namespace NekoGui_ConfigItem {
     }
 
     void JsonStore::FromJson(const QJsonObject &object) {
-        for (const auto &key: object.keys()) {
-            if (!_map.contains(key)) {
-                continue;
-            }
-
-            auto value = object[key];
-            auto item = _map[key].get();
-
-            if (item == nullptr)
-                continue; // 故意忽略
-
-            // 根据类型修改ptr的内容
-            switch (item->type) {
-                case itemType::string:
-                    if (value.isString()) *(QString *) item->ptr = value.toString();
-                    break;
-                case itemType::integer:
-                    if (value.isDouble()) *(int *) item->ptr = value.toInt();
-                    break;
-                case itemType::integer64:
-                    if (value.isDouble()) *(long long *) item->ptr = value.toDouble();
-                    break;
-                case itemType::boolean:
-                    if (value.isBool()) *(bool *) item->ptr = value.toBool();
-                    break;
-                case itemType::stringList:
-                    if (value.isArray()) *(QList<QString> *) item->ptr = QJsonArray2QList<QString>(value.toArray());
-                    break;
-                case itemType::integerList:
-                    if (value.isArray()) *(QList<int> *) item->ptr = QJsonArray2QList<int>(value.toArray());
-                    break;
-                case itemType::jsonStore:
-                    if (value.isObject()) ((JsonStore *) item->ptr)->FromJson(value.toObject());
-                    break;
+        for (const auto &[key, value]: object.asKeyValueRange()) {
+            auto v = _map.value(key.toString());
+            if (v.isNull()) continue;
+            QString type(v.typeName());
+            if (type == "QString*") {
+                if (value.isString()) *v.value<QString *>() = value.toString();
+            } else if (type == "int*") {
+                if (value.isDouble()) *v.value<int *>() = value.toInt();
+            } else if (type == "qlonglong*") {
+                if (value.isDouble()) *v.value<qlonglong *>() = value.toInteger();
+            } else if (type == "bool*") {
+                if (value.isBool()) *v.value<bool *>() = value.toBool();
+            } else if (type == "QList<QString>*") {
+                if (value.isArray()) *v.value<QList<QString> *>() = QJsonArray2QList<QString>(value.toArray());
+            } else if (type == "QList<int>*") {
+                if (value.isArray()) *v.value<QList<int> *>() = QJsonArray2QList<int>(value.toArray());
+            } else if (type == "NekoGui_ConfigItem::JsonStore*") {
+                if (value.isObject()) v.value<JsonStore *>()->FromJson(value.toObject());
             }
         }
 

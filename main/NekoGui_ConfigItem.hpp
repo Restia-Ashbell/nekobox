@@ -3,30 +3,10 @@
 #include "NekoGui_Utils.hpp"
 
 namespace NekoGui_ConfigItem {
-    // config 工具
-    enum class itemType {
-        string,
-        integer,
-        integer64,
-        boolean,
-        stringList,
-        integerList,
-        jsonStore,
-    };
-
-    class configItem {
-    public:
-        QString name;
-        void *ptr;
-        itemType type;
-
-        configItem(const QString &n, void *p, itemType t) : name(n), ptr(p), type(t) {}
-    };
-
     // 可格式化对象
     class JsonStore {
     public:
-        QMap<QString, std::shared_ptr<configItem>> _map;
+        QMap<QString, QVariant> _map;
 
         std::function<void()> callback_after_load = nullptr;
         std::function<void()> callback_before_save = nullptr;
@@ -41,13 +21,15 @@ namespace NekoGui_ConfigItem {
 
         explicit JsonStore(const QString &fileName) : fn(fileName) {}
 
-        void _add(configItem *item);
+        template<typename T>
+        void _add(const QString &name, T *ptr) {
+            _map.insert(name, QVariant::fromValue(ptr));
+        }
 
-        QString _name(void *p);
-
-        std::shared_ptr<configItem> _get(const QString &name);
-
-        void _setValue(const QString &name, void *p);
+        template<typename T>
+        T *_get(const QString &name) {
+            return *(T **) _map.value(name).data();
+        }
 
         QJsonObject ToJson(const QStringList &without = {});
 

@@ -17,14 +17,14 @@ namespace NekoGui_fmt {
 
         NaiveBean() : AbstractBean(0) {
             serverPort = 443;
-            _add(new configItem("username", &username, itemType::string));
-            _add(new configItem("password", &password, itemType::string));
-            _add(new configItem("protocol", &protocol, itemType::string));
-            _add(new configItem("extra_headers", &extra_headers, itemType::string));
-            _add(new configItem("sni", &sni, itemType::string));
-            _add(new configItem("certificate", &certificate, itemType::string));
-            _add(new configItem("insecure_concurrency", &insecure_concurrency, itemType::integer));
-            _add(new configItem("disable_log", &disable_log, itemType::boolean));
+            _add("username", &username);
+            _add("password", &password);
+            _add("protocol", &protocol);
+            _add("extra_headers", &extra_headers);
+            _add("sni", &sni);
+            _add("certificate", &certificate);
+            _add("insecure_concurrency", &insecure_concurrency);
+            _add("disable_log", &disable_log);
         };
 
         QString DisplayCoreType() override { return "Naive"; };

@@ -269,13 +269,6 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
-         <widget class="QPushButton" name="apply_to_group">
-          <property name="text">
-           <string>Apply settings to this group</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QDialogButtonBox" name="buttonBox">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -607,7 +600,6 @@
   <tabstop>port</tabstop>
   <tabstop>custom_outbound_edit</tabstop>
   <tabstop>custom_config_edit</tabstop>
-  <tabstop>apply_to_group</tabstop>
   <tabstop>network</tabstop>
   <tabstop>security</tabstop>
   <tabstop>packet_encoding</tabstop>

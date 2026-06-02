@@ -13,12 +13,12 @@ namespace NekoGui_fmt {
         QString protocolParam = "";
 
         ShadowSocksRBean() : AbstractBean(0) {
-            _add(new configItem("method", &method, itemType::string));
-            _add(new configItem("pass", &password, itemType::string));
-            _add(new configItem("obfs", &obfs, itemType::string));
-            _add(new configItem("obfs_param", &obfsParam, itemType::string));
-            _add(new configItem("protocol", &protocol, itemType::string));
-            _add(new configItem("protocol_param", &protocolParam, itemType::string));
+            _add("method", &method);
+            _add("pass", &password);
+            _add("obfs", &obfs);
+            _add("obfs_param", &obfsParam);
+            _add("protocol", &protocol);
+            _add("protocol_param", &protocolParam);
         };
 
         QString DisplayType() override { return "ShadowsocksR"; };

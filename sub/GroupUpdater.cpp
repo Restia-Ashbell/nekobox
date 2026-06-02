@@ -40,7 +40,7 @@ namespace NekoGui_sub {
 
     void GroupUpdater::fixEnt(const std::shared_ptr<NekoGui::ProxyEntity> &ent) {
         if (ent == nullptr) return;
-        auto stream = ent->bean->GetConfigItemPtr<NekoGui_fmt::V2rayStreamSettings>("stream");
+        auto stream = ent->bean->_get<NekoGui_fmt::V2rayStreamSettings>("stream");
         if (stream == nullptr) return;
         // 1. "security"
         if (stream->security == "none" || stream->security == "0" || stream->security == "false") {

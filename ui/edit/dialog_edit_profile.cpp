@@ -121,8 +121,6 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
             this->type = ui->type->itemData(index).toString();
             typeSelected();
         });
-
-        ui->apply_to_group->hide();
     } else {
         this->ent = NekoGui::profileManager->GetProfile(profileOrGroupId);
         if (this->ent == nullptr) return;
@@ -188,7 +186,7 @@ void DialogEditProfile::typeSelected() {
     ui->port_l->setVisible(showAddressPort);
 
     // 右边 stream
-    if (auto stream = ent->bean->GetConfigItemPtr<NekoGui_fmt::V2rayStreamSettings>("stream")) {
+    if (auto stream = ent->bean->_get<NekoGui_fmt::V2rayStreamSettings>("stream")) {
         ui->network->setCurrentText(stream->network);
         ui->security->setCurrentText(stream->security);
         ui->packet_encoding->setCurrentText(stream->packet_encoding);
@@ -217,7 +215,7 @@ void DialogEditProfile::typeSelected() {
         ui->security_box->setVisible(false);
     }
 
-    if (auto multiplex = ent->bean->GetConfigItemPtr<NekoGui_fmt::MultiplexSettings>("multiplex")) {
+    if (auto multiplex = ent->bean->_get<NekoGui_fmt::MultiplexSettings>("multiplex")) {
         ui->multiplex->setCurrentIndex(multiplex->enabled ? 1 : 0);
         ui->multiplex_padding->setChecked(multiplex->padding);
         ui->multiplex_protocol->setCurrentText(multiplex->protocol);
@@ -327,7 +325,7 @@ bool DialogEditProfile::onEnd() {
     ent->bean->serverPort = ui->port->text().toInt();
 
     // 右边 stream
-    if (auto stream = ent->bean->GetConfigItemPtr<NekoGui_fmt::V2rayStreamSettings>("stream")) {
+    if (auto stream = ent->bean->_get<NekoGui_fmt::V2rayStreamSettings>("stream")) {
         stream->network = ui->network->currentText();
         stream->security = ui->security->currentText();
         stream->packet_encoding = ui->packet_encoding->currentText();
@@ -349,7 +347,7 @@ bool DialogEditProfile::onEnd() {
         stream->ech = CACHE.ech;
     }
 
-    if (auto multiplex = ent->bean->GetConfigItemPtr<NekoGui_fmt::MultiplexSettings>("multiplex")) {
+    if (auto multiplex = ent->bean->_get<NekoGui_fmt::MultiplexSettings>("multiplex")) {
         multiplex->enabled = ui->multiplex->currentIndex() == 1;
         multiplex->padding = ui->multiplex_padding->isChecked();
         multiplex->protocol = ui->multiplex_protocol->currentText();
@@ -447,107 +445,5 @@ void DialogEditProfile::on_ech_edit_clicked() {
     if (ok) {
         CACHE.ech = txt;
         editor_cache_updated_impl();
-    }
-}
-
-void DialogEditProfile::on_apply_to_group_clicked() {
-    if (apply_to_group_ui.empty()) {
-        apply_to_group_ui[ui->multiplex] = new FloatCheckBox(ui->multiplex, this);
-        apply_to_group_ui[ui->multiplex_padding] = new FloatCheckBox(ui->multiplex_padding, this);
-        apply_to_group_ui[ui->multiplex_protocol] = new FloatCheckBox(ui->multiplex_protocol, this);
-        apply_to_group_ui[ui->multiplex_max_streams] = new FloatCheckBox(ui->multiplex_max_streams, this);
-        apply_to_group_ui[ui->brutal_up] = new FloatCheckBox(ui->brutal_up, this);
-        apply_to_group_ui[ui->brutal_down] = new FloatCheckBox(ui->brutal_down, this);
-        apply_to_group_ui[ui->alpn] = new FloatCheckBox(ui->alpn, this);
-        apply_to_group_ui[ui->host] = new FloatCheckBox(ui->host, this);
-        apply_to_group_ui[ui->path] = new FloatCheckBox(ui->path, this);
-        apply_to_group_ui[ui->utlsFingerprint] = new FloatCheckBox(ui->utlsFingerprint, this);
-        apply_to_group_ui[ui->insecure] = new FloatCheckBox(ui->insecure, this);
-        apply_to_group_ui[ui->certificate_edit] = new FloatCheckBox(ui->certificate_edit, this);
-        apply_to_group_ui[ui->ech_enabled] = new FloatCheckBox(ui->ech_enabled, this);
-        apply_to_group_ui[ui->ech_edit] = new FloatCheckBox(ui->ech_edit, this);
-        apply_to_group_ui[ui->disable_sni] = new FloatCheckBox(ui->disable_sni, this);
-        apply_to_group_ui[ui->sni] = new FloatCheckBox(ui->sni, this);
-        apply_to_group_ui[ui->tls_fragment] = new FloatCheckBox(ui->tls_fragment, this);
-        apply_to_group_ui[ui->tls_record_fragment] = new FloatCheckBox(ui->tls_record_fragment, this);
-        apply_to_group_ui[ui->custom_config_edit] = new FloatCheckBox(ui->custom_config_edit, this);
-        apply_to_group_ui[ui->custom_outbound_edit] = new FloatCheckBox(ui->custom_outbound_edit, this);
-        ui->apply_to_group->setText(tr("Confirm"));
-    } else {
-        auto group = NekoGui::profileManager->GetGroup(ent->gid);
-        if (group == nullptr) {
-            MessageBoxWarning("failed", "unknown group");
-            return;
-        }
-        // save this
-        if (onEnd()) {
-            ent->Save();
-        } else {
-            MessageBoxWarning("failed", "failed to save");
-            return;
-        }
-        // copy keys
-        for (const auto &pair: apply_to_group_ui) {
-            if (pair.second->isChecked()) {
-                do_apply_to_group(group, pair.first);
-            }
-            delete pair.second;
-        }
-        apply_to_group_ui.clear();
-        ui->apply_to_group->setText(tr("Apply settings to this group"));
-    }
-}
-
-void DialogEditProfile::do_apply_to_group(const std::shared_ptr<NekoGui::Group> &group, QWidget *key) {
-    auto stream = ent->bean->GetConfigItemPtr<NekoGui_fmt::V2rayStreamSettings>("stream");
-
-    auto copyStream = [=, this](void *p) {
-        for (const auto &profile: group->Profiles()) {
-            auto newStream = profile->bean->GetConfigItemPtr<NekoGui_fmt::V2rayStreamSettings>("stream");
-            if (newStream == nullptr) continue;
-            if (stream == newStream) continue;
-            newStream->_setValue(stream->_name(p), p);
-            // qDebug() << newStream->ToJsonBytes();
-            profile->Save();
-        }
-    };
-
-    auto copyBean = [=, this](void *p) {
-        for (const auto &profile: group->Profiles()) {
-            if (profile == ent) continue;
-            profile->bean->_setValue(ent->bean->_name(p), p);
-            // qDebug() << profile->bean->ToJsonBytes();
-            profile->Save();
-        }
-    };
-
-    if (key == ui->alpn) {
-        copyStream(&stream->alpn);
-    } else if (key == ui->host) {
-        copyStream(&stream->host);
-    } else if (key == ui->path) {
-        copyStream(&stream->path);
-    } else if (key == ui->utlsFingerprint) {
-        copyStream(&stream->utlsFingerprint);
-    } else if (key == ui->insecure) {
-        copyStream(&stream->allow_insecure);
-    } else if (key == ui->certificate_edit) {
-        copyStream(&stream->certificate);
-    } else if (key == ui->ech_enabled) {
-        copyStream(&stream->ech_enabled);
-    } else if (key == ui->ech_edit) {
-        copyStream(&stream->ech);
-    } else if (key == ui->sni) {
-        copyStream(&stream->sni);
-    } else if (key == ui->disable_sni) {
-        copyStream(&stream->disable_sni);
-    } else if (key == ui->tls_fragment) {
-        copyStream(&stream->tls_fragment);
-    } else if (key == ui->tls_record_fragment) {
-        copyStream(&stream->tls_record_fragment);
-    } else if (key == ui->custom_config_edit) {
-        copyBean(&ent->bean->custom_config);
-    } else if (key == ui->custom_outbound_edit) {
-        copyBean(&ent->bean->custom_outbound);
     }
 }

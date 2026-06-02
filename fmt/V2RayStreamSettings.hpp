@@ -30,26 +30,26 @@ namespace NekoGui_fmt {
         bool tls_record_fragment = false;
 
         V2rayStreamSettings() : JsonStore() {
-            _add(new configItem("net", &network, itemType::string));
-            _add(new configItem("sec", &security, itemType::string));
-            _add(new configItem("pac_enc", &packet_encoding, itemType::string));
-            _add(new configItem("path", &path, itemType::string));
-            _add(new configItem("host", &host, itemType::string));
-            _add(new configItem("sni", &sni, itemType::string));
-            _add(new configItem("alpn", &alpn, itemType::string));
-            _add(new configItem("cert", &certificate, itemType::string));
-            _add(new configItem("ech", &ech, itemType::string));
-            _add(new configItem("insecure", &allow_insecure, itemType::boolean));
-            _add(new configItem("ech_enabled", &ech_enabled, itemType::boolean));
-            _add(new configItem("disable_sni", &disable_sni, itemType::boolean));
-            _add(new configItem("ed_name", &ws_early_data_name, itemType::string));
-            _add(new configItem("ed_len", &ws_early_data_length, itemType::integer));
-            _add(new configItem("utls", &utlsFingerprint, itemType::string));
-            _add(new configItem("pbk", &reality_pbk, itemType::string));
-            _add(new configItem("sid", &reality_sid, itemType::string));
-            _add(new configItem("spx", &reality_spx, itemType::string));
-            _add(new configItem("tls_fragment", &tls_fragment, itemType::boolean));
-            _add(new configItem("tls_record_fragment", &tls_record_fragment, itemType::boolean));
+            _add("net", &network);
+            _add("sec", &security);
+            _add("pac_enc", &packet_encoding);
+            _add("path", &path);
+            _add("host", &host);
+            _add("sni", &sni);
+            _add("alpn", &alpn);
+            _add("cert", &certificate);
+            _add("ech", &ech);
+            _add("insecure", &allow_insecure);
+            _add("ech_enabled", &ech_enabled);
+            _add("disable_sni", &disable_sni);
+            _add("ed_name", &ws_early_data_name);
+            _add("ed_len", &ws_early_data_length);
+            _add("utls", &utlsFingerprint);
+            _add("pbk", &reality_pbk);
+            _add("sid", &reality_sid);
+            _add("spx", &reality_spx);
+            _add("tls_fragment", &tls_fragment);
+            _add("tls_record_fragment", &tls_record_fragment);
         }
 
         void BuildStreamSettingsSingBox(QJsonObject *outbound);

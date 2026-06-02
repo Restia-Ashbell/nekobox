@@ -17,10 +17,10 @@ namespace NekoGui_fmt {
 
         explicit TrojanVLESSBean(int _proxy_type) : AbstractBean(0) {
             proxy_type = _proxy_type;
-            _add(new configItem("pass", &password, itemType::string));
-            _add(new configItem("flow", &flow, itemType::string));
-            _add(new configItem("stream", dynamic_cast<JsonStore *>(stream.get()), itemType::jsonStore));
-            _add(new configItem("multiplex", &multiplex, itemType::jsonStore));
+            _add("pass", &password);
+            _add("flow", &flow);
+            _add("stream", dynamic_cast<JsonStore *>(stream.get()));
+            _add("multiplex", dynamic_cast<JsonStore *>(&multiplex));
         };
 
         QString DisplayType() override { return proxy_type == proxy_VLESS ? "VLESS" : "Trojan"; };

@@ -9,59 +9,59 @@ namespace NekoGui {
     // datastore
 
     DataStore::DataStore() : JsonStore() {
-        _add(new configItem("extraCore", dynamic_cast<JsonStore *>(extraCore), itemType::jsonStore));
-        _add(new configItem("inbound_auth", dynamic_cast<JsonStore *>(inbound_auth), itemType::jsonStore));
-        _add(new configItem("user_agent", &user_agent, itemType::string));
-        _add(new configItem("test_url", &test_latency_url, itemType::string));
-        _add(new configItem("test_url_dl", &test_download_url, itemType::string));
-        _add(new configItem("test_dl_timeout", &test_download_timeout, itemType::integer));
-        _add(new configItem("current_group", &current_group, itemType::integer));
-        _add(new configItem("inbound_address", &inbound_address, itemType::string));
-        _add(new configItem("inbound_port", &inbound_port, itemType::integer));
-        _add(new configItem("traffic_loop_interval", &traffic_loop_interval, itemType::integer));
-        _add(new configItem("test_concurrent", &test_concurrent, itemType::integer));
-        _add(new configItem("theme", &theme, itemType::string));
-        _add(new configItem("custom_inbound", &custom_inbound, itemType::string));
-        _add(new configItem("sub_use_proxy", &sub_use_proxy, itemType::boolean));
-        _add(new configItem("started_id", &started_id, itemType::integer));
-        _add(new configItem("spmode_vpn", &spmode_vpn, itemType::boolean));
-        _add(new configItem("spmode_system_proxy", &spmode_system_proxy, itemType::boolean));
-        _add(new configItem("language", &language, itemType::string));
-        _add(new configItem("font", &font, itemType::string));
-        _add(new configItem("skip_cert", &skip_cert, itemType::boolean));
-        _add(new configItem("hk_mw", &hotkey_mainwindow, itemType::string));
-        _add(new configItem("hk_group", &hotkey_group, itemType::string));
-        _add(new configItem("hk_route", &hotkey_route, itemType::string));
-        _add(new configItem("hk_spmenu", &hotkey_system_proxy_menu, itemType::string));
-        _add(new configItem("active_routing", &active_routing, itemType::string));
-        _add(new configItem("mw_geometry", &mw_geometry, itemType::string));
-        _add(new configItem("tun_stack", &tun_stack, itemType::string));
-        _add(new configItem("tun_mtu", &tun_mtu, itemType::integer));
-        _add(new configItem("tun_ipv6", &tun_ipv6, itemType::boolean));
-        _add(new configItem("tun_strict_route", &tun_strict_route, itemType::boolean));
-        _add(new configItem("check_include_pre", &check_include_pre, itemType::boolean));
-        _add(new configItem("sp_format", &system_proxy_format, itemType::string));
-        _add(new configItem("sub_insecure", &sub_insecure, itemType::boolean));
-        _add(new configItem("sub_auto_update", &sub_auto_update, itemType::integer));
-        _add(new configItem("log_ignore", &log_ignore, itemType::stringList));
-        _add(new configItem("start_minimal", &start_minimal, itemType::boolean));
-        _add(new configItem("max_log_line", &max_log_line, itemType::integer));
-        _add(new configItem("splitter_state", &splitter_state, itemType::string));
-        _add(new configItem("utlsFingerprint", &utlsFingerprint, itemType::string));
-        _add(new configItem("log_disabled", &log_disabled, itemType::boolean));
-        _add(new configItem("log_timestamp", &log_timestamp, itemType::boolean));
-        _add(new configItem("log_level", &log_level, itemType::string));
-        _add(new configItem("clash_api_external_controller", &clash_api_external_controller, itemType::string));
-        _add(new configItem("clash_api_dashboard", &clash_api_dashboard, itemType::string));
-        _add(new configItem("clash_api_secret", &clash_api_secret, itemType::string));
-        _add(new configItem("ntp_enabled", &ntp_enabled, itemType::boolean));
-        _add(new configItem("ntp_server", &ntp_server, itemType::string));
-        _add(new configItem("ntp_server_port", &ntp_server_port, itemType::integer));
-        _add(new configItem("ntp_interval", &ntp_interval, itemType::string));
-        _add(new configItem("certificate_store", &certificate_store, itemType::string));
-        _add(new configItem("certificate", &certificate, itemType::string));
-        _add(new configItem("certificate_path", &certificate_path, itemType::string));
-        _add(new configItem("certificate_directory_path", &certificate_directory_path, itemType::string));
+        _add("extraCore", dynamic_cast<JsonStore *>(extraCore));
+        _add("inbound_auth", dynamic_cast<JsonStore *>(inbound_auth));
+        _add("user_agent", &user_agent);
+        _add("test_url", &test_latency_url);
+        _add("test_url_dl", &test_download_url);
+        _add("test_dl_timeout", &test_download_timeout);
+        _add("current_group", &current_group);
+        _add("inbound_address", &inbound_address);
+        _add("inbound_port", &inbound_port);
+        _add("traffic_loop_interval", &traffic_loop_interval);
+        _add("test_concurrent", &test_concurrent);
+        _add("theme", &theme);
+        _add("custom_inbound", &custom_inbound);
+        _add("sub_use_proxy", &sub_use_proxy);
+        _add("started_id", &started_id);
+        _add("spmode_vpn", &spmode_vpn);
+        _add("spmode_system_proxy", &spmode_system_proxy);
+        _add("language", &language);
+        _add("font", &font);
+        _add("skip_cert", &skip_cert);
+        _add("hk_mw", &hotkey_mainwindow);
+        _add("hk_group", &hotkey_group);
+        _add("hk_route", &hotkey_route);
+        _add("hk_spmenu", &hotkey_system_proxy_menu);
+        _add("active_routing", &active_routing);
+        _add("mw_geometry", &mw_geometry);
+        _add("tun_stack", &tun_stack);
+        _add("tun_mtu", &tun_mtu);
+        _add("tun_ipv6", &tun_ipv6);
+        _add("tun_strict_route", &tun_strict_route);
+        _add("check_include_pre", &check_include_pre);
+        _add("sp_format", &system_proxy_format);
+        _add("sub_insecure", &sub_insecure);
+        _add("sub_auto_update", &sub_auto_update);
+        _add("log_ignore", &log_ignore);
+        _add("start_minimal", &start_minimal);
+        _add("max_log_line", &max_log_line);
+        _add("splitter_state", &splitter_state);
+        _add("utlsFingerprint", &utlsFingerprint);
+        _add("log_disabled", &log_disabled);
+        _add("log_timestamp", &log_timestamp);
+        _add("log_level", &log_level);
+        _add("clash_api_external_controller", &clash_api_external_controller);
+        _add("clash_api_dashboard", &clash_api_dashboard);
+        _add("clash_api_secret", &clash_api_secret);
+        _add("ntp_enabled", &ntp_enabled);
+        _add("ntp_server", &ntp_server);
+        _add("ntp_server_port", &ntp_server_port);
+        _add("ntp_interval", &ntp_interval);
+        _add("certificate_store", &certificate_store);
+        _add("certificate", &certificate);
+        _add("certificate_path", &certificate_path);
+        _add("certificate_directory_path", &certificate_directory_path);
     }
 
     QString DataStore::GetUserAgent(bool isDefault) const {
@@ -91,24 +91,24 @@ namespace NekoGui {
         if (!Preset::SingBox::DomainStrategy.contains(domain_strategy)) domain_strategy = "";
         if (!Preset::SingBox::DomainStrategy.contains(outbound_domain_strategy)) outbound_domain_strategy = "";
 
-        _add(new configItem("block_rules", &block_rules, itemType::string));
-        _add(new configItem("proxy_rules", &proxy_rules, itemType::string));
-        _add(new configItem("direct_rules", &direct_rules, itemType::string));
-        _add(new configItem("def_outbound", &def_outbound, itemType::string));
-        _add(new configItem("rule_sets_provider", &rule_sets_provider, itemType::string));
-        _add(new configItem("custom", &custom, itemType::string));
+        _add("block_rules", &block_rules);
+        _add("proxy_rules", &proxy_rules);
+        _add("direct_rules", &direct_rules);
+        _add("def_outbound", &def_outbound);
+        _add("rule_sets_provider", &rule_sets_provider);
+        _add("custom", &custom);
         //
-        _add(new configItem("remote_dns", &remote_dns, itemType::string));
-        _add(new configItem("remote_dns_strategy", &remote_dns_strategy, itemType::string));
-        _add(new configItem("direct_dns", &direct_dns, itemType::string));
-        _add(new configItem("direct_dns_strategy", &direct_dns_strategy, itemType::string));
-        _add(new configItem("dns_final_out", &dns_final_out, itemType::string));
-        _add(new configItem("dns_routing", &dns_routing, itemType::boolean));
-        _add(new configItem("fake_dns", &fake_dns, itemType::boolean));
-        _add(new configItem("sniffing_mode", &sniffing_mode, itemType::integer));
-        _add(new configItem("domain_strategy", &domain_strategy, itemType::string));
-        _add(new configItem("outbound_domain_strategy", &outbound_domain_strategy, itemType::string));
-        _add(new configItem("enable_custom", &enable_custom, itemType::boolean));
+        _add("remote_dns", &remote_dns);
+        _add("remote_dns_strategy", &remote_dns_strategy);
+        _add("direct_dns", &direct_dns);
+        _add("direct_dns_strategy", &direct_dns_strategy);
+        _add("dns_final_out", &dns_final_out);
+        _add("dns_routing", &dns_routing);
+        _add("fake_dns", &fake_dns);
+        _add("sniffing_mode", &sniffing_mode);
+        _add("domain_strategy", &domain_strategy);
+        _add("outbound_domain_strategy", &outbound_domain_strategy);
+        _add("enable_custom", &enable_custom);
     }
 
     QString Routing::DisplayRouting() const {
@@ -140,7 +140,7 @@ namespace NekoGui {
     // NO default extra core
 
     ExtraCore::ExtraCore() : JsonStore() {
-        _add(new configItem("core_map", &this->core_map, itemType::string));
+        _add("core_map", &this->core_map);
     }
 
     QString ExtraCore::Get(const QString &id) const {
@@ -164,8 +164,8 @@ namespace NekoGui {
     }
 
     InboundAuthorization::InboundAuthorization() : JsonStore() {
-        _add(new configItem("user", &this->username, itemType::string));
-        _add(new configItem("pass", &this->password, itemType::string));
+        _add("user", &this->username);
+        _add("pass", &this->password);
     }
 
     bool InboundAuthorization::NeedAuth() const {

@@ -1,11 +1,9 @@
-#ifndef DIALOG_EDIT_PROFILE_H
-#define DIALOG_EDIT_PROFILE_H
+#pragma once
 
 #include <QDialog>
+
 #include "db/ProfileManager.hpp"
 #include "profile_editor.h"
-
-#include "ui/widget/FloatCheckBox.h"
 
 namespace Ui {
     class DialogEditProfile;
@@ -33,12 +31,8 @@ private slots:
 
     void on_ech_edit_clicked();
 
-    void on_apply_to_group_clicked();
-
 private:
     Ui::DialogEditProfile *ui;
-
-    std::map<QWidget *, FloatCheckBox *> apply_to_group_ui;
 
     ProfileEditor *innerEditor{};
 
@@ -59,8 +53,4 @@ private:
     bool onEnd();
 
     void editor_cache_updated_impl();
-
-    void do_apply_to_group(const std::shared_ptr<NekoGui::Group> &group, QWidget *key);
 };
-
-#endif // DIALOG_EDIT_PROFILE_H
