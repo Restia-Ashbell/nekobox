@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
-project(nekobox VERSION 0.1 LANGUAGES CXX)
+project(nekobox LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -232,7 +232,6 @@ set(PROJECT_SOURCES
         ui/widget/GroupItem.ui
 
         res/neko.qrc
-        ${QV2RAY_RC}
 )
 
 # Qt exe
