@@ -606,8 +606,10 @@ QTableWidget *MainWindow::createTable(int gid) {
     connect(tableWidget, &QWidget::customContextMenuRequested, this, [=, this](const QPoint &pos) {
         ui->menu_server->popup(tableWidget->viewport()->mapToGlobal(pos));
     });
-    for (const auto &[row, id]: std::views::enumerate(group->order)) {
+    int row = 0;
+    for (const auto &id: group->order) {
         updateTableRow(row, id, tableWidget);
+        row++;
     }
     return tableWidget;
 }
@@ -635,9 +637,11 @@ void MainWindow::refresh_group(int gid) {
     group->Save();
 
     tableWidget->setRowCount(0);
-    for (const auto &[row, id]: std::views::enumerate(group->order)) {
+    int row = 0;
+    for (const auto &id: group->order) {
         tableWidget->insertRow(row);
         updateTableRow(row, id, tableWidget);
+        row++;
     }
     ui->tabWidget->setTabText(ui->tabWidget->indexOf(tableWidget), group->name);
 }
@@ -655,12 +659,14 @@ void MainWindow::refresh_groups() {
         }
     }
     int last_gid = NekoGui::dataStore->current_group;
-    for (const auto &[index, gid]: std::views::enumerate(NekoGui::profileManager->groupsTabOrder)) {
+    int index = 0;
+    for (const auto &gid: NekoGui::profileManager->groupsTabOrder) {
         if (!validGids.contains(gid)) {
             auto group = NekoGui::profileManager->GetGroup(gid);
             ui->tabWidget->insertTab(index, createTable(gid), group->name);
             ui->tabWidget->tabBar()->setTabData(index, gid);
         }
+        index++;
     }
     ui->tabWidget->setCurrentIndex(NekoGui::profileManager->groupsTabOrder.indexOf(last_gid));
 }
