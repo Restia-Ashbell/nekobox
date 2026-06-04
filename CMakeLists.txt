@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.19)
 
 set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
@@ -55,42 +55,6 @@ if (NKR_PACKAGE OR NKR_PACKAGE_MACOS)
     nkr_add_compile_definitions(NKR_CPP_USE_APPDATA)
 endif ()
 
-if (WIN32)
-    set(LIBBOX_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/libbox.dll)
-elseif (APPLE)
-    set(LIBBOX_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/libbox.dylib)
-else ()
-    set(LIBBOX_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/libbox.so)
-endif ()
-set(LIBBOX_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sing-box)
-
-if (NOT EXISTS ${LIBBOX_SRC_DIR})
-    execute_process(
-            COMMAND git clone https://github.com/Restia-Ashbell/sing-box.git ${LIBBOX_SRC_DIR}
-    )
-endif ()
-
-execute_process(
-        COMMAND git rev-parse --short HEAD
-        WORKING_DIRECTORY ${LIBBOX_SRC_DIR}
-        OUTPUT_VARIABLE LIBBOX_GIT_HASH
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-file(GLOB_RECURSE LIBBOX_SOURCES "${LIBBOX_SRC_DIR}/*.go")
-add_custom_command(
-        OUTPUT ${LIBBOX_OUTPUT}
-        COMMAND go build -v -buildmode=c-shared -trimpath
-        -ldflags "-w -s -X github.com/sagernet/sing-box/constant.Version=${LIBBOX_GIT_HASH} -checklinkname=0"
-        -tags "with_clash_api,with_gvisor,with_quic,with_wireguard,with_utls,with_dhcp,badlinkname,tfogo_checklinkname0"
-        -o ${LIBBOX_OUTPUT} ./cmd/sing-box
-        WORKING_DIRECTORY ${LIBBOX_SRC_DIR}
-        DEPENDS ${LIBBOX_SOURCES}
-        COMMENT "Building Go shared library"
-)
-
-add_custom_target(BuildCore ALL DEPENDS ${LIBBOX_OUTPUT})
-
 set(BUILD_SHARED_LIBS OFF)
 set(QHOTKEY_INSTALL OFF)
 set(YAML_CPP_BUILD_TOOLS OFF)
@@ -116,10 +80,63 @@ FetchContent_Declare(
         zxing-cpp
         GIT_REPOSITORY https://github.com/zxing-cpp/zxing-cpp.git
         GIT_TAG v2.3.0
+        EXCLUDE_FROM_ALL
 )
-FetchContent_MakeAvailable(QJsonModel QHotkey yaml-cpp zxing-cpp)
+if (EXISTS ${CMAKE_SOURCE_DIR}/../sing-box)
+    FetchContent_Declare(
+        sing-box
+        SOURCE_DIR ${CMAKE_SOURCE_DIR}/../sing-box
+    )
+else()
+    FetchContent_Declare(
+        sing-box
+        GIT_REPOSITORY https://github.com/Restia-Ashbell/sing-box.git
+        GIT_TAG nekobox
+    )
+endif()
+FetchContent_MakeAvailable(QJsonModel QHotkey yaml-cpp zxing-cpp sing-box)
 
 set_target_properties(ZXing PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
+
+set(LIBBOX_SRC_DIR ${sing-box_SOURCE_DIR})
+set(LIBBOX_OUTPUT "${CMAKE_BINARY_DIR}/libbox${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
+execute_process(
+        COMMAND git rev-parse --short HEAD
+        WORKING_DIRECTORY ${LIBBOX_SRC_DIR}
+        OUTPUT_VARIABLE LIBBOX_GIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+file(GLOB_RECURSE LIBBOX_SOURCES "${LIBBOX_SRC_DIR}/*.go")
+if(MSVC)
+    set(LIBBOX_LIB "${CMAKE_BINARY_DIR}/libbox.lib")
+    add_custom_command(
+        OUTPUT ${LIBBOX_OUTPUT} ${LIBBOX_LIB}
+        COMMAND go build -v -buildmode=c-shared -trimpath
+                -ldflags "-w -s -X github.com/sagernet/sing-box/constant.Version=${LIBBOX_GIT_HASH} -checklinkname=0 -extldflags '-Wl,--out-implib,${LIBBOX_LIB}'"
+                -tags "with_clash_api,with_gvisor,with_quic,with_wireguard,with_utls,with_dhcp,badlinkname,tfogo_checklinkname0"
+                -o ${LIBBOX_OUTPUT} ./cmd/sing-box
+        WORKING_DIRECTORY ${LIBBOX_SRC_DIR}
+        DEPENDS ${LIBBOX_SOURCES}
+        COMMENT "Building Go shared library and converting to MSVC .lib"
+    )
+    set(LIBBOX_LINK_TARGET ${LIBBOX_LIB})
+else()
+    add_custom_command(
+        OUTPUT ${LIBBOX_OUTPUT}
+        COMMAND go build -v -buildmode=c-shared -trimpath
+                -ldflags "-w -s -X github.com/sagernet/sing-box/constant.Version=${LIBBOX_GIT_HASH} -checklinkname=0"
+                -tags "with_clash_api,with_gvisor,with_quic,with_wireguard,with_utls,with_dhcp,badlinkname,tfogo_checklinkname0"
+                -o ${LIBBOX_OUTPUT} ./cmd/sing-box
+        WORKING_DIRECTORY ${LIBBOX_SRC_DIR}
+        DEPENDS ${LIBBOX_SOURCES}
+        COMMENT "Building Go shared library"
+    )
+    set(LIBBOX_LINK_TARGET ${LIBBOX_OUTPUT})
+endif()
+
+add_custom_target(BuildCore ALL DEPENDS ${LIBBOX_OUTPUT})
 
 # Sources
 set(PROJECT_SOURCES
@@ -236,7 +253,7 @@ set(PROJECT_SOURCES
 
 # Qt exe
 qt_add_executable(nekobox
-        MANUAL_FINALIZATION
+        WIN32 MACOSX_BUNDLE
         ${PROJECT_SOURCES}
 )
 add_dependencies(nekobox BuildCore)
@@ -253,15 +270,11 @@ if (APPLE)
     set_target_properties(nekobox PROPERTIES
             MACOSX_BUNDLE_ICON_FILE "nekobox.icns"
             RESOURCE ${MACOSX_ICON}
-            MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/MacOSXBundleInfo.plist
             MACOSX_BUNDLE_GUI_IDENTIFIER moe.nekobox.macosx
-            MACOSX_BUNDLE TRUE
     )
 endif ()
 
 if (WIN32)
-    set_target_properties(nekobox PROPERTIES WIN32_EXECUTABLE TRUE)
-
     qt_add_resources(nekobox "emoji_fonts"
         BASE "res"
         FILES
@@ -293,7 +306,36 @@ target_link_libraries(nekobox PRIVATE
         QHotkey::QHotkey
         yaml-cpp::yaml-cpp
         ZXing::ZXing
-        ${LIBBOX_OUTPUT}
+        ${LIBBOX_LINK_TARGET}
 )
 
-qt_finalize_executable(nekobox)
+install(TARGETS nekobox
+    BUNDLE  DESTINATION .
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+set(deploy_tool_options_arg "")
+set(DEPLOY_EXTRA_ARGS "")
+if(APPLE)
+    set(deploy_tool_options_arg -libpath=${CMAKE_BINARY_DIR})
+elseif(WIN32)
+    set(deploy_tool_options_arg --no-system-d3d-compiler --no-system-dxc-compiler --no-opengl-sw)
+    install(FILES ${LIBBOX_OUTPUT} DESTINATION ${CMAKE_INSTALL_BINDIR})
+elseif(LINUX)
+    set_target_properties(nekobox PROPERTIES
+        INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}"
+    )
+    set(DEPLOY_EXTRA_ARGS
+        INCLUDE_PLUGINS qwayland
+    )
+endif()
+
+qt_generate_deploy_app_script(
+    TARGET nekobox
+    OUTPUT_SCRIPT deploy_script
+    NO_TRANSLATIONS
+    NO_UNSUPPORTED_PLATFORM_ERROR
+    DEPLOY_TOOL_OPTIONS ${deploy_tool_options_arg}
+    ${DEPLOY_EXTRA_ARGS}
+)
+install(SCRIPT ${deploy_script})
