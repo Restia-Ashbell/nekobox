@@ -14,11 +14,11 @@ class DialogBasicSettings : public QDialog {
 public:
     explicit DialogBasicSettings(QWidget *parent = nullptr);
 
-    ~DialogBasicSettings();
+    ~DialogBasicSettings() override;
 
 public slots:
 
-    void accept();
+    void accept() override;
 
 private:
     Ui::DialogBasicSettings *ui;

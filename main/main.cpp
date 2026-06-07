@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     NekoGui::dataStore->argv = QApplication::arguments();
     if (NekoGui::dataStore->argv.contains("-appdata")) {
         NekoGui::dataStore->flag_use_appdata = true;
-        int appdataIndex = NekoGui::dataStore->argv.indexOf("-appdata");
+        auto appdataIndex = NekoGui::dataStore->argv.indexOf("-appdata");
         if (NekoGui::dataStore->argv.size() > appdataIndex + 1 && !NekoGui::dataStore->argv.at(appdataIndex + 1).startsWith("-")) {
             NekoGui::dataStore->appdataDir = NekoGui::dataStore->argv.at(appdataIndex + 1);
         }

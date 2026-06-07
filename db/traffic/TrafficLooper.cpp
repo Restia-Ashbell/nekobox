@@ -20,8 +20,8 @@ namespace NekoGui_traffic {
         // query
         QJsonObject ups = stats["ups"].toObject();
         QJsonObject downs = stats["downs"].toObject();
-        auto uplink = ups[item->tag].toDouble();
-        auto downlink = downs[item->tag].toDouble();
+        auto uplink = ups[item->tag].toInteger();
+        auto downlink = downs[item->tag].toInteger();
 
         // add diff
         item->uplink += uplink;

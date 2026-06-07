@@ -184,7 +184,7 @@ void DialogManageRoutes::on_load_save_clicked() {
                 QFile f("routes/" + fn);
                 f.remove();
                 if (NekoGui::dataStore->active_routing == fn) {
-                    NekoGui::Routing::SetToActive(NekoGui::Routing::List().first());
+                    NekoGui::Routing::SetToActive(NekoGui::Routing::List().constFirst());
                     REFRESH_ACTIVE_ROUTING(NekoGui::dataStore->active_routing, NekoGui::dataStore->routing.get())
                 }
                 w->accept();

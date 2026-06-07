@@ -58,7 +58,7 @@ namespace NekoGui_fmt {
         }
 
         void ResolveDomainToIP(const std::function<void()> &onFinished) {
-            QHostInfo::lookupHost(serverAddress, QApplication::instance(), [=, this](const QHostInfo &host) {
+            QHostInfo::lookupHost(serverAddress, [=, this](const QHostInfo &host) {
                 if (!IsIpAddress(serverAddress)) {
                     auto addr = host.addresses();
                     if (!addr.isEmpty()) {

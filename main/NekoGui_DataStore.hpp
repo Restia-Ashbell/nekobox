@@ -74,7 +74,6 @@ namespace NekoGui {
         QStringList ignoreConnTag = {};
 
         std::unique_ptr<Routing> routing;
-        int resolve_count = 0;
 
         // Flags
         QStringList argv = {};

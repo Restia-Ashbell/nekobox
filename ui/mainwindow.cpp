@@ -114,14 +114,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             }
         }
     });
-    QShortcut *shortcut_ctrl_f = new QShortcut(QKeySequence("Ctrl+F"), this);
+    auto *shortcut_ctrl_f = new QShortcut(QKeySequence("Ctrl+F"), this);
     connect(shortcut_ctrl_f, &QShortcut::activated, this, [this] {
         if (!ui->search->isVisible()) {
             ui->search->setVisible(true);
             ui->search->setFocus();
         }
     });
-    QShortcut *shortcut_esc = new QShortcut(QKeySequence("Esc"), this);
+    auto *shortcut_esc = new QShortcut(QKeySequence("Esc"), this);
     connect(shortcut_esc, &QShortcut::activated, this, [this] {
         if (ui->search->isVisible()) {
             ui->search->clear();
@@ -244,6 +244,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         ui->menu_export_config->setVisible(name == software_core_name);
         ui->menu_export_config->setText(tr("Export %1 config").arg(name));
     });
+
     refresh_status();
 
     BoxMain([](const char *log) { MW_show_log(log); });
@@ -408,7 +409,7 @@ void MainWindow::on_menu_exit_triggered() {
         QDir::setCurrent(QApplication::applicationDirPath());
 
         auto arguments = NekoGui::dataStore->argv;
-        if (arguments.length() > 0) {
+        if (!arguments.isEmpty()) {
             arguments.removeFirst();
             arguments.removeAll("-tray");
             arguments.removeAll("-flag_restart_tun_on");
@@ -770,7 +771,7 @@ void MainWindow::on_menu_copy_links_triggered() {
     for (const auto &ent: ents) {
         links += ent->bean->ToShareLink();
     }
-    if (links.length() == 0) return;
+    if (links.isEmpty()) return;
     QApplication::clipboard()->setText(links.join("\n"));
     show_log_impl(tr("Copied %1 item(s)").arg(links.length()));
 }
@@ -781,7 +782,7 @@ void MainWindow::on_menu_copy_links_nkr_triggered() {
     for (const auto &ent: ents) {
         links += ent->bean->ToNekorayShareLink(ent->type);
     }
-    if (links.length() == 0) return;
+    if (links.isEmpty()) return;
     QApplication::clipboard()->setText(links.join("\n"));
     show_log_impl(tr("Copied %1 item(s)").arg(links.length()));
 }
@@ -1002,21 +1003,14 @@ void MainWindow::on_menu_resolve_domain_triggered() {
     auto profiles = get_now_selected_list();
     if (profiles.isEmpty()) return;
 
-    if (QMessageBox::question(this,
-                              tr("Confirmation"),
-                              tr("Resolving domain to IP, if support.")) != QMessageBox::StandardButton::Yes) {
-        return;
-    }
-    if (mw_sub_updating) return;
-    mw_sub_updating = true;
-    NekoGui::dataStore->resolve_count = profiles.count();
+    auto remaining_tasks = std::make_shared<int>(profiles.count());
 
     for (const auto &profile: profiles) {
         profile->bean->ResolveDomainToIP([=, this] {
             profile->Save();
-            if (--NekoGui::dataStore->resolve_count != 0) return;
-            refresh_group(profile->gid);
-            mw_sub_updating = false;
+            if (--(*remaining_tasks) == 0) {
+                refresh_group(profile->gid);
+            }
         });
     }
 }
@@ -1155,7 +1149,7 @@ void MainWindow::onTabBarContextMenuRequested(const QPoint &pos) {
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
     if (event->type() == QEvent::MouseButtonPress) {
-        auto mouseEvent = static_cast<QMouseEvent *>(event);
+        auto mouseEvent = dynamic_cast<QMouseEvent *>(event);
         if (obj == ui->label_running && mouseEvent->button() == Qt::LeftButton && NekoGui::dataStore->started_id >= 0) {
             speedtest_current();
             return true;
@@ -1191,7 +1185,7 @@ void MainWindow::RegisterHotkey(bool unregister) {
     for (auto it = hotkeyActions.constBegin(); it != hotkeyActions.constEnd(); ++it) {
         const QString &key = it.key();
         if (key.isEmpty()) continue;
-        QHotkey *hotkey = new QHotkey(QKeySequence(key), true, this);
+        auto *hotkey = new QHotkey(QKeySequence(key), true, this);
         if (hotkey->isRegistered()) {
             RegisteredHotkey.append(hotkey);
             connect(hotkey, &QHotkey::activated, this, it.value());

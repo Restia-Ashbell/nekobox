@@ -61,7 +61,7 @@ namespace NekoGui_ConfigItem {
         QJsonParseError error{};
         auto document = QJsonDocument::fromJson(data, &error);
 
-        if (error.error != error.NoError) {
+        if (error.error != QJsonParseError::NoError) {
             qDebug() << "QJsonParseError" << error.errorString();
             return;
         }

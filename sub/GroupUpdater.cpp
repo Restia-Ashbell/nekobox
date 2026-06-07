@@ -466,8 +466,8 @@ namespace NekoGui_sub {
                     bean->privateKey = Node2Value<QString>(proxy["private-key"]);
                     bean->MTU = Node2Value<int>(proxy["mtu"], 1408);
 
-                    QString ip = Node2Value<QString>(proxy["ip"]);
-                    QString ipv6 = Node2Value<QString>(proxy["ipv6"]);
+                    auto ip = Node2Value<QString>(proxy["ip"]);
+                    auto ipv6 = Node2Value<QString>(proxy["ipv6"]);
                     bean->localAddress = ip.isEmpty() ? ipv6 : (ipv6.isEmpty() ? ip : ip + "," + ipv6);
                 } else {
                     continue;

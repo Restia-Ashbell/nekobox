@@ -97,7 +97,7 @@ namespace NekoGui_fmt {
 
     QString ShadowSocksRBean::ToShareLink() {
         auto encode = [](const QString &src) -> QString { return src.isEmpty() ? src : src.toUtf8().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals); };
-        QString dataString =
+        auto dataString =
             QString("%1:%2:%3:%4:%5:%6/?obfsparam=%7&protoparam=%8&remarks=%9")
                 .arg(serverAddress)
                 .arg(serverPort)

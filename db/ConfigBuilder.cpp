@@ -52,7 +52,7 @@ namespace NekoGui {
             QString line = raw.trimmed();
             if (line.isEmpty() || line.startsWith('#')) continue;
 
-            int idx = line.indexOf(':');
+            auto idx = line.indexOf(':');
             if (idx <= 0) continue;
 
             const QString key = line.left(idx).trimmed();
@@ -146,7 +146,7 @@ namespace NekoGui {
             QList<std::shared_ptr<ProxyEntity>> resolved;
             if (ent->type == "chain") {
                 auto list = ent->Bean<NekoGui_fmt::ChainBean>()->list;
-                std::reverse(std::begin(list), std::end(list));
+                std::ranges::reverse(list);
                 for (auto id: list) {
                     resolved += profileManager->GetProfile(id);
                     if (resolved.last() == nullptr) {

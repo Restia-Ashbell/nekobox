@@ -33,9 +33,7 @@ inline std::function<void(const QString &, const QString &)> MW_dialog_message;
 
 inline const QString UNICODE_LRO = QString::fromUtf8(QByteArray::fromHex("E280AD"));
 
-inline QString Int2String(int num) {
-    return QString::number(num);
-}
+#define Int2String(num) (QString::number(num))
 
 inline QString firstOrSecond(const QString &a, const QString &b) {
     return a.isEmpty() ? b : a;
@@ -151,7 +149,7 @@ inline QJsonArray QString2QJsonArray(const QString &str) {
 
 inline QJsonArray mergeJsonArray(const QJsonArray &arr1, const QJsonArray &arr2) {
     QJsonArray result = arr1;
-    for (const QJsonValue &v: arr2) {
+    for (const auto &v: arr2) {
         result.append(v);
     }
     return result;
