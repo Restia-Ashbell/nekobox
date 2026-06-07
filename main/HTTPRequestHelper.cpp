@@ -1,7 +1,6 @@
 #include "HTTPRequestHelper.hpp"
 
 #include <QEventLoop>
-#include <QNetworkAccessManager>
 #include <QNetworkProxy>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -11,7 +10,6 @@
 namespace NekoGui_network {
 
     NekoHTTPResponse NetworkRequestHelper::HttpGet(const QUrl &url) {
-        QNetworkAccessManager accessManager;
         // Set proxy
         if (NekoGui::dataStore->sub_use_proxy) {
             if (NekoGui::dataStore->started_id < 0) {
@@ -26,7 +24,7 @@ namespace NekoGui_network {
                 proxy.setUser(NekoGui::dataStore->inbound_auth->username);
                 proxy.setPassword(NekoGui::dataStore->inbound_auth->password);
             }
-            accessManager.setProxy(proxy);
+            networkManager->setProxy(proxy);
         }
 
         QNetworkRequest request(url);
@@ -37,7 +35,7 @@ namespace NekoGui_network {
             ssl.setPeerVerifyMode(QSslSocket::PeerVerifyMode::VerifyNone);
             request.setSslConfiguration(ssl);
         }
-        QNetworkReply *reply = accessManager.get(request);
+        QNetworkReply *reply = networkManager->get(request);
 
         QEventLoop loop;
         QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);

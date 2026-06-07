@@ -10,6 +10,8 @@
 #include <QInputDialog>
 #include <QLabel>
 #include <QMessageBox>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QPlainTextEdit>
 #include <QScrollBar>
 #include <QShortcut>
@@ -27,6 +29,7 @@
 #include "db/ProfileFilter.hpp"
 #include "db/traffic/TrafficLooper.hpp"
 #include "fmt/Preset.hpp"
+#include "main/HTTPRequestHelper.hpp"
 #include "sub/GroupUpdater.hpp"
 #include "sys/AdminHelper.hpp"
 #include "sys/ExternalProcess.hpp"
@@ -75,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->toolButton_server->setMenu(ui->menu_server);
     ui->menubar->setVisible(false);
     connect(ui->toolButton_document, &QToolButton::clicked, this, [=, this] { QDesktopServices::openUrl(QUrl("https://matsuridayo.github.io/")); });
-    connect(ui->toolButton_update, &QToolButton::clicked, this, [=, this] { runOnNewThread([=, this] { CheckUpdate(); }); });
+    connect(ui->toolButton_update, &QToolButton::clicked, this, &MainWindow::CheckUpdate);
 
     // Setup log UI
     ui->splitter->restoreState(DecodeB64IfValid(NekoGui::dataStore->splitter_state));
@@ -402,10 +405,7 @@ void MainWindow::on_menu_exit_triggered() {
     neko_set_spmode_system_proxy(false);
     neko_set_spmode_vpn(false);
     //
-    if (exit_reason == 1) {
-        QDir::setCurrent(QApplication::applicationDirPath());
-        QProcess::startDetached("./updater", QStringList{});
-    } else if (exit_reason == 2 || exit_reason == 3) {
+    if (exit_reason == 2 || exit_reason == 3) {
         QDir::setCurrent(QApplication::applicationDirPath());
 
         auto arguments = NekoGui::dataStore->argv;
@@ -1193,6 +1193,86 @@ void MainWindow::RegisterHotkey(bool unregister) {
             hotkey->deleteLater();
         }
     }
+}
+
+void MainWindow::CheckUpdate() {
+    QUrl url("https://api.github.com/repos/Restia-Ashbell/nekobox/releases");
+
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::UserAgentHeader, "NekoBox-Updater");
+
+    QNetworkReply *reply = NekoGui_network::networkManager->get(request);
+    connect(reply, &QNetworkReply::finished, this, [this, reply] {
+        reply->deleteLater();
+
+        if (reply->error() != QNetworkReply::NoError) {
+            QMessageBox::warning(
+                this,
+                tr("Update Check Failed"),
+                tr("Network error: %1").arg(reply->errorString()));
+            return;
+        }
+
+        QJsonObject jsonObj = QJsonDocument::fromJson(reply->readAll()).array().at(0).toObject();
+        QString latestVersion = jsonObj.value("tag_name").toString();
+        QString releaseUrl = jsonObj.value("html_url").toString();
+
+        if (latestVersion.isEmpty()) {
+            QMessageBox::warning(this, tr("Update Check Failed"), tr("Could not parse version tag."));
+            return;
+        }
+
+        auto toVersionTuple = [](QString ver) {
+            if (ver.startsWith('v', Qt::CaseInsensitive)) {
+                ver = ver.mid(1);
+            }
+
+            QStringList parts = ver.split('-');
+            QString coreStr = parts.value(0);
+            QString suffixStr = parts.value(1);
+
+            QStringList coreParts = coreStr.split('.');
+            int major = coreParts.value(0).toInt();
+            int minor = coreParts.value(1).toInt();
+            int patch = coreParts.value(2).toInt();
+
+            int stageWeight = 4;
+            int buildNum = 0;
+
+            if (!suffixStr.isEmpty() && !suffixStr.contains(QRegularExpression("^\\d+$"))) {
+                if (suffixStr.contains("alpha", Qt::CaseInsensitive))
+                    stageWeight = 1;
+                else if (suffixStr.contains("beta", Qt::CaseInsensitive))
+                    stageWeight = 2;
+                else if (suffixStr.contains("rc", Qt::CaseInsensitive))
+                    stageWeight = 3;
+
+                QRegularExpression re("(\\d+)");
+                QRegularExpressionMatch match = re.match(suffixStr);
+                if (match.hasMatch()) {
+                    buildNum = match.captured(1).toInt();
+                }
+            }
+
+            return std::make_tuple(major, minor, patch, stageWeight, buildNum);
+        };
+
+        if (toVersionTuple(latestVersion) > toVersionTuple(NKR_VERSION)) {
+            auto result = QMessageBox::question(
+                this,
+                tr("New Version Available"),
+                tr("A new version (%1) is available.\nYour current version is %2.\n\nDo you want to download it now?")
+                    .arg(latestVersion, NKR_VERSION),
+                QMessageBox::Yes | QMessageBox::No);
+
+            if (result == QMessageBox::Yes) {
+                QDesktopServices::openUrl(QUrl(releaseUrl));
+            }
+        } else {
+            QMessageBox::information(this, tr("Check Update"),
+                                     tr("You are already using the latest version (%1).").arg(NKR_VERSION));
+        }
+    });
 }
 
 void MainWindow::updateLogMaxLines() {

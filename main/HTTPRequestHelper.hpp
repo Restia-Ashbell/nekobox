@@ -1,8 +1,11 @@
 #pragma once
 
+#include <QNetworkAccessManager>
 #include <QUrl>
 
 namespace NekoGui_network {
+    inline QNetworkAccessManager *networkManager = new QNetworkAccessManager;
+
     struct NekoHTTPResponse {
         QString error;
         QByteArray data;

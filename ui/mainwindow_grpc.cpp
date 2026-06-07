@@ -296,6 +296,3 @@ void MainWindow::neko_stop(bool crash) {
         mu_state.unlock();
     });
 }
-
-void MainWindow::CheckUpdate() {
-}
