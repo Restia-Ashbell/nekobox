@@ -16,14 +16,6 @@ namespace NekoGui {
         return paths;
     }
 
-    QString genTunName() {
-        auto tun_name = "nekobox-tun";
-#ifdef Q_OS_MACOS
-        tun_name = "utun9";
-#endif
-        return tun_name;
-    }
-
     void MergeJson(const QJsonObject &custom, QJsonObject &outbound) {
         // 合并
         if (custom.isEmpty()) return;
@@ -429,10 +421,15 @@ namespace NekoGui {
 
             // tun-in
             if (dataStore->spmode_vpn) {
+#ifdef Q_OS_MACOS
+                auto tun_name = "";
+#else
+                auto tun_name = "nekobox-tun";
+#endif
                 QJsonObject inboundObj;
                 inboundObj["tag"] = "tun-in";
                 inboundObj["type"] = "tun";
-                inboundObj["interface_name"] = genTunName();
+                inboundObj["interface_name"] = tun_name;
                 inboundObj["auto_route"] = true;
                 // inboundObj["endpoint_independent_nat"] = true;
                 inboundObj["mtu"] = dataStore->tun_mtu;
