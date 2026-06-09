@@ -339,7 +339,6 @@ namespace NekoGui_fmt {
             {"local_address", QString2QJsonArray(localAddress)},
             {"reserved", QString2QJsonArray(reserved)},
             {"mtu", MTU},
-            {"gso", enableGSO},
             {"system_interface", useSystemInterface},
         };
 

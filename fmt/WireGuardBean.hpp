@@ -12,7 +12,6 @@ namespace NekoGui_fmt {
         QString reserved;
         int MTU = 1408;
         bool useSystemInterface = false;
-        bool enableGSO = false;
 
         WireGuardBean() : AbstractBean(0) {
             _add("private_key", &privateKey);
@@ -22,7 +21,6 @@ namespace NekoGui_fmt {
             _add("reserved", &reserved);
             _add("mtu", &MTU);
             _add("use_system_proxy", &useSystemInterface);
-            _add("enable_gso", &enableGSO);
         };
 
         QString DisplayType() override { return "WireGuard"; };
