@@ -96,6 +96,7 @@ namespace NekoGui {
         QString theme = "";
         QString language = "";
         QString font = "";
+        QString icon_path = "";
         bool check_include_pre = false;
         QString system_proxy_format = "";
         QStringList log_ignore = {};

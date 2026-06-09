@@ -169,8 +169,6 @@ set(PROJECT_SOURCES
         sys/AdminHelper.cpp
         sys/AutoRun.cpp
 
-        ui/Icon.cpp
-
         ui/mainwindow_grpc.cpp
         ui/mainwindow.cpp
         ui/mainwindow.h

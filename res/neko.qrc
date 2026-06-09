@@ -1,6 +1,6 @@
 <RCC>
-    <qresource prefix="/neko">
-        <file alias="nekobox.png">public/nekobox.png</file>
-        <file alias="nekoray.png">public/nekoray.png</file>
+    <qresource prefix="/">
+        <file>icons/nekobox.png</file>
+        <file>icons/nekoray.png</file>
     </qresource>
 </RCC>

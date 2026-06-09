@@ -11,7 +11,6 @@
 #include "fmt/Preset.hpp"
 #include "main/GuiUtils.hpp"
 #include "sys/AutoRun.hpp"
-#include "ui/Icon.hpp"
 #include "ui/mainwindow.h"
 
 class ExtraCoreWidget : public QWidget {
@@ -301,21 +300,53 @@ void DialogBasicSettings::refresh_auth() {
 
 void DialogBasicSettings::on_set_custom_icon_clicked() {
     auto title = ui->set_custom_icon->text();
-    QString user_icon_path = "./" + software_name.toLower() + ".png";
-    auto c = QMessageBox::question(this, title, tr("Please select a PNG file."),
-                                   QMessageBox::Open | QMessageBox::Reset | QMessageBox::Cancel, QMessageBox::Cancel);
-    if (c == QMessageBox::Open) {
-        auto fn = QFileDialog::getOpenFileName(this, QObject::tr("Select"), QDir::currentPath(),
-                                               "*.png", nullptr, QFileDialog::Option::ReadOnly);
-        QImage img(fn);
+
+    QDialog dlg(this);
+    dlg.setWindowTitle(title);
+    auto *gridLayout = new QGridLayout(&dlg);
+
+    auto *btnIcon1 = new QPushButton(&dlg);
+    btnIcon1->setIcon(QIcon(":/icons/nekobox.png"));
+    btnIcon1->setIconSize(QSize(128, 128));
+
+    auto *btnIcon2 = new QPushButton(&dlg);
+    btnIcon2->setIcon(QIcon(":/icons/nekoray.png"));
+    btnIcon2->setIconSize(QSize(128, 128));
+
+    auto *btnSelect = new QPushButton(tr("Select"), &dlg);
+    auto *btnCancel = new QPushButton(tr("Cancel"), &dlg);
+
+    gridLayout->addWidget(btnIcon1, 0, 0);
+    gridLayout->addWidget(btnIcon2, 0, 1);
+    gridLayout->addWidget(btnSelect, 1, 0);
+    gridLayout->addWidget(btnCancel, 1, 1);
+
+    connect(btnIcon1, &QPushButton::clicked, &dlg, [&] { dlg.done(1); });
+    connect(btnIcon2, &QPushButton::clicked, &dlg, [&] { dlg.done(2); });
+    connect(btnCancel, &QPushButton::clicked, &dlg, [&] { dlg.done(0); });
+
+    QString selectedFileName;
+    connect(btnSelect, &QPushButton::clicked, &dlg, [&] {
+        selectedFileName = QFileDialog::getOpenFileName(&dlg, QObject::tr("Select"), QDir::currentPath(),
+                                                        "*.png", nullptr, QFileDialog::Option::ReadOnly);
+        if (!selectedFileName.isEmpty()) {
+            dlg.done(3);
+        }
+    });
+
+    int result = dlg.exec();
+
+    if (result == 1) {
+        NekoGui::dataStore->icon_path = ":/icons/nekobox.png";
+    } else if (result == 2) {
+        NekoGui::dataStore->icon_path = ":/icons/nekoray.png";
+    } else if (result == 3) {
+        QImage img(selectedFileName);
         if (img.isNull() || img.height() != img.width()) {
-            MessageBoxWarning(title, tr("Please select a valid square image."));
+            QMessageBox::warning(this, title, tr("Please select a valid square image."));
             return;
         }
-        QFile::remove(user_icon_path);
-        QFile::copy(fn, user_icon_path);
-    } else if (c == QMessageBox::Reset) {
-        QFile::remove(user_icon_path);
+        NekoGui::dataStore->icon_path = selectedFileName;
     } else {
         return;
     }

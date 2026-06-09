@@ -123,7 +123,6 @@ private:
     QSystemTrayIcon *tray;
     //
     bool qvLogAutoScoll = true;
-    int icon_status = -1;
     //
     std::shared_ptr<NekoGui::ProxyEntity> running;
     std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> running_ext;
@@ -149,6 +148,8 @@ private:
     QList<std::shared_ptr<NekoGui::ProxyEntity>> get_now_selected_list();
 
     void dialog_message_impl(const QString &sender, const QString &info);
+
+    QIcon getIcon(bool isTray = false);
 
     void updateTableRow(int row, int id, QTableWidget *tableWidget);
 

@@ -28,6 +28,7 @@ namespace NekoGui {
         _add("spmode_system_proxy", &spmode_system_proxy);
         _add("language", &language);
         _add("font", &font);
+        _add("icon_path", &icon_path);
         _add("skip_cert", &skip_cert);
         _add("hk_mw", &hotkey_mainwindow);
         _add("hk_group", &hotkey_group);

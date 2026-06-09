@@ -12,6 +12,7 @@
 #include <QMessageBox>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QPainter>
 #include <QPlainTextEdit>
 #include <QScrollBar>
 #include <QShortcut>
@@ -33,7 +34,6 @@
 #include "sub/GroupUpdater.hpp"
 #include "sys/AdminHelper.hpp"
 #include "sys/ExternalProcess.hpp"
-#include "ui/Icon.hpp"
 #include "ui/dialog_basic_settings.h"
 #include "ui/dialog_hotkey.h"
 #include "ui/dialog_manage_groups.h"
@@ -141,8 +141,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     refresh_groups();
 
     // Setup Tray
-    tray = new QSystemTrayIcon(this); // 初始化托盘对象tray
-    tray->setIcon(Icon::GetTrayIcon(Icon::NONE));
+    tray = new QSystemTrayIcon(this);       // 初始化托盘对象tray
     tray->setContextMenu(ui->menu_program); // 创建托盘菜单
     tray->show();                           // 让托盘图标显示在系统托盘上
     connect(tray, &QSystemTrayIcon::activated, this, [this](QSystemTrayIcon::ActivationReason reason) {
@@ -289,7 +288,6 @@ MainWindow::~MainWindow() {
 void MainWindow::dialog_message_impl(const QString &sender, const QString &info) {
     // info
     if (info.contains("UpdateIcon")) {
-        icon_status = -1;
         refresh_status();
     }
     if (info.contains("UpdateDataStore")) {
@@ -513,30 +511,49 @@ void MainWindow::refresh_status(const QString &traffic_update) {
     }
 
     auto title = tt.join(" ");
-    auto icon_status_new = Icon::NONE;
-
-    if (running != nullptr) {
-        if (NekoGui::dataStore->spmode_vpn) {
-            icon_status_new = Icon::VPN;
-        } else if (NekoGui::dataStore->spmode_system_proxy) {
-            icon_status_new = Icon::SYSTEM_PROXY;
-        } else {
-            icon_status_new = Icon::RUNNING;
-        }
-    }
 
     // refresh title & window icon
     setWindowTitle(title);
-    if (icon_status_new != icon_status) QApplication::setWindowIcon(Icon::GetTrayIcon(Icon::NONE));
+    QApplication::setWindowIcon(getIcon());
 
     // refresh tray
     if (tray != nullptr) {
         if (running) title += "\n" + running->bean->DisplayTypeAndName() + "@" + group_name;
         tray->setToolTip(title);
-        if (icon_status_new != icon_status) tray->setIcon(Icon::GetTrayIcon(icon_status_new));
+        tray->setIcon(getIcon(true));
     }
+}
 
-    icon_status = icon_status_new;
+QIcon MainWindow::getIcon(bool isTray) {
+    if (NekoGui::dataStore->icon_path.isEmpty()) NekoGui::dataStore->icon_path = ":/icons/" + software_name.toLower() + ".png";
+    auto pixmap = QPixmap(NekoGui::dataStore->icon_path);
+
+    if (!isTray || !running) return pixmap;
+
+    auto p = QPainter(&pixmap);
+
+    auto side = pixmap.width();
+    auto radius = side * 0.4;
+    auto d = side * 0.3;
+    auto margin = side * 0.05;
+
+    if (NekoGui::dataStore->spmode_vpn) {
+        p.setBrush(QBrush(Qt::red));
+    } else if (NekoGui::dataStore->spmode_system_proxy) {
+        p.setBrush(QBrush(Qt::blue));
+    } else {
+        p.setBrush(QBrush(Qt::darkGreen));
+    }
+    p.drawRoundedRect(
+        QRect(side - d - margin,
+              side - d - margin,
+              d,
+              d),
+        radius,
+        radius);
+    p.end();
+
+    return pixmap;
 }
 
 // table显示
