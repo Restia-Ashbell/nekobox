@@ -855,63 +855,38 @@ void MainWindow::display_qr_link(bool nkrFormat) {
     QString link = ent->bean->ToShareLink();
     QString link_nk = ent->bean->ToNekorayShareLink(ent->type);
 
-    class QRDialog : public QDialog {
-    public:
-        QLabel *qrLabel = nullptr;
-        QCheckBox *cb = nullptr;
-        QPlainTextEdit *textEdit = nullptr;
-        QImage qrImage;
-        QString link, link_nk;
+    QDialog dlg(this);
+    dlg.setWindowTitle(ent->bean->DisplayTypeAndName());
+    auto *layout = new QVBoxLayout(&dlg);
 
-        QRDialog(const QString &link_, const QString &link_nk_, bool nkrFormat)
-            : link(link_), link_nk(link_nk_) {
-            auto *layout = new QVBoxLayout(this);
+    auto *qrLabel = new QLabel();
+    qrLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(qrLabel);
 
-            qrLabel = new QLabel();
-            qrLabel->setMinimumSize(256, 256);
-            qrLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-            qrLabel->setAlignment(Qt::AlignCenter);
-            layout->addWidget(qrLabel);
+    auto *cb = new QCheckBox("Neko Links");
+    cb->setChecked(nkrFormat);
+    layout->addWidget(cb);
 
-            cb = new QCheckBox("Neko Links");
-            cb->setChecked(nkrFormat);
-            layout->addWidget(cb);
+    auto *textEdit = new QPlainTextEdit();
+    textEdit->setReadOnly(true);
+    layout->addWidget(textEdit);
 
-            textEdit = new QPlainTextEdit();
-            textEdit->setReadOnly(true);
-            layout->addWidget(textEdit);
+    connect(cb, &QCheckBox::toggled, [&] {
+        const QString &link_display = cb->isChecked() ? link_nk : link;
+        textEdit->setPlainText(link_display);
 
-            connect(cb, &QCheckBox::toggled, this, &QRDialog::refresh);
-            refresh();
-        }
-
-        void refresh() {
-            const QString &link_display = cb->isChecked() ? link_nk : link;
-            textEdit->setPlainText(link_display);
-
-            try {
-                auto writer = ZXing::MultiFormatWriter(ZXing::BarcodeFormat::QRCode);
-                auto matrix = writer.encode(link_display.toStdString(), 0, 0);
-                auto bitmap = ZXing::ToMatrix<uint8_t>(matrix);
-                qrImage = QImage(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.width(), QImage::Format_Grayscale8).copy();
-                showQR();
-            } catch (const std::exception &ex) {
-                QMessageBox::warning(this, "QR generation error", ex.what());
-            }
-        }
-
-        void showQR() {
+        try {
+            auto writer = ZXing::MultiFormatWriter(ZXing::BarcodeFormat::QRCode);
+            auto matrix = writer.encode(link_display.toStdString(), 0, 0);
+            auto bitmap = ZXing::ToMatrix<uint8_t>(matrix);
+            auto qrImage = QImage(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.width(), QImage::Format_Grayscale8).copy();
             qrLabel->setPixmap(QPixmap::fromImage(qrImage.scaled(qrLabel->size(), Qt::KeepAspectRatio, Qt::FastTransformation)));
+        } catch (const std::exception &ex) {
+            QMessageBox::warning(&dlg, "QR generation error", ex.what());
         }
+    });
+    emit cb->toggled(cb->isChecked());
 
-        void resizeEvent(QResizeEvent *event) override {
-            QDialog::resizeEvent(event);
-            showQR();
-        }
-    };
-
-    QRDialog dlg(link, link_nk, nkrFormat);
-    dlg.setWindowTitle(ents.first()->bean->DisplayTypeAndName());
     dlg.exec();
 }
 
