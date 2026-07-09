@@ -5,7 +5,7 @@
 #include <QJsonDocument>
 #include <QDebug>
 
-#include "main/NekoGui_Utils.hpp"
+#include "common/Utils.hpp"
 
 #define LOG(...) Qv2ray::base::log_internal(__VA_ARGS__)
 #define DEBUG(...) Qv2ray::base::log_internal(__VA_ARGS__)
