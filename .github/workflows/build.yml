@@ -16,13 +16,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-2025
+          - os: windows-2025-vs2026
             target: windows-amd64
-          - os: windows-11-arm
+          - os: windows-11-vs2026-arm
             target: windows-arm64
-          - os: ubuntu-24.04
+          - os: ubuntu-26.04
             target: linux-amd64
-          - os: ubuntu-24.04-arm
+          - os: ubuntu-26.04-arm
             target: linux-arm64
           - os: macos-26-intel
             target: macos-amd64
@@ -67,7 +67,7 @@ jobs:
       # so we use MSYS2 to install an aarch64-w64-mingw32 cross toolchain.
 
       - name: Setup MSYS2
-        if: matrix.os == 'windows-11-arm'
+        if: matrix.os == 'windows-11-vs2026-arm'
         uses: msys2/setup-msys2@v2
         with:
           update: true
@@ -76,7 +76,7 @@ jobs:
             mingw-w64-cross-mingwarm64-gcc
 
       - name: Build (Windows ARM)
-        if: matrix.os == 'windows-11-arm'
+        if: matrix.os == 'windows-11-vs2026-arm'
         shell: msys2 {0}
         run: |
           export PATH=/usr/bin:/opt/bin:$PATH
@@ -86,7 +86,7 @@ jobs:
           cmake --build build --config Release
 
       - name: Build (Default)
-        if: matrix.os != 'windows-11-arm'
+        if: matrix.os != 'windows-11-vs2026-arm'
         shell: bash
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
