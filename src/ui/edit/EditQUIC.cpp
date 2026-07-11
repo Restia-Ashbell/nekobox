@@ -19,19 +19,21 @@ void EditQUIC::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     this->ent = _ent;
     auto bean = this->ent->Bean<NekoGui_fmt::QUICBean>();
 
+    ui->forceExternal->setChecked(bean->external);
+
+    ui->hyProtocol->addItems({"udp", "wechat-video", "faketcp"});
+    ui->hyProtocol->setCurrentText(bean->protocol);
+    ui->authPayload->setText(bean->auth_str);
+
     P_LOAD_STRING(hopPort);
     P_LOAD_INT(hopInterval);
     P_LOAD_INT(uploadMbps);
     P_LOAD_INT(downloadMbps);
     P_LOAD_BOOL(disableMtuDiscovery)
     P_LOAD_STRING(obfsPassword);
-    P_LOAD_STRING(authPayload);
     P_LOAD_INT(streamReceiveWindow);
     P_LOAD_INT(connectionReceiveWindow);
 
-    P_LOAD_BOOL(forceExternal);
-    P_LOAD_COMBO_INT(hyProtocol);
-    P_LOAD_COMBO_INT(authPayloadType);
     P_LOAD_STRING(uuid);
     P_LOAD_STRING(password);
 
@@ -71,8 +73,6 @@ void EditQUIC::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
             ui->hyProtocol_l->hide();
             ui->authPayload->hide();
             ui->authPayload_l->hide();
-            ui->authPayloadType->hide();
-            ui->authPayloadType_l->hide();
             ui->alpn->hide();
             ui->alpn_l->hide();
             ui->TLS->removeItem(ui->alpn_sp);
@@ -98,8 +98,6 @@ void EditQUIC::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
         ui->obfsPassword_l->hide();
         ui->authPayload->hide();
         ui->authPayload_l->hide();
-        ui->authPayloadType->hide();
-        ui->authPayloadType_l->hide();
         ui->streamReceiveWindow->hide();
         ui->streamReceiveWindow_l->hide();
         ui->connectionReceiveWindow->hide();
@@ -110,18 +108,18 @@ void EditQUIC::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
 bool EditQUIC::onEnd() {
     auto bean = this->ent->Bean<NekoGui_fmt::QUICBean>();
 
-    P_SAVE_BOOL(forceExternal);
+    bean->external = ui->forceExternal->isChecked();
+
+    bean->protocol = ui->hyProtocol->currentText();
+    bean->auth_str = ui->authPayload->text();
 
     // Hysteria
     P_SAVE_STRING(hopPort);
     P_SAVE_INT(hopInterval);
     P_SAVE_INT(uploadMbps);
     P_SAVE_INT(downloadMbps);
-    P_SAVE_COMBO_INT(hyProtocol);
     P_SAVE_BOOL(disableMtuDiscovery)
     P_SAVE_STRING(obfsPassword);
-    P_SAVE_COMBO_INT(authPayloadType);
-    P_SAVE_STRING(authPayload);
     P_SAVE_INT(streamReceiveWindow);
     P_SAVE_INT(connectionReceiveWindow);
 

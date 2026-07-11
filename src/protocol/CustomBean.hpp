@@ -9,17 +9,13 @@ namespace NekoGui_fmt {
         QList<QString> command;
         QString config_suffix;
         QString config_simple;
-        int mapping_port = 0;
-        int socks_port = 0;
 
         CustomBean() : AbstractBean(0) {
             _add("core", &core);
             _add("cmd", &command);
             _add("cs", &config_simple);
             _add("cs_suffix", &config_suffix);
-            _add("mapping_port", &mapping_port);
-            _add("socks_port", &socks_port);
-        };
+        }
 
         QString DisplayType() override {
             if (core == "internal") {
@@ -29,9 +25,11 @@ namespace NekoGui_fmt {
                 return software_core_name + " config";
             }
             return core;
-        };
+        }
 
-        QString DisplayCoreType() override { return NeedExternal(true) == 0 ? software_core_name : core; };
+        QString DisplayCoreType() override {
+            return core == "internal" || core == "internal-full" ? software_core_name : core;
+        }
 
         QString DisplayAddress() override {
             if (core == "internal") {
@@ -41,11 +39,9 @@ namespace NekoGui_fmt {
                 return {};
             }
             return AbstractBean::DisplayAddress();
-        };
+        }
 
-        int NeedExternal(bool isFirstProfile) override;
-
-        ExternalBuildResult BuildExternal(int mapping_port, int socks_port, int external_stat) override;
+        ExternalBuildResult BuildExternal(int mapping_port, int socks_port) override;
 
         CoreObjOutboundBuildResult BuildCoreObjSingBox() override;
     };

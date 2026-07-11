@@ -4,18 +4,18 @@
 #include <QInputDialog>
 
 #include "3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp"
-#include "protocol/Preset.hpp"
-#include "protocol/Includes.hpp"
 #include "common/GuiUtils.hpp"
+#include "protocol/Includes.hpp"
+#include "protocol/Preset.hpp"
 #include "ui/edit/EditAnyTLS.hpp"
 #include "ui/edit/EditChain.hpp"
 #include "ui/edit/EditCustom.hpp"
 #include "ui/edit/EditNaive.hpp"
 #include "ui/edit/EditQUIC.hpp"
+#include "ui/edit/EditSSH.hpp"
 #include "ui/edit/EditShadowSocks.hpp"
 #include "ui/edit/EditShadowSocksR.hpp"
 #include "ui/edit/EditSocksHttp.hpp"
-#include "ui/edit/EditSSH.hpp"
 #include "ui/edit/EditTrojanVLESS.hpp"
 #include "ui/edit/EditVMess.hpp"
 #include "ui/edit/EditWireGuard.hpp"
@@ -255,10 +255,7 @@ void DialogEditProfile::typeSelected() {
     ui->bean->setTitle(ent->bean->DisplayType());
 
     // 左边 bean inner editor
-    innerEditor->get_edit_dialog = [&]() { return (QWidget *) this; };
-    innerEditor->get_edit_text_name = [&]() { return ui->name->text(); };
-    innerEditor->get_edit_text_serverAddress = [&]() { return ui->address->text(); };
-    innerEditor->get_edit_text_serverPort = [&]() { return ui->port->text(); };
+    innerEditor->get_edit_dialog = [&]() { return this; };
     innerEditor->editor_cache_updated = [=, this] { editor_cache_updated_impl(); };
     innerEditor->onStart(ent);
 

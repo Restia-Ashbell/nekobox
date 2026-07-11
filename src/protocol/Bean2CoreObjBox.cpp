@@ -237,9 +237,7 @@ namespace NekoGui_fmt {
             outbound["recv_window_conn"] = connectionReceiveWindow;
             outbound["up_mbps"] = uploadMbps;
             outbound["down_mbps"] = downloadMbps;
-
-            if (authPayloadType == hysteria_auth_base64) outbound["auth"] = authPayload;
-            if (authPayloadType == hysteria_auth_string) outbound["auth_str"] = authPayload;
+            outbound["auth_str"] = auth_str;
 
             if (!hopPort.isEmpty()) {
                 outbound["server_ports"] = QJsonArray::fromStringList(QString(hopPort).replace('-', ':').split(',', Qt::SkipEmptyParts));

@@ -10,20 +10,10 @@ namespace NekoGui_fmt {
         static constexpr int proxy_Hysteria2 = 3;
         int proxy_type = proxy_Hysteria;
 
-        bool forceExternal = false;
-
         // Hysteria 1
 
-        static constexpr int hysteria_protocol_udp = 0;
-        static constexpr int hysteria_protocol_facktcp = 1;
-        static constexpr int hysteria_protocol_wechat_video = 2;
-        int hyProtocol = 0;
-
-        static constexpr int hysteria_auth_none = 0;
-        static constexpr int hysteria_auth_string = 1;
-        static constexpr int hysteria_auth_base64 = 2;
-        int authPayloadType = 0;
-        QString authPayload = "";
+        QString protocol = "udp";
+        QString auth_str = "";
 
         // Hysteria 1&2
 
@@ -63,7 +53,6 @@ namespace NekoGui_fmt {
         explicit QUICBean(int _proxy_type) : AbstractBean(0), proxy_type(_proxy_type) {
             serverPort = 443;
             if (proxy_type == proxy_Hysteria || proxy_type == proxy_Hysteria2) {
-                _add("authPayload", &authPayload);
                 _add("obfsPassword", &obfsPassword);
                 _add("uploadMbps", &uploadMbps);
                 _add("downloadMbps", &downloadMbps);
@@ -73,8 +62,8 @@ namespace NekoGui_fmt {
                 _add("hopInterval", &hopInterval);
                 _add("hopPort", &hopPort);
                 if (proxy_type == proxy_Hysteria) { // hy1
-                    _add("authPayloadType", &authPayloadType);
-                    _add("protocol", &hyProtocol);
+                    _add("auth_str", &auth_str);
+                    _add("protocol", &protocol);
                 } else { // hy2
                     uploadMbps = 0;
                     downloadMbps = 0;
@@ -89,7 +78,6 @@ namespace NekoGui_fmt {
                 _add("heartbeat", &heartbeat);
                 _add("uos", &uos);
             }
-            _add("forceExternal", &forceExternal);
             // TLS
             _add("allowInsecure", &allowInsecure);
             _add("sni", &sni);
@@ -103,7 +91,7 @@ namespace NekoGui_fmt {
         }
 
         QString DisplayCoreType() override {
-            if (NeedExternal(true) == 0) {
+            if (!external) {
                 return software_core_name;
             } else if (proxy_type == proxy_TUIC) {
                 return "tuic";
@@ -122,11 +110,9 @@ namespace NekoGui_fmt {
             } else {
                 return "Hysteria2";
             }
-        };
+        }
 
-        int NeedExternal(bool isFirstProfile) override;
-
-        ExternalBuildResult BuildExternal(int mapping_port, int socks_port, int external_stat) override;
+        ExternalBuildResult BuildExternal(int mapping_port, int socks_port) override;
 
         CoreObjOutboundBuildResult BuildCoreObjSingBox() override;
 

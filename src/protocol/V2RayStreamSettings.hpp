@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QUrlQuery>
+
 namespace NekoGui_fmt {
     class V2rayStreamSettings : public JsonStore {
     public:
@@ -53,5 +55,9 @@ namespace NekoGui_fmt {
         }
 
         void BuildStreamSettingsSingBox(QJsonObject *outbound);
+
+        void BuildShareLinkQuery(QUrlQuery *query);
+
+        void ParseShareLinkQuery(const QUrlQuery &query);
     };
 } // namespace NekoGui_fmt

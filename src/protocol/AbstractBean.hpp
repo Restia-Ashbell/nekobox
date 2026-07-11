@@ -35,6 +35,8 @@ namespace NekoGui_fmt {
         QString custom_config = "";
         QString custom_outbound = "";
 
+        bool external = false;
+
         explicit AbstractBean(int v) : version(v) {
             _add("_v", &version);
             _add("name", &name);
@@ -42,6 +44,7 @@ namespace NekoGui_fmt {
             _add("port", &serverPort);
             _add("c_cfg", &custom_config);
             _add("c_out", &custom_outbound);
+            _add("external", &external);
         }
 
         virtual ~AbstractBean() = default;
@@ -101,11 +104,9 @@ namespace NekoGui_fmt {
 
         //
 
-        virtual int NeedExternal(bool isFirstProfile) { return 0; }
-
         virtual CoreObjOutboundBuildResult BuildCoreObjSingBox() { return {}; }
 
-        virtual ExternalBuildResult BuildExternal(int mapping_port, int socks_port, int external_stat) { return {}; }
+        virtual ExternalBuildResult BuildExternal(int mapping_port, int socks_port) { return {}; }
 
         virtual QString ToShareLink() { return {}; }
 

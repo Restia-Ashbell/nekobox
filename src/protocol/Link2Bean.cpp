@@ -4,6 +4,26 @@
 #include <QUrlQuery>
 
 namespace NekoGui_fmt {
+    void V2rayStreamSettings::ParseShareLinkQuery(const QUrlQuery &query) {
+        sni = FirstQueryValue(query, {"sni", "peer"});
+        alpn = GetQueryValue(query, "alpn");
+        if (!query.queryItemValue("allowInsecure").isEmpty()) allow_insecure = true;
+        reality_pbk = GetQueryValue(query, "pbk", "");
+        reality_sid = GetQueryValue(query, "sid", "");
+        reality_spx = GetQueryValue(query, "spx", "");
+        utlsFingerprint = GetQueryValue(query, "fp", "");
+        if (utlsFingerprint.isEmpty()) utlsFingerprint = NekoGui::dataStore->utlsFingerprint;
+
+        network = FirstQueryValue(query, {"type", "obfs"});
+        if (GetQueryValue(query, "headerType") == "http") network = "http";
+        if (network == "grpc") {
+            path = FirstQueryValue(query, {"serviceName", "path"});
+        } else {
+            path = GetQueryValue(query, "path");
+            host = GetQueryValue(query, "host");
+        }
+    }
+
     bool SocksHttpBean::TryParseLink(const QString &link) {
         QUrl url(link);
         if (!url.isValid()) return false;
@@ -142,27 +162,7 @@ namespace NekoGui_fmt {
             serverPort = url.port();
             aid = GetQueryValue(query, "alterId", "0").toInt();
 
-            // security
-            stream->sni = FirstQueryValue(query, {"sni", "peer"});
-            stream->alpn = GetQueryValue(query, "alpn");
-            if (!query.queryItemValue("allowInsecure").isEmpty()) stream->allow_insecure = true;
-            stream->reality_pbk = GetQueryValue(query, "pbk", "");
-            stream->reality_sid = GetQueryValue(query, "sid", "");
-            stream->reality_spx = GetQueryValue(query, "spx", "");
-            stream->utlsFingerprint = GetQueryValue(query, "fp", "");
-            if (stream->utlsFingerprint.isEmpty()) {
-                stream->utlsFingerprint = NekoGui::dataStore->utlsFingerprint;
-            }
-
-            // type
-            stream->network = FirstQueryValue(query, {"type", "obfs"});
-            if (GetQueryValue(query, "headerType") == "http") stream->network = "http";
-            if (stream->network == "grpc") {
-                stream->path = FirstQueryValue(query, {"serviceName", "path"});
-            } else {
-                stream->path = GetQueryValue(query, "path");
-                stream->host = GetQueryValue(query, "host");
-            }
+            stream->ParseShareLinkQuery(query);
         }
         return !(serverAddress.isEmpty() || uuid.isEmpty());
     }
@@ -190,27 +190,7 @@ namespace NekoGui_fmt {
         serverAddress = url.host();
         serverPort = url.port();
 
-        // security
-        stream->sni = FirstQueryValue(query, {"sni", "peer"});
-        stream->alpn = GetQueryValue(query, "alpn");
-        if (!query.queryItemValue("allowInsecure").isEmpty()) stream->allow_insecure = true;
-        stream->reality_pbk = GetQueryValue(query, "pbk", "");
-        stream->reality_sid = GetQueryValue(query, "sid", "");
-        stream->reality_spx = GetQueryValue(query, "spx", "");
-        stream->utlsFingerprint = GetQueryValue(query, "fp", "");
-        if (stream->utlsFingerprint.isEmpty()) {
-            stream->utlsFingerprint = NekoGui::dataStore->utlsFingerprint;
-        }
-
-        // type
-        stream->network = FirstQueryValue(query, {"type", "obfs"});
-        if (GetQueryValue(query, "headerType") == "http") stream->network = "http";
-        if (stream->network == "grpc") {
-            stream->path = FirstQueryValue(query, {"serviceName", "path"});
-        } else {
-            stream->path = GetQueryValue(query, "path");
-            stream->host = GetQueryValue(query, "host");
-        }
+        stream->ParseShareLinkQuery(query);
 
         // protocol
         if (proxy_type == proxy_VLESS) {
@@ -255,18 +235,8 @@ namespace NekoGui_fmt {
             allowInsecure = QStringList{"1", "true"}.contains(query.queryItemValue("insecure"));
             uploadMbps = query.queryItemValue("upmbps").toInt();
             downloadMbps = query.queryItemValue("downmbps").toInt();
-
-            auto protocolStr = GetQueryValue(query, "protocol", "udp").toLower();
-            if (protocolStr == "faketcp") {
-                hyProtocol = NekoGui_fmt::QUICBean::hysteria_protocol_facktcp;
-            } else if (protocolStr.startsWith("wechat")) {
-                hyProtocol = NekoGui_fmt::QUICBean::hysteria_protocol_wechat_video;
-            }
-
-            if (query.hasQueryItem("auth")) {
-                authPayload = query.queryItemValue("auth");
-                authPayloadType = NekoGui_fmt::QUICBean::hysteria_auth_string;
-            }
+            auth_str = query.queryItemValue("auth");
+            protocol = GetQueryValue(query, "protocol", "udp");
 
             connectionReceiveWindow = query.queryItemValue("recv_window").toInt();
             streamReceiveWindow = query.queryItemValue("recv_window_conn").toInt();

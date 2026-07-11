@@ -17,6 +17,7 @@ namespace NekoGui_fmt {
 
         NaiveBean() : AbstractBean(0) {
             serverPort = 443;
+            external = true;
             _add("username", &username);
             _add("password", &password);
             _add("protocol", &protocol);
@@ -31,9 +32,7 @@ namespace NekoGui_fmt {
 
         QString DisplayType() override { return "Naive"; };
 
-        int NeedExternal(bool isFirstProfile) override;
-
-        ExternalBuildResult BuildExternal(int mapping_port, int socks_port, int external_stat) override;
+        ExternalBuildResult BuildExternal(int mapping_port, int socks_port) override;
 
         bool TryParseLink(const QString &link) override;
 

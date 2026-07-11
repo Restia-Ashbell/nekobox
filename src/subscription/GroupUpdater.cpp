@@ -371,16 +371,8 @@ namespace NekoGui_sub {
                     bean->alpn = Node2Value<QList<QString>>(proxy["alpn"]).join(",");
                     bean->sni = Node2Value<QString>(proxy["sni"]);
 
-                    auto auth_str = Node2Value<QString>(proxy["auth-str"]);
-                    auto auth = Node2Value<QString>(proxy["auth"]);
-                    if (!auth_str.isEmpty()) {
-                        bean->authPayloadType = NekoGui_fmt::QUICBean::hysteria_auth_string;
-                        bean->authPayload = auth_str;
-                    }
-                    if (!auth.isEmpty()) {
-                        bean->authPayloadType = NekoGui_fmt::QUICBean::hysteria_auth_base64;
-                        bean->authPayload = auth;
-                    }
+                    bean->auth_str = Node2Value<QString>(proxy["auth-str"]);
+                    bean->protocol = Node2Value<QString>(proxy["protocol"]);
                     bean->obfsPassword = Node2Value<QString>(proxy["obfs"]);
 
                     bean->disableMtuDiscovery = Node2Value<bool>(proxy["disable-mtu-discovery"]);

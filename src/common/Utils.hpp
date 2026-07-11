@@ -147,14 +147,6 @@ inline QJsonArray QString2QJsonArray(const QString &str) {
     return jsonArray;
 }
 
-inline QJsonArray mergeJsonArray(const QJsonArray &arr1, const QJsonArray &arr2) {
-    QJsonArray result = arr1;
-    for (const auto &v: arr2) {
-        result.append(v);
-    }
-    return result;
-}
-
 // Files
 
 inline QString WriteTempFile(const QString &fileName, const QString &content, QString &error) {

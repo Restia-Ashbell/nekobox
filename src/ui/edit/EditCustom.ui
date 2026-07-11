@@ -146,39 +146,6 @@
       <property name="bottomMargin">
        <number>0</number>
       </property>
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="toolTip">
-         <string>Random if it's empty or zero.</string>
-        </property>
-        <property name="text">
-         <string notr="true">Mapping Port</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="mapping_port"/>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_2">
-        <property name="toolTip">
-         <string>Random if it's empty or zero.</string>
-        </property>
-        <property name="text">
-         <string notr="true">Socks Port</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="socks_port"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="preview">
-        <property name="text">
-         <string>Preview</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
@@ -199,9 +166,6 @@
   <tabstop>as_json</tabstop>
   <tabstop>command</tabstop>
   <tabstop>config_suffix</tabstop>
-  <tabstop>mapping_port</tabstop>
-  <tabstop>socks_port</tabstop>
-  <tabstop>preview</tabstop>
   <tabstop>config_simple</tabstop>
  </tabstops>
  <resources/>

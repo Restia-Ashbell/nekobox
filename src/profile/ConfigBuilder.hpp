@@ -10,7 +10,6 @@ namespace NekoGui {
 
         QList<std::shared_ptr<NekoGui_traffic::TrafficData>> outboundStats; // all, but not including "bypass" "block"
         std::shared_ptr<NekoGui_traffic::TrafficData> outboundStat;         // main
-        QStringList ignoreConnTag;
 
         std::list<std::shared_ptr<NekoGui_fmt::ExternalBuildResult>> extRs;
     };
@@ -21,9 +20,6 @@ namespace NekoGui {
         std::shared_ptr<ProxyEntity> ent;
         bool forTest;
         bool forExport;
-
-        // priv
-        QList<int> globalProfiles;
 
         // config format
         QJsonArray routingRules;

@@ -69,8 +69,6 @@ namespace NekoGui {
         bool prepare_exit = false;
         bool spmode_vpn = false;
         bool spmode_system_proxy = false;
-        bool need_keep_vpn_off = false;
-        QStringList ignoreConnTag = {};
 
         std::unique_ptr<Routing> routing;
 

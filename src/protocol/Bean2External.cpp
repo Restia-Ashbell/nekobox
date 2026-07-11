@@ -4,77 +4,12 @@
 #include <QUrl>
 
 namespace NekoGui_fmt {
-    // -1: Cannot use this config
-    // 0: Internal
-    // 1: Mapping External
-    // 2: Direct External
-
-    int NaiveBean::NeedExternal(bool isFirstProfile) {
-        if (isFirstProfile) {
-            if (NekoGui::dataStore->spmode_vpn) {
-                return 1;
-            }
-            return 2;
-        }
-        return 1;
-    }
-
-    int QUICBean::NeedExternal(bool isFirstProfile) {
-        auto hysteriaCore = [=, this] {
-            if (isFirstProfile) {
-                if (NekoGui::dataStore->spmode_vpn && hyProtocol != hysteria_protocol_facktcp && hopPort.trimmed().isEmpty()) {
-                    return 1;
-                }
-                return 2;
-            } else {
-                if (hyProtocol == hysteria_protocol_facktcp || !hopPort.trimmed().isEmpty()) {
-                    return -1;
-                }
-            }
-            return 1;
-        };
-
-        auto hysteria2Core = [=, this] {
-            if (isFirstProfile) {
-                if (NekoGui::dataStore->spmode_vpn) {
-                    return 1;
-                }
-                return 2;
-            }
-            return 1;
-        };
-
-        auto tuicCore = [=, this] {
-            if (isFirstProfile) {
-                if (NekoGui::dataStore->spmode_vpn) {
-                    return 1;
-                }
-                return 2;
-            }
-            return 1;
-        };
-
-        if (!forceExternal && (proxy_type == proxy_TUIC || hyProtocol == hysteria_protocol_udp)) {
-            // sing-box support
-            return 0;
-        } else {
-            // hysteria core support
-            return hysteriaCore();
-        }
-    }
-
-    int CustomBean::NeedExternal(bool isFirstProfile) {
-        if (core == "internal" || core == "internal-full") return 0;
-        return 1;
-    }
-
-    ExternalBuildResult NaiveBean::BuildExternal(int mapping_port, int socks_port, int external_stat) {
+    ExternalBuildResult NaiveBean::BuildExternal(int mapping_port, int socks_port) {
         ExternalBuildResult result{NekoGui::dataStore->extraCore->Get("naive")};
 
-        auto is_direct = external_stat == 2;
         auto domain_address = sni.isEmpty() ? serverAddress : sni;
-        auto connect_address = is_direct ? serverAddress : "127.0.0.1";
-        auto connect_port = is_direct ? serverPort : mapping_port;
+        auto connect_address = mapping_port > 0 ? "127.0.0.1" : serverAddress;
+        auto connect_port = mapping_port > 0 ? mapping_port : serverPort;
         domain_address = WrapIPV6Host(domain_address);
         connect_address = WrapIPV6Host(connect_address);
 
@@ -96,7 +31,7 @@ namespace NekoGui_fmt {
         return result;
     }
 
-    ExternalBuildResult QUICBean::BuildExternal(int mapping_port, int socks_port, int external_stat) {
+    ExternalBuildResult QUICBean::BuildExternal(int mapping_port, int socks_port) {
         if (proxy_type == proxy_TUIC) {
             ExternalBuildResult result{NekoGui::dataStore->extraCore->Get("tuic")};
 
@@ -213,7 +148,6 @@ namespace NekoGui_fmt {
             QJsonObject config;
 
             // determine server format
-            auto is_direct = external_stat == 2;
             auto sniGen = sni;
             if (sni.isEmpty() && !IsIpAddress(serverAddress)) sniGen = serverAddress;
 
@@ -223,7 +157,7 @@ namespace NekoGui_fmt {
             } else {
                 server = WrapIPV6Host(server) + ":" + Int2String(serverPort);
             }
-            config["server"] = is_direct ? server : "127.0.0.1:" + Int2String(mapping_port);
+            config["server"] = mapping_port > 0 ? "127.0.0.1:" + Int2String(mapping_port) : server;
 
             // listen
             config["socks5"] = QJsonObject{
@@ -238,12 +172,8 @@ namespace NekoGui_fmt {
             config["obfs"] = obfsPassword;
             config["up_mbps"] = uploadMbps;
             config["down_mbps"] = downloadMbps;
-
-            if (authPayloadType == hysteria_auth_base64) config["auth"] = authPayload;
-            if (authPayloadType == hysteria_auth_string) config["auth_str"] = authPayload;
-
-            if (hyProtocol == hysteria_protocol_facktcp) config["protocol"] = "faketcp";
-            if (hyProtocol == hysteria_protocol_wechat_video) config["protocol"] = "wechat-video";
+            config["auth_str"] = auth_str;
+            config["protocol"] = protocol;
 
             if (!sniGen.isEmpty()) config["server_name"] = sniGen;
             if (!alpn.isEmpty()) config["alpn"] = alpn;
@@ -267,26 +197,24 @@ namespace NekoGui_fmt {
         }
     }
 
-    ExternalBuildResult CustomBean::BuildExternal(int mapping_port, int socks_port, int external_stat) {
+    ExternalBuildResult CustomBean::BuildExternal(int mapping_port, int socks_port) {
         ExternalBuildResult result{NekoGui::dataStore->extraCore->Get(core)};
 
         result.arguments = command; // TODO split?
 
         for (int i = 0; i < result.arguments.length(); i++) {
             auto arg = result.arguments[i];
-            arg = arg.replace("%mapping_port%", Int2String(mapping_port));
             arg = arg.replace("%socks_port%", Int2String(socks_port));
-            arg = arg.replace("%server_addr%", serverAddress);
-            arg = arg.replace("%server_port%", Int2String(serverPort));
+            arg = arg.replace("%server_addr%", mapping_port > 0 ? "127.0.0.1" : serverAddress);
+            arg = arg.replace("%server_port%", Int2String(mapping_port > 0 ? mapping_port : serverPort));
             result.arguments[i] = arg;
         }
 
         if (!config_simple.trimmed().isEmpty()) {
             auto config = config_simple;
-            config = config.replace("%mapping_port%", Int2String(mapping_port));
             config = config.replace("%socks_port%", Int2String(socks_port));
-            config = config.replace("%server_addr%", serverAddress);
-            config = config.replace("%server_port%", Int2String(serverPort));
+            config = config.replace("%server_addr%", mapping_port > 0 ? "127.0.0.1" : serverAddress);
+            config = config.replace("%server_port%", Int2String(mapping_port > 0 ? mapping_port : serverPort));
 
             // suffix
             QString suffix;

@@ -4,6 +4,36 @@
 #include <QUrlQuery>
 
 namespace NekoGui_fmt {
+    void V2rayStreamSettings::BuildShareLinkQuery(QUrlQuery *query) {
+        auto security = this->security;
+        if (security == "tls" && !reality_pbk.trimmed().isEmpty()) security = "reality";
+        if (!security.isEmpty()) query->addQueryItem("security", security);
+
+        if (!sni.isEmpty()) query->addQueryItem("sni", sni);
+        if (!alpn.isEmpty()) query->addQueryItem("alpn", alpn);
+        if (allow_insecure) query->addQueryItem("allowInsecure", "1");
+        if (!utlsFingerprint.isEmpty()) query->addQueryItem("fp", utlsFingerprint);
+
+        if (security == "reality") {
+            query->addQueryItem("pbk", reality_pbk);
+            if (!reality_sid.isEmpty()) query->addQueryItem("sid", reality_sid);
+            if (!reality_spx.isEmpty()) query->addQueryItem("spx", reality_spx);
+        }
+
+        if (!network.isEmpty()) query->addQueryItem("type", network);
+        if (network == "ws" || network == "http" || network == "httpupgrade") {
+            if (!path.isEmpty()) query->addQueryItem("path", path);
+            if (!host.isEmpty()) query->addQueryItem("host", host);
+        } else if (network == "grpc") {
+            if (!path.isEmpty()) query->addQueryItem("serviceName", path);
+        }
+        if (network == "http" && this->security != "tls") {
+            query->removeQueryItem("type");
+            query->addQueryItem("type", "tcp");
+            query->addQueryItem("headerType", "http");
+        }
+    }
+
     QString SocksHttpBean::ToShareLink() {
         QUrl url;
         if (socks_http_type == type_HTTP) { // http
@@ -32,36 +62,7 @@ namespace NekoGui_fmt {
         url.setPort(serverPort);
         if (!name.isEmpty()) url.setFragment(name);
 
-        //  security
-        auto security = stream->security;
-        if (security == "tls" && !stream->reality_pbk.trimmed().isEmpty()) security = "reality";
-        if (!security.isEmpty()) query.addQueryItem("security", security);
-
-        if (!stream->sni.isEmpty()) query.addQueryItem("sni", stream->sni);
-        if (!stream->alpn.isEmpty()) query.addQueryItem("alpn", stream->alpn);
-        if (stream->allow_insecure) query.addQueryItem("allowInsecure", "1");
-        if (!stream->utlsFingerprint.isEmpty()) query.addQueryItem("fp", stream->utlsFingerprint);
-
-        if (security == "reality") {
-            query.addQueryItem("pbk", stream->reality_pbk);
-            if (!stream->reality_sid.isEmpty()) query.addQueryItem("sid", stream->reality_sid);
-            if (!stream->reality_spx.isEmpty()) query.addQueryItem("spx", stream->reality_spx);
-        }
-
-        // type
-        if (!stream->network.isEmpty()) query.addQueryItem("type", stream->network);
-
-        if (stream->network == "ws" || stream->network == "http" || stream->network == "httpupgrade") {
-            if (!stream->path.isEmpty()) query.addQueryItem("path", stream->path);
-            if (!stream->host.isEmpty()) query.addQueryItem("host", stream->host);
-        } else if (stream->network == "grpc") {
-            if (!stream->path.isEmpty()) query.addQueryItem("serviceName", stream->path);
-        }
-        if (stream->network == "http" && stream->security != "tls") {
-            query.removeQueryItem("type");
-            query.addQueryItem("type", "tcp");
-            query.addQueryItem("headerType", "http");
-        }
+        stream->BuildShareLinkQuery(&query);
 
         // protocol
         if (proxy_type == proxy_VLESS) {
@@ -149,39 +150,7 @@ namespace NekoGui_fmt {
 
             query.addQueryItem("encryption", security);
 
-            //  security
-            auto security = stream->security;
-            if (security == "tls" && !stream->reality_pbk.trimmed().isEmpty()) security = "reality";
-            if (!security.isEmpty()) query.addQueryItem("security", security);
-
-            if (!stream->sni.isEmpty()) query.addQueryItem("sni", stream->sni);
-            if (stream->allow_insecure) query.addQueryItem("allowInsecure", "1");
-            if (stream->utlsFingerprint.isEmpty()) {
-                query.addQueryItem("fp", NekoGui::dataStore->utlsFingerprint);
-            } else {
-                query.addQueryItem("fp", stream->utlsFingerprint);
-            }
-
-            if (security == "reality") {
-                query.addQueryItem("pbk", stream->reality_pbk);
-                if (!stream->reality_sid.isEmpty()) query.addQueryItem("sid", stream->reality_sid);
-                if (!stream->reality_spx.isEmpty()) query.addQueryItem("spx", stream->reality_spx);
-            }
-
-            // type
-            if (!stream->network.isEmpty()) query.addQueryItem("type", stream->network);
-
-            if (stream->network == "ws" || stream->network == "http" || stream->network == "httpupgrade") {
-                if (!stream->path.isEmpty()) query.addQueryItem("path", stream->path);
-                if (!stream->host.isEmpty()) query.addQueryItem("host", stream->host);
-            } else if (stream->network == "grpc") {
-                if (!stream->path.isEmpty()) query.addQueryItem("serviceName", stream->path);
-            }
-            if (stream->network == "http" && stream->security != "tls") {
-                query.removeQueryItem("type");
-                query.addQueryItem("type", "tcp");
-                query.addQueryItem("headerType", "http");
-            }
+            stream->BuildShareLinkQuery(&query);
 
             url.setQuery(query);
             return url.toString(QUrl::FullyEncoded);
@@ -214,9 +183,8 @@ namespace NekoGui_fmt {
                 q.addQueryItem("obfs", "xplus");
                 q.addQueryItem("obfsParam", obfsPassword);
             }
-            if (authPayloadType == hysteria_auth_string) q.addQueryItem("auth", authPayload);
-            if (hyProtocol == hysteria_protocol_facktcp) q.addQueryItem("protocol", "faketcp");
-            if (hyProtocol == hysteria_protocol_wechat_video) q.addQueryItem("protocol", "wechat-video");
+            if (!auth_str.isEmpty()) q.addQueryItem("auth", auth_str);
+            if (!protocol.isEmpty()) q.addQueryItem("protocol", protocol);
             if (allowInsecure) q.addQueryItem("insecure", "1");
             if (!sni.isEmpty()) q.addQueryItem("peer", sni);
             if (!alpn.isEmpty()) q.addQueryItem("alpn", alpn);

@@ -227,7 +227,6 @@ void MainWindow::neko_start(int _id) {
         //
         NekoGui_traffic::trafficLooper->proxy = result->outboundStat.get();
         NekoGui_traffic::trafficLooper->items = result->outboundStats;
-        NekoGui::dataStore->ignoreConnTag = result->ignoreConnTag;
         NekoGui_traffic::trafficLooper->loop_enabled = true;
 
         runOnUiThread([result, this] {
@@ -281,7 +280,6 @@ void MainWindow::neko_stop(bool crash) {
         }
 
         NekoGui::dataStore->started_id = -1919;
-        NekoGui::dataStore->need_keep_vpn_off = false;
         running = nullptr;
 
         runOnUiThread([=, this] {
