@@ -4,7 +4,7 @@
 #include <QUrl>
 
 namespace NekoGui_network {
-    inline QNetworkAccessManager *networkManager = new QNetworkAccessManager;
+    inline QNetworkAccessManager *networkManager = nullptr;
 
     struct NekoHTTPResponse {
         QString error;
@@ -14,7 +14,7 @@ namespace NekoGui_network {
 
     class NetworkRequestHelper {
     public:
-        static NekoHTTPResponse HttpGet(const QUrl &url);
+        static void HttpGet(const QUrl &url, std::function<void(const NekoHTTPResponse &)> onDone);
 
         static QByteArray GetHeader(const QList<QPair<QByteArray, QByteArray>> &header, const QByteArray &name);
     };

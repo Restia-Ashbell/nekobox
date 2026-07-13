@@ -7,7 +7,7 @@ namespace NekoGui_sub {
     public:
         void AsyncUpdate(const QString &str, int _sub_gid = -1, const std::function<void()> &finish = nullptr);
 
-        void Update(QString content, int _sub_gid = -1, bool asURL = false);
+        void Update(const QString &content, int _sub_gid = -1);
 
     private:
         QList<std::shared_ptr<NekoGui::ProxyEntity>> update(const QString &str);

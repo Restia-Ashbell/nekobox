@@ -499,52 +499,52 @@ namespace NekoGui_sub {
             }
         }
 
-        runOnNewThread([=, this] {
-            Update(content, _sub_gid, asURL);
+        auto done = [=] {
             runOnUiThread([=] {
                 auto *mw = MainWindow::instance();
                 createNewGroup ? mw->refresh_groups() : mw->refresh_group(_sub_gid);
                 emit mw->groupUpdated(_sub_gid);
             });
             if (finish) finish();
-        });
-    }
+        };
 
-    void GroupUpdater::Update(QString content, int _sub_gid, bool asURL) {
-        // 准备
-        QString sub_user_info, contentDisposition;
-        auto group = NekoGui::profileManager->GetGroup(_sub_gid);
-        if (group != nullptr && group->archive) return;
-
-        // 网络请求
         if (asURL) {
+            auto group = NekoGui::profileManager->GetGroup(_sub_gid);
             auto groupName = group && !group->name.isEmpty() ? group->name : content;
             MW_show_log(">>>>>>>> " + QObject::tr("Requesting subscription: %1").arg(groupName));
-
-            auto resp = NekoGui_network::NetworkRequestHelper::HttpGet(content);
-            if (!resp.error.isEmpty()) {
-                MW_show_log("<<<<<<<< " + QObject::tr("Requesting subscription %1 error: %2").arg(groupName, resp.error + "\n" + resp.data));
-                return;
-            }
-
-            content = resp.data.trimmed();
-            sub_user_info = NekoGui_network::NetworkRequestHelper::GetHeader(resp.headers, "Subscription-UserInfo");
-            contentDisposition = NekoGui_network::NetworkRequestHelper::GetHeader(resp.headers, "Content-Disposition");
-
-            MW_show_log("<<<<<<<< " + QObject::tr("Subscription request fininshed: %1").arg(groupName));
+            NekoGui_network::NetworkRequestHelper::HttpGet(content, [=, this](const NekoGui_network::NekoHTTPResponse &resp) {
+                if (resp.error.isEmpty()) {
+                    if (group->name.isEmpty()) {
+                        QString parsedName = GroupItem::parseFileName(NekoGui_network::NetworkRequestHelper::GetHeader(resp.headers, "Content-Disposition"));
+                        group->name = parsedName.isEmpty() ? QUrl(group->url).host() : parsedName;
+                    }
+                    group->info = NekoGui_network::NetworkRequestHelper::GetHeader(resp.headers, "Subscription-UserInfo");
+                    group->sub_last_update = QDateTime::currentSecsSinceEpoch();
+                    MW_show_log("<<<<<<<< " + QObject::tr("Subscription request finished: %1").arg(groupName));
+                } else {
+                    MW_show_log("<<<<<<<< " + QObject::tr("Requesting subscription %1 error: %2").arg(groupName, resp.error + "\n" + resp.data));
+                }
+                runOnNewThread([=, this] {
+                    Update(resp.data.trimmed(), _sub_gid);
+                    done();
+                });
+            });
+        } else {
+            runOnNewThread([=, this] {
+                Update(content, _sub_gid);
+                done();
+            });
         }
+    }
+
+    void GroupUpdater::Update(const QString &content, int _sub_gid) {
+        auto group = NekoGui::profileManager->GetGroup(_sub_gid);
+        if (group != nullptr && group->archive) return;
 
         auto newProfiles = update(content);
 
         if (group) {
             auto [oldCommon, newCommon, oldOnly, newOnly] = NekoGui::ProfileFilter::Diff(group->Profiles(), newProfiles);
-
-            if (group->name.isEmpty()) {
-                QString parsedName = GroupItem::parseFileName(contentDisposition);
-                group->name = parsedName.isEmpty() ? QUrl(group->url).host() : parsedName;
-            }
-            group->sub_last_update = QDateTime::currentSecsSinceEpoch();
-            group->info = sub_user_info;
 
             QString notice_added;
             QString notice_deleted;
