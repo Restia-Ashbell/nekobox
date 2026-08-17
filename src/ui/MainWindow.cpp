@@ -163,7 +163,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->actionRestart_Program, &QAction::triggered, this, [=, this] { MW_dialog_message("", "RestartProgram"); });
     ui->menu_program_preference->addActions(ui->menu_preferences->actions());
     //
-    connect(ui->menu_program, &QMenu::aboutToShow, this, [=, this]() {
+    connect(ui->menu_server, &QMenu::aboutToShow, this, [=, this] {
+        auto group = NekoGui::profileManager->CurrentGroup();
+        ui->menu_update_subscription->setVisible(!group->url.isEmpty());
+    });
+    connect(ui->menu_program, &QMenu::aboutToShow, this, [=, this] {
         // active server
         for (const auto &old: ui->menuActive_Server->actions()) {
             ui->menuActive_Server->removeAction(old);
