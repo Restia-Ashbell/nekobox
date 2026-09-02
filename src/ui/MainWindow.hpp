@@ -50,10 +50,6 @@ public:
 
     void RegisterHotkey(bool unregister);
 
-    void updateLogMaxLines();
-
-    void resetAutoUpdateSubscription(int minutes);
-
     static MainWindow *instance();
 
 signals:
@@ -148,6 +144,8 @@ private:
     QList<std::shared_ptr<NekoGui::ProxyEntity>> get_now_selected_list();
 
     void dialog_message_impl(const QString &sender, const QString &info);
+
+    void applyDataStoreSettings();
 
     QIcon getIcon(bool isTray = false);
 

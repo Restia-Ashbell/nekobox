@@ -82,9 +82,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // Setup log UI
     ui->splitter->restoreState(DecodeB64IfValid(NekoGui::dataStore->splitter_state));
-    auto *doc = ui->masterLogBrowser->document();
-    doc->setMaximumBlockCount(NekoGui::dataStore->max_log_line);
-    new SyntaxHighlighter(false, doc);
+    new SyntaxHighlighter(false, ui->masterLogBrowser->document());
     ui->masterLogBrowser->setUndoRedoEnabled(false);
     ui->masterLogBrowser->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     auto *vBar = ui->masterLogBrowser->verticalScrollBar();
@@ -271,7 +269,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     autoUpdateSubscriptionTimer = new QTimer(this);
     connect(autoUpdateSubscriptionTimer, &QTimer::timeout, this, [this] { UI_update_all_groups(true); });
-    resetAutoUpdateSubscription(NekoGui::dataStore->sub_auto_update);
+
+    applyDataStoreSettings();
 
     if (!NekoGui::dataStore->flag_tray) show();
 }
@@ -309,6 +308,7 @@ void MainWindow::dialog_message_impl(const QString &sender, const QString &info)
             QMessageBox::question(GetMessageBoxParent(), tr("Confirmation"), tr("Settings changed, restart proxy?")) == QMessageBox::StandardButton::Yes) {
             neko_start(NekoGui::dataStore->started_id);
         }
+        applyDataStoreSettings();
         refresh_status();
     }
     if (info.contains("NeedRestart")) {
@@ -1265,12 +1265,16 @@ void MainWindow::CheckUpdate() {
     });
 }
 
-void MainWindow::updateLogMaxLines() {
+void MainWindow::applyDataStoreSettings() {
+    // 日志行数上限
     ui->masterLogBrowser->document()->setMaximumBlockCount(NekoGui::dataStore->max_log_line);
-}
-
-void MainWindow::resetAutoUpdateSubscription(int minutes) {
-    if (minutes >= 30) autoUpdateSubscriptionTimer->start(minutes * 60 * 1000);
+    // 订阅自动更新
+    auto minutes = NekoGui::dataStore->sub_auto_update;
+    if (minutes >= 30) {
+        autoUpdateSubscriptionTimer->start(minutes * 60 * 1000);
+    } else {
+        autoUpdateSubscriptionTimer->stop();
+    }
 }
 
 MainWindow *MainWindow::instance() {

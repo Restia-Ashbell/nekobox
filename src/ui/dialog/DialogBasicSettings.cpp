@@ -8,10 +8,10 @@
 #include <QStyleFactory>
 
 #include "3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp"
-#include "protocol/Preset.hpp"
 #include "common/GuiUtils.hpp"
+#include "profile/DataStore.hpp"
+#include "protocol/Preset.hpp"
 #include "system/AutoRun.hpp"
-#include "ui/MainWindow.hpp"
 
 class ExtraCoreWidget : public QWidget {
 public:
@@ -230,7 +230,6 @@ void DialogBasicSettings::accept() {
     D_SAVE_BOOL(start_minimal)
 
     D_SAVE_INT(max_log_line)
-    MainWindow::instance()->updateLogMaxLines();
     AutoRun_SetEnabled(ui->launch_at_startup->isChecked());
 
     // Subscription
@@ -239,7 +238,6 @@ void DialogBasicSettings::accept() {
     D_SAVE_BOOL(sub_use_proxy)
     D_SAVE_BOOL(sub_insecure)
     D_SAVE_INT_ENABLE(sub_auto_update, sub_auto_update_enable)
-    MainWindow::instance()->resetAutoUpdateSubscription(NekoGui::dataStore->sub_auto_update);
 
     // Inbound
     D_SAVE_COMBO_STRING(inbound_address)
