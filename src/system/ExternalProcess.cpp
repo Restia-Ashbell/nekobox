@@ -1,6 +1,7 @@
 #include "ExternalProcess.hpp"
 
 #include "profile/DataStore.hpp"
+#include "protocol/AbstractBean.hpp"
 
 namespace NekoGui_sys {
 
@@ -41,6 +42,19 @@ namespace NekoGui_sys {
             kill();
             waitForFinished();
         }
+    }
+
+    std::list<std::shared_ptr<ExternalProcess>> CreateExtCFromExtR(const std::list<std::shared_ptr<NekoGui_fmt::ExternalBuildResult>> &extRs) {
+        std::list<std::shared_ptr<ExternalProcess>> processes;
+        for (const auto &extR: extRs) {
+            auto extC = std::make_shared<ExternalProcess>();
+            extC->tag = extR->tag;
+            extC->setProgram(extR->program);
+            extC->setArguments(extR->arguments);
+            extC->setEnvironment(QProcess::systemEnvironment() + extR->env);
+            processes.emplace_back(extC);
+        }
+        return processes;
     }
 
 } // namespace NekoGui_sys
