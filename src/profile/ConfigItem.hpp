@@ -15,7 +15,7 @@ namespace NekoGui_ConfigItem {
         bool load_control_must = false; // must load from file
         bool save_control_compact = false;
         bool save_control_no_save = false;
-        QByteArray last_save_content;
+        size_t last_save_hash = 0;
 
         JsonStore() = default;
 

@@ -74,8 +74,11 @@ namespace NekoGui_ConfigItem {
         if (save_control_no_save) return false;
 
         auto save_content = ToJsonBytes();
-        auto changed = last_save_content != save_content;
-        last_save_content = save_content;
+        auto new_hash = qHash(save_content);
+        bool changed = last_save_hash != new_hash;
+        if (!changed && !fn.isEmpty() && QFile::exists(fn)) {
+            return false;
+        }
 
         QFile file(fn);
         if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate)) {
@@ -84,6 +87,7 @@ namespace NekoGui_ConfigItem {
         }
         file.write(save_content);
         file.close();
+        last_save_hash = new_hash;
 
         return changed;
     }
@@ -98,8 +102,9 @@ namespace NekoGui_ConfigItem {
         if (!ok) {
             MessageBoxWarning("error", "can not open config " + fn + "\n" + file.errorString());
         } else {
-            last_save_content = file.readAll();
-            FromJsonBytes(last_save_content);
+            auto data = file.readAll();
+            last_save_hash = qHash(data);
+            FromJsonBytes(data);
         }
 
         file.close();
