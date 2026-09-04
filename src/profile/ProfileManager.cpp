@@ -129,7 +129,7 @@ namespace NekoGui {
         if (ent->bean) {
             ent->load_control_must = true;
             ent->fn = jsonPath;
-            ent->last_save_content = data;
+            ent->last_save_hash = qHash(data);
             ent->FromJson(obj);
         }
 
