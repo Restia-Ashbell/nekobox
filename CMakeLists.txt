@@ -64,7 +64,7 @@ FetchContent_Declare(
 FetchContent_Declare(
         zxing-cpp
         GIT_REPOSITORY https://github.com/zxing-cpp/zxing-cpp.git
-        GIT_TAG v2.3.0
+        GIT_TAG master
         EXCLUDE_FROM_ALL
 )
 if (EXISTS ${CMAKE_SOURCE_DIR}/../sing-box)
@@ -81,7 +81,10 @@ else()
 endif()
 FetchContent_MakeAvailable(QJsonModel QHotkey yaml-cpp zxing-cpp sing-box)
 
-set_target_properties(ZXing PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
+# internal compiler error
+if(MINGW)
+    set_target_properties(ZXing PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
+endif()
 
 set(LIBBOX_SRC_DIR ${sing-box_SOURCE_DIR})
 set(LIBBOX_OUTPUT "${CMAKE_BINARY_DIR}/libbox${CMAKE_SHARED_LIBRARY_SUFFIX}")
@@ -178,7 +181,6 @@ qt_add_translations(nekobox TS_FILES ${TS_FILES} MERGE_QT_TRANSLATIONS)
 
 target_include_directories(nekobox PRIVATE
         ${CMAKE_SOURCE_DIR}/src
-        ${zxing-cpp_SOURCE_DIR}/example
 )
 
 target_link_libraries(nekobox PRIVATE

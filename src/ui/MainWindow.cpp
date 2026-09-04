@@ -21,10 +21,7 @@
 #include <QVBoxLayout>
 #include <QtConcurrent>
 
-#include "BarcodeFormat.h"
-#include "BitMatrix.h"
-#include "MultiFormatWriter.h"
-#include "ZXingQtReader.h"
+#include "ZXingQt.h"
 #include "libbox.h"
 
 #include "3rdparty/qv2ray/v2/components/proxy/QvProxyConfigurator.hpp"
@@ -1139,14 +1136,12 @@ void MainWindow::display_qr_link(bool nkrFormat) {
         const QString &link_display = cb->isChecked() ? link_nk : link;
         textEdit->setPlainText(link_display);
 
-        try {
-            auto writer = ZXing::MultiFormatWriter(ZXing::BarcodeFormat::QRCode);
-            auto matrix = writer.encode(link_display.toStdString(), 0, 0);
-            auto bitmap = ZXing::ToMatrix<uint8_t>(matrix);
-            auto qrImage = QImage(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.width(), QImage::Format_Grayscale8).copy();
+        auto barcode = ZXingQt::Barcode::fromText(link_display, ZXingQt::BarcodeFormat::QRCode);
+        if (barcode.isValid()) {
+            auto qrImage = barcode.toImage();
             qrLabel->setPixmap(QPixmap::fromImage(qrImage.scaled(qrLabel->size(), Qt::KeepAspectRatio, Qt::FastTransformation)));
-        } catch (const std::exception &ex) {
-            QMessageBox::warning(&dlg, "QR generation error", ex.what());
+        } else {
+            QMessageBox::warning(&dlg, "QR generation error", barcode.error().message());
         }
     });
     emit cb->toggled(cb->isChecked());
@@ -1155,30 +1150,21 @@ void MainWindow::display_qr_link(bool nkrFormat) {
 }
 
 void MainWindow::on_menu_scan_qr_triggered() {
-    using namespace ZXingQt;
+    auto screen = QGuiApplication::primaryScreen();
+    auto qpx = screen->grabWindow();
 
-    hide();
+    auto hints = ZXing::ReaderOptions()
+                     .setFormats({ZXing::BarcodeFormat::QRCode})
+                     .setTryRotate(false)
+                     .setBinarizer(ZXing::Binarizer::FixedThreshold);
 
-    QTimer::singleShot(200, this, [this] {
-        auto screen = QGuiApplication::primaryScreen();
-        auto qpx = screen->grabWindow();
-
-        show();
-
-        auto hints = ReaderOptions()
-                         .setFormats(BarcodeFormat::QRCode)
-                         .setTryRotate(false)
-                         .setBinarizer(Binarizer::FixedThreshold);
-
-        auto result = ReadBarcode(qpx.toImage(), hints);
-        const auto &text = result.text();
-        if (text.isEmpty()) {
-            MessageBoxInfo(software_name, tr("QR Code not found"));
-        } else {
-            show_log_impl("QR Code Result:\n" + text);
-            NekoGui_sub::groupUpdater->AsyncUpdate(text);
-        }
-    });
+    auto result = ZXingQt::ReadBarcode(qpx.toImage(), hints).text();
+    if (result.isEmpty()) {
+        QMessageBox::warning(this, software_name, tr("QR Code not found"));
+    } else {
+        show_log_impl("QR Code Result:\n" + result);
+        NekoGui_sub::groupUpdater->AsyncUpdate(result);
+    }
 }
 
 void MainWindow::on_menu_clear_test_result_triggered() {
