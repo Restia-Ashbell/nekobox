@@ -257,7 +257,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     refresh_status();
 
     BoxMain([](const char *log) { MW_show_log(log); });
-    runOnNewThread([=, this] { NekoGui_traffic::trafficLooper->Loop(); });
+    NekoGui_traffic::trafficLooper = new NekoGui_traffic::TrafficLooper(this);
 
     // Remember
     QTimer::singleShot(0, [this] { // 事件循环启动后立即执行
@@ -348,8 +348,6 @@ void MainWindow::dialog_message_impl(const QString &sender, const QString &info)
     } else if (sender == "ExternalProcess") {
         if (info == "Crashed") {
             neko_stop();
-        } else if (info == "CoreCrashed") {
-            neko_stop(true);
         } else if (info.startsWith("CoreStarted")) {
             neko_start(info.split(",")[1].toInt());
         }
@@ -406,8 +404,7 @@ void MainWindow::on_menu_exit_triggered() {
     on_commitDataRequest();
     NekoGui::dataStore->save_control_no_save = true; // don't change datastore after this line
     //
-    neko_stop();
-    mu_state.lock();
+    neko_stop(true);
     //
     neko_set_spmode_system_proxy(false);
     neko_set_spmode_vpn(false);
@@ -507,89 +504,73 @@ void MainWindow::neko_start(int _id) {
         neko_stop();
     }
 
-    mu_state.lock();
-
-    auto neko_start_stage2 = [=, this] {
+    auto future = QtConcurrent::run([=, this] {
+        QMutexLocker locker(&mu_state);
         MW_show_log(">>>>>>>> " + tr("Starting profile %1").arg(ent->bean->DisplayTypeAndName()));
 
         auto CoreConfig = QJsonObject2QString(result->coreConfig, false).toUtf8();
-        auto BoxStartError = BoxStart(CoreConfig.data());
-        if (BoxStartError != nullptr) {
+        if (auto BoxStartError = BoxStart(CoreConfig.data())) {
             QString boxStartError(BoxStartError);
             free(BoxStartError);
             runOnUiThread([=, this] { MessageBoxWarning("Start failed", boxStartError); });
             MW_show_log("<<<<<<<< " + tr("Failed to start profile %1").arg(ent->bean->DisplayTypeAndName()));
             return;
         }
-        //
-        NekoGui_traffic::trafficLooper->proxy = result->outboundStat.get();
-        NekoGui_traffic::trafficLooper->items = result->outboundStats;
-        NekoGui_traffic::trafficLooper->loop_enabled = true;
-
-        runOnUiThread([result, this] {
-            running_ext = NekoGui_sys::CreateExtCFromExtR(result->extRs);
-            for (const auto &extC: running_ext) extC->start();
-        });
-
-        NekoGui::dataStore->started_id = ent->id;
-        running = ent;
 
         runOnUiThread([=, this] {
+            NekoGui::dataStore->started_id = ent->id;
+            running = ent;
+
+            running_ext = NekoGui_sys::CreateExtCFromExtR(result->extRs);
+            for (const auto &extC: running_ext) extC->start();
+
+            NekoGui_traffic::trafficLooper->proxy = result->outboundStat.get();
+            NekoGui_traffic::trafficLooper->items = result->outboundStats;
+            NekoGui_traffic::trafficLooper->start();
+
             refresh_status();
             refresh_proxy(ent->id);
         });
-    };
-
-    runOnNewThread([=, this] {
-        // do start
-        neko_start_stage2();
-        mu_state.unlock();
     });
 }
 
-void MainWindow::neko_stop(bool crash) {
+void MainWindow::neko_stop(bool wait) {
     if (!running) return;
     auto id = running->id;
 
-    mu_state.lock();
+    // 提前保存避免退出时流量丢失
+    NekoGui_traffic::trafficLooper->SaveAll();
 
-    auto neko_stop_stage2 = [=, this] {
+    auto future = QtConcurrent::run([=, this] {
+        QMutexLocker locker(&mu_state);
         MW_show_log(">>>>>>>> " + tr("Stopping profile %1").arg(running->bean->DisplayTypeAndName()));
 
-        runOnUiThread([this] {
-            running_ext.clear();
-        });
-
-        NekoGui_traffic::trafficLooper->loop_enabled = false;
-        for (const auto &item: NekoGui_traffic::trafficLooper->items) {
-            NekoGui::profileManager->GetProfile(item->id)->Save();
+        if (auto BoxStopError = BoxStop()) {
+            QString boxStopError(BoxStopError);
+            free(BoxStopError);
+            runOnUiThread([=, this] { MessageBoxWarning("Stop failed", boxStopError); });
+            MW_show_log("<<<<<<<< " + tr("Failed to stop profile %1").arg(running->bean->DisplayTypeAndName()));
+            return;
         }
-
-        if (!crash) {
-            auto BoxStopError = BoxStop();
-            if (BoxStopError != nullptr) {
-                QString boxStopError(BoxStopError);
-                free(BoxStopError);
-                runOnUiThread([=, this] { MessageBoxWarning("Stop failed", boxStopError); });
-                MW_show_log("<<<<<<<< " + tr("Failed to stop profile %1").arg(running->bean->DisplayTypeAndName()));
-                return;
-            }
-        }
-
-        NekoGui::dataStore->started_id = -1919;
-        running = nullptr;
 
         runOnUiThread([=, this] {
+            NekoGui::dataStore->started_id = -1919;
+            running = nullptr;
+
+            running_ext.clear();
+
+            NekoGui_traffic::trafficLooper->stop();
+            NekoGui_traffic::trafficLooper->items.clear();
+            NekoGui_traffic::trafficLooper->proxy = nullptr;
+
             refresh_status();
             refresh_proxy(id);
         });
-    };
-
-    runOnNewThread([=, this] {
-        // do stop
-        neko_stop_stage2();
-        mu_state.unlock();
     });
+
+    if (wait) {
+        future.waitForFinished();
+    }
 }
 
 // speed test
@@ -915,9 +896,10 @@ QTableWidget *MainWindow::createTable(int gid) {
 }
 
 void MainWindow::refresh_proxy(int id) {
-    auto profile = NekoGui::profileManager->GetProfile(id);
-    auto tableWidget = qobject_cast<QTableWidget *>(ui->tabWidget->widget(NekoGui::profileManager->groupsTabOrder.indexOf(profile->gid)));
-    updateTableRow(NekoGui::profileManager->GetGroup(profile->gid)->order.indexOf(id), id, tableWidget);
+    if (auto profile = NekoGui::profileManager->GetProfile(id)) {
+        auto tableWidget = qobject_cast<QTableWidget *>(ui->tabWidget->widget(NekoGui::profileManager->groupsTabOrder.indexOf(profile->gid)));
+        updateTableRow(NekoGui::profileManager->GetGroup(profile->gid)->order.indexOf(id), id, tableWidget);
+    }
 }
 
 void MainWindow::refresh_group(int gid) {

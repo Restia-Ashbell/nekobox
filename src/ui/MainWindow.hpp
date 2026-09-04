@@ -36,7 +36,7 @@ public:
 
     void neko_start(int _id = -1);
 
-    void neko_stop(bool crash = false);
+    void neko_stop(bool wait = false);
 
     void neko_set_spmode_vpn(bool enable);
 

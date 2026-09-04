@@ -1,14 +1,53 @@
 #include "TrafficLooper.hpp"
 
 #include <QJsonObject>
-#include <QThread>
 
 #include "libbox.h"
 
+#include "profile/DataStore.hpp"
 #include "profile/ProfileManager.hpp"
 #include "ui/MainWindow.hpp"
 
 namespace NekoGui_traffic {
+
+    TrafficLooper *trafficLooper = nullptr;
+
+    TrafficLooper::TrafficLooper(QObject *parent) : QObject(parent) {
+        connect(&m_timer, &QTimer::timeout, this, &TrafficLooper::onTick);
+    }
+
+    void TrafficLooper::start() {
+        if (NekoGui::dataStore->traffic_loop_interval == 0) return; // user disabled
+
+        auto interval = qBound(500, NekoGui::dataStore->traffic_loop_interval, 5000);
+        if (!elapsedTimer.isValid()) elapsedTimer.start();
+        m_timer.start(interval);
+    }
+
+    void TrafficLooper::stop() {
+        m_timer.stop();
+    }
+
+    void TrafficLooper::onTick() {
+        if (NekoGui::dataStore->traffic_loop_interval == 0) return; // user disabled
+
+        // follow runtime interval change
+        auto interval = qBound(500, NekoGui::dataStore->traffic_loop_interval, 5000);
+        if (m_timer.interval() != interval) {
+            m_timer.setInterval(interval);
+        }
+
+        UpdateAll();
+
+        auto m = MainWindow::instance();
+        if (proxy != nullptr) {
+            m->refresh_status(QObject::tr("Proxy: %1\nDirect: %2").arg(proxy->DisplaySpeed(), direct->DisplaySpeed()));
+        }
+        for (const auto &item: items) {
+            if (item->id >= 0)
+                m->refresh_proxy(item->id);
+        }
+    }
 
     void TrafficLooper::update_stats(TrafficData *item, QJsonObject &stats) {
         // last update
@@ -41,29 +80,9 @@ namespace NekoGui_traffic {
         update_stats(direct, stats);
     }
 
-    void TrafficLooper::Loop() {
-        elapsedTimer.start();
-        while (true) {
-            QThread::msleep(qBound(500, NekoGui::dataStore->traffic_loop_interval, 5000));
-            if (NekoGui::dataStore->traffic_loop_interval == 0) continue; // user disabled
-
-            // profile start and stop
-            if (!loop_enabled) continue;
-
-            // do update
-            UpdateAll();
-
-            // post to UI
-            runOnUiThread([=, this] {
-                auto m = MainWindow::instance();
-                if (proxy != nullptr) {
-                    m->refresh_status(QObject::tr("Proxy: %1\nDirect: %2").arg(proxy->DisplaySpeed(), direct->DisplaySpeed()));
-                }
-                for (const auto &item: items) {
-                    if (item->id >= 0)
-                        m->refresh_proxy(item->id);
-                }
-            });
+    void TrafficLooper::SaveAll() {
+        for (const auto &item: items) {
+            if (auto profile = NekoGui::profileManager->GetProfile(item->id)) profile->Save();
         }
     }
 
