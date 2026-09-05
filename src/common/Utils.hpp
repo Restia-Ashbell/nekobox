@@ -247,17 +247,3 @@ inline void runOnNewThread(Function &&func, Args &&...args) {
     QObject::connect(thread, &QThread::finished, thread, &QObject::deleteLater);
     thread->start();
 }
-
-//
-
-template<typename EMITTER, typename SIGNAL, typename RECEIVER, typename ReceiverFunc>
-inline void connectOnce(EMITTER *emitter, SIGNAL signal, RECEIVER *receiver, ReceiverFunc f,
-                        Qt::ConnectionType connectionType = Qt::AutoConnection) {
-    auto connection = std::make_shared<QMetaObject::Connection>();
-    auto onTriggered = [connection, f](auto... arguments) {
-        std::invoke(f, arguments...);
-        QObject::disconnect(*connection);
-    };
-
-    *connection = QObject::connect(emitter, signal, receiver, onTriggered, connectionType);
-}
