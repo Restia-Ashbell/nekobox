@@ -1404,7 +1404,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
 
 void MainWindow::start_select_mode(QObject *context, const std::function<void(int)> &callback) {
     select_mode = true;
-    connectOnce(this, &MainWindow::profile_selected, context, callback);
+    connect(this, &MainWindow::profile_selected, context, callback, Qt::SingleShotConnection);
     refresh_status();
 }
 
