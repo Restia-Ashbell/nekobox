@@ -5,12 +5,12 @@
 #include <QMainWindow>
 #include <QMutex>
 #include <QSystemTrayIcon>
-#include <QTableWidget>
 
 #include "profile/ProxyEntity.hpp"
 #include "common/GuiUtils.hpp"
 #include "profile/DataStore.hpp"
 #include "system/ExternalProcess.hpp"
+#include "ui/table/ProfileTableView.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -149,11 +149,9 @@ private:
 
     QIcon getIcon(bool isTray = false);
 
-    void updateTableRow(int row, int id, QTableWidget *tableWidget);
+    ProfileTableView *findTableView(int gid) const;
 
-    QTableWidget *createTable(int gid);
-
-    void keyPressEvent(QKeyEvent *event) override;
+    ProfileTableView *createProfileTable(int gid);
 
     void closeEvent(QCloseEvent *event) override;
 

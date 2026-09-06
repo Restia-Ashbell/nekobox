@@ -2,7 +2,6 @@
 
 #include <QDialog>
 #include <QMenu>
-#include <QTableWidgetItem>
 #include <QWidget>
 
 #include "profile/Group.hpp"

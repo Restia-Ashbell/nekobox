@@ -1564,6 +1564,29 @@ End: %2</source>
     </message>
 </context>
 <context>
+    <name>ProfileTableModel</name>
+    <message>
+        <source>Address</source>
+        <translation>آدرس</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>نام</translation>
+    </message>
+    <message>
+        <source>Test Result</source>
+        <translation>نتیجه تست</translation>
+    </message>
+    <message>
+        <source>Traffic</source>
+        <translation>ترافیک</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>نوع</translation>
+    </message>
+</context>
+<context>
     <name>ProxyItem</name>
     <message>
         <source>Confirmation</source>

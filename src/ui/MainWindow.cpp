@@ -7,7 +7,6 @@
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QFileInfo>
-#include <QHeaderView>
 #include <QHotkey>
 #include <QInputDialog>
 #include <QLabel>
@@ -40,6 +39,8 @@
 #include "ui/dialog/DialogManageRoutes.hpp"
 #include "ui/edit/DialogEditGroup.hpp"
 #include "ui/edit/DialogEditProfile.hpp"
+#include "ui/table/ProfileSortFilterProxyModel.hpp"
+#include "ui/table/ProfileTableModel.hpp"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     mainwindow = this;
@@ -108,12 +109,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->search->setVisible(false);
     connect(ui->search, &QLineEdit::textChanged, this, [this](const QString &text) {
         for (int index = 0; index < ui->tabWidget->count(); ++index) {
-            auto proxyListTable = qobject_cast<QTableWidget *>(ui->tabWidget->widget(index));
-            for (int row = 0; row < proxyListTable->rowCount(); ++row) {
-                proxyListTable->setRowHidden(row, !text.isEmpty());
-            }
-            for (auto *item: proxyListTable->findItems(text, Qt::MatchContains)) {
-                if (item) proxyListTable->setRowHidden(item->row(), false);
+            if (auto table = qobject_cast<ProfileTableView *>(ui->tabWidget->widget(index))) {
+                table->setFilterText(text);
             }
         }
     });
@@ -818,111 +815,57 @@ QIcon MainWindow::getIcon(bool isTray) {
 
 // table显示
 
-void MainWindow::updateTableRow(int row, int id, QTableWidget *tableWidget) {
-    auto profile = NekoGui::profileManager->GetProfile(id);
-    if (!profile) return;
+ProfileTableView *MainWindow::createProfileTable(int gid) {
+    auto table = new ProfileTableView(gid);
 
-    auto makeItem = [&](const QVariant &value, const QColor &color = QColor()) {
-        auto item = new QTableWidgetItem();
-        item->setData(Qt::DisplayRole, value);
-        item->setData(114514, profile->id);
-        if (color.isValid()) item->setForeground(color);
-        if (id == NekoGui::dataStore->started_id) item->setBackground(palette().highlight().color().lighter());
-        return item;
-    };
-
-    tableWidget->setItem(row, 0, makeItem(profile->bean->DisplayType()));
-
-    tableWidget->setItem(row, 1, makeItem(profile->bean->DisplayAddress()));
-
-    tableWidget->setItem(row, 2, makeItem(profile->bean->name));
-
-    const QVariant testResult = profile->full_test_report.isEmpty() ? profile->DisplayLatency() : profile->full_test_report;
-    const QColor testColor = profile->full_test_report.isEmpty() ? profile->DisplayLatencyColor() : QColor();
-    tableWidget->setItem(row, 3, makeItem(testResult, testColor));
-
-    tableWidget->setItem(row, 4, makeItem(profile->traffic_data->DisplayTraffic()));
-}
-
-QTableWidget *MainWindow::createTable(int gid) {
-    auto group = NekoGui::profileManager->GetGroup(gid);
-    auto tableWidget = new QTableWidget(group->order.size(), 5);
-    tableWidget->setHorizontalHeaderLabels({tr("Type"), tr("Address"), tr("Name"), tr("Test Result"), tr("Traffic")});
-    tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    // tableWidget->setAlternatingRowColors(true);
-    tableWidget->setTabKeyNavigation(false);
-    tableWidget->setWordWrap(false);
-    tableWidget->verticalHeader()->setDefaultSectionSize(24);
-    // tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
-    tableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
-    tableWidget->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
-    tableWidget->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
-    tableWidget->horizontalHeader()->setHighlightSections(false);
-    connect(tableWidget->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, [=, this](int logicalIndex, Qt::SortOrder order) {
-        tableWidget->sortItems(logicalIndex, order);
-        group->order.clear();
-        for (int row = 0; row < tableWidget->rowCount(); ++row) {
-            group->order.append(tableWidget->item(row, 0)->data(114514).toInt());
-        }
-        group->Save();
-    });
-    connect(tableWidget, &QTableWidget::itemDoubleClicked, this, [this](QTableWidgetItem *item) {
-        auto id = item->data(114514).toInt();
+    // 双击:select_mode 选中或打开编辑对话框
+    connect(table, &QTableView::doubleClicked, this, [this, table](const QModelIndex &proxyIndex) {
+        auto ent = table->groupModel()->profileAtRow(table->filterProxy()->mapToSource(proxyIndex).row());
+        if (ent == nullptr) return;
         if (select_mode) {
-            emit profile_selected(id);
+            emit profile_selected(ent->id);
             select_mode = false;
             refresh_status();
             return;
         }
-        auto dialog = new DialogEditProfile("", id, this);
+        auto dialog = new DialogEditProfile("", ent->id, this);
         connect(dialog, &QDialog::finished, dialog, &QDialog::deleteLater);
     });
-    connect(tableWidget, &QWidget::customContextMenuRequested, this, [=, this](const QPoint &pos) {
-        ui->menu_server->popup(tableWidget->viewport()->mapToGlobal(pos));
+    connect(table, &QWidget::customContextMenuRequested, this, [=, this](const QPoint &pos) {
+        ui->menu_server->popup(table->viewport()->mapToGlobal(pos));
     });
-    int row = 0;
-    for (const auto &id: group->order) {
-        updateTableRow(row, id, tableWidget);
-        row++;
+
+    if (!ui->search->text().isEmpty()) {
+        table->setFilterText(ui->search->text());
     }
-    return tableWidget;
+
+    return table;
+}
+
+ProfileTableView *MainWindow::findTableView(int gid) const {
+    const auto index = NekoGui::profileManager->groupsTabOrder.indexOf(gid);
+    if (index < 0) return nullptr;
+    return qobject_cast<ProfileTableView *>(ui->tabWidget->widget(index));
 }
 
 void MainWindow::refresh_proxy(int id) {
     if (auto profile = NekoGui::profileManager->GetProfile(id)) {
-        auto tableWidget = qobject_cast<QTableWidget *>(ui->tabWidget->widget(NekoGui::profileManager->groupsTabOrder.indexOf(profile->gid)));
-        updateTableRow(NekoGui::profileManager->GetGroup(profile->gid)->order.indexOf(id), id, tableWidget);
+        if (auto table = findTableView(profile->gid)) {
+            table->notifyProfile(id);
+        }
     }
 }
 
 void MainWindow::refresh_group(int gid) {
-    QTableWidget *tableWidget;
-    if (gid < 0) {
-        gid = NekoGui::dataStore->current_group;
-        tableWidget = qobject_cast<QTableWidget *>(ui->tabWidget->currentWidget());
-    } else {
-        tableWidget = qobject_cast<QTableWidget *>(ui->tabWidget->widget(NekoGui::profileManager->groupsTabOrder.indexOf(gid)));
-    }
+    auto table = gid < 0 ? qobject_cast<ProfileTableView *>(ui->tabWidget->currentWidget()) : findTableView(gid);
+    if (table == nullptr) return;
+    if (gid < 0) gid = NekoGui::dataStore->current_group;
 
-    auto group = NekoGui::profileManager->GetGroup(gid);
-    group->order.removeIf([](int k) { return !NekoGui::profileManager->profiles.contains(k); });
-    for (const auto &[id, profile]: NekoGui::profileManager->profiles)
-        if (profile->gid == gid && !group->order.contains(id))
-            group->order.append(id);
-    group->Save();
+    table->reload();
 
-    tableWidget->setRowCount(0);
-    int row = 0;
-    for (const auto &id: group->order) {
-        tableWidget->insertRow(row);
-        updateTableRow(row, id, tableWidget);
-        row++;
+    if (auto group = NekoGui::profileManager->GetGroup(gid)) {
+        ui->tabWidget->setTabText(ui->tabWidget->indexOf(table), group->name);
     }
-    ui->tabWidget->setTabText(ui->tabWidget->indexOf(tableWidget), group->name);
 }
 
 void MainWindow::refresh_groups() {
@@ -942,7 +885,7 @@ void MainWindow::refresh_groups() {
     for (const auto &gid: NekoGui::profileManager->groupsTabOrder) {
         if (!validGids.contains(gid)) {
             auto group = NekoGui::profileManager->GetGroup(gid);
-            ui->tabWidget->insertTab(index, createTable(gid), group->name);
+            ui->tabWidget->insertTab(index, createProfileTable(gid), group->name);
             ui->tabWidget->tabBar()->setTabData(index, gid);
         }
         index++;
@@ -1180,7 +1123,7 @@ void MainWindow::on_menu_select_all_triggered() {
     if (ui->masterLogBrowser->hasFocus()) {
         ui->masterLogBrowser->selectAll();
     } else {
-        qobject_cast<QTableWidget *>(ui->tabWidget->currentWidget())->selectAll();
+        qobject_cast<ProfileTableView *>(ui->tabWidget->currentWidget())->selectAll();
     }
 }
 
@@ -1258,24 +1201,14 @@ void MainWindow::on_menu_resolve_domain_triggered() {
 }
 
 QList<std::shared_ptr<NekoGui::ProxyEntity>> MainWindow::get_now_selected_list() {
-    auto items = qobject_cast<QTableWidget *>(ui->tabWidget->currentWidget())->selectedItems();
     QList<std::shared_ptr<NekoGui::ProxyEntity>> list;
-    for (auto item: items) {
-        auto id = item->data(114514).toInt();
-        auto ent = NekoGui::profileManager->GetProfile(id);
-        if (ent != nullptr && !list.contains(ent)) list += ent;
+    if (auto table = qobject_cast<ProfileTableView *>(ui->tabWidget->currentWidget())) {
+        for (const auto &proxyIndex: table->selectionModel()->selectedRows()) {
+            auto ent = table->groupModel()->profileAtRow(table->filterProxy()->mapToSource(proxyIndex).row());
+            if (ent != nullptr && !list.contains(ent)) list += ent;
+        }
     }
     return list;
-}
-
-void MainWindow::keyPressEvent(QKeyEvent *event) {
-    switch (event->key()) {
-        case Qt::Key_Enter:
-            neko_start();
-            break;
-        default:
-            QMainWindow::keyPressEvent(event);
-    }
 }
 
 // Log

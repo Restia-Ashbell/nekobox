@@ -2,6 +2,7 @@
 #include "ui_EditChain.h"
 
 #include "ui/MainWindow.hpp"
+#include "ui/table/ProfileIdRole.hpp"
 #include "ui/widget/ProxyItem.hpp"
 
 #include "profile/ProfileManager.hpp"
@@ -29,7 +30,7 @@ bool EditChain::onEnd() {
 
     QList<int> idList;
     for (int i = 0; i < ui->listWidget->count(); i++) {
-        idList << ui->listWidget->item(i)->data(114514).toInt();
+        idList << ui->listWidget->item(i)->data(ProfileUi::ProfileIdRole).toInt();
     }
     bean->list = idList;
 
@@ -48,7 +49,7 @@ void EditChain::AddProfileToListIfExist(int profileId) {
     auto _ent = NekoGui::profileManager->GetProfile(profileId);
     if (_ent != nullptr && _ent->type != "chain") {
         auto wI = new QListWidgetItem();
-        wI->setData(114514, profileId);
+        wI->setData(ProfileUi::ProfileIdRole, profileId);
         auto w = new ProxyItem(this, _ent, wI);
         ui->listWidget->addItem(wI);
         ui->listWidget->setItemWidget(wI, w);
@@ -66,7 +67,7 @@ void EditChain::AddProfileToListIfExist(int profileId) {
 void EditChain::ReplaceProfile(ProxyItem *w, int profileId) {
     auto _ent = NekoGui::profileManager->GetProfile(profileId);
     if (_ent != nullptr && _ent->type != "chain") {
-        w->item->setData(114514, profileId);
+        w->item->setData(ProfileUi::ProfileIdRole, profileId);
         w->ent = _ent;
         w->refresh_data();
     }
