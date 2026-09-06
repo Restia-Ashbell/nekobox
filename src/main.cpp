@@ -8,6 +8,7 @@
 #include <QLocalSocket>
 #include <QMessageBox>
 #include <QStandardPaths>
+#include <QStyle>
 #include <QTranslator>
 
 #include "ui/MainWindow.hpp"

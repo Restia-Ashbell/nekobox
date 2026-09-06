@@ -1583,6 +1583,29 @@ Split by line.</source>
     </message>
 </context>
 <context>
+    <name>ProfileTableModel</name>
+    <message>
+        <source>Address</source>
+        <translation>地址</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <source>Test Result</source>
+        <translation>测试结果</translation>
+    </message>
+    <message>
+        <source>Traffic</source>
+        <translation>流量</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>类型</translation>
+    </message>
+</context>
+<context>
     <name>ProxyItem</name>
     <message>
         <source>Confirmation</source>

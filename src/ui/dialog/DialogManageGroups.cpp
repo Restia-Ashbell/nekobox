@@ -10,6 +10,7 @@
 #include "subscription/GroupUpdater.hpp"
 #include "ui/edit/DialogEditGroup.hpp"
 #include "ui/MainWindow.hpp"
+#include "ui/table/ProfileIdRole.hpp"
 #include "ui/widget/GroupItem.hpp"
 
 DialogManageGroups::DialogManageGroups(QWidget *parent, int index) : QDialog(parent), ui(new Ui::DialogManageGroups) {
@@ -31,7 +32,7 @@ DialogManageGroups::DialogManageGroups(QWidget *parent, int index) : QDialog(par
     connect(MainWindow::instance(), &MainWindow::groupUpdated, this, [this](int gid) {
         for (int i = 0; i < ui->listWidget->count(); ++i) {
             auto item = ui->listWidget->item(i);
-            if (item->data(114514).toInt() == gid) {
+            if (item->data(ProfileUi::ProfileIdRole).toInt() == gid) {
                 if (!NekoGui::profileManager->GetGroup(gid)) {
                     delete ui->listWidget->takeItem(i);
                 }
@@ -54,7 +55,7 @@ void DialogManageGroups::addGroupToList(int id) {
     if (auto ent = NekoGui::profileManager->GetGroup(id)) {
         auto item = new QListWidgetItem();
         auto w = new GroupItem(this, ent, item);
-        item->setData(114514, id);
+        item->setData(ProfileUi::ProfileIdRole, id);
         ui->listWidget->addItem(item);
         ui->listWidget->setItemWidget(item, w);
     }
