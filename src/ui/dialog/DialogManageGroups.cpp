@@ -7,7 +7,7 @@
 
 #include "profile/ProfileManager.hpp"
 #include "common/GuiUtils.hpp"
-#include "subscription/GroupUpdater.hpp"
+#include "subscription/SubscriptionService.hpp"
 #include "ui/edit/DialogEditGroup.hpp"
 #include "ui/MainWindow.hpp"
 #include "ui/table/ProfileIdRole.hpp"
@@ -77,6 +77,6 @@ void DialogManageGroups::on_add_clicked() {
 
 void DialogManageGroups::on_update_all_clicked() {
     if (QMessageBox::question(this, tr("Confirmation"), tr("Update all subscriptions?")) == QMessageBox::StandardButton::Yes) {
-        UI_update_all_groups(false);
+        NekoGui_sub::subService->updateAll(false);
     }
 }

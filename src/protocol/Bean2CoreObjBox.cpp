@@ -51,6 +51,7 @@ namespace NekoGui_fmt {
             if (!sni.trimmed().isEmpty()) tls["server_name"] = sni;
             if (!alpn.trimmed().isEmpty()) tls["alpn"] = QList2QJsonArray(alpn.split(","));
             QString fp = utlsFingerprint;
+            if (fp.isEmpty()) fp = NekoGui::dataStore->utlsFingerprint;
             if (!reality_pbk.trimmed().isEmpty()) {
                 tls["reality"] = QJsonObject{
                     {"enabled", true},

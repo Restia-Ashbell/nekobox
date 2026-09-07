@@ -30,7 +30,7 @@
 #include "profile/ProfileFilter.hpp"
 #include "profile/traffic/TrafficLooper.hpp"
 #include "protocol/Preset.hpp"
-#include "subscription/GroupUpdater.hpp"
+#include "subscription/SubscriptionService.hpp"
 #include "system/AdminHelper.hpp"
 #include "system/ExternalProcess.hpp"
 #include "ui/dialog/DialogBasicSettings.hpp"
@@ -267,7 +267,39 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(refreshTimer, &QTimer::timeout, this, [this] { refresh_status(); });
 
     autoUpdateSubscriptionTimer = new QTimer(this);
-    connect(autoUpdateSubscriptionTimer, &QTimer::timeout, this, [this] { UI_update_all_groups(true); });
+    connect(autoUpdateSubscriptionTimer, &QTimer::timeout, this, [this] { NekoGui_sub::subService->updateAll(true); });
+
+    connect(NekoGui_sub::subService, &NekoGui_sub::SubscriptionService::importUrlDetected, this, [this](const QString &url) {
+        auto items = QStringList{
+            tr("As Subscription (create new group)"),
+            tr("As link"),
+        };
+        bool ok;
+        auto a = QInputDialog::getItem(this,
+                                       tr("url detected"),
+                                       tr("%1\nHow to update?").arg(url),
+                                       items, 0, false, &ok);
+        if (ok) NekoGui_sub::subService->resolveImport(url, items.indexOf(a) == 0);
+    });
+    connect(NekoGui_sub::subService, &NekoGui_sub::SubscriptionService::taskFinished, this, [this](int gid, const NekoGui_sub::UpdateReport &) {
+        if (gid < 0) {
+            refresh_group();
+        } else {
+            bool hasTab = false;
+            for (int i = 0; i < ui->tabWidget->count(); ++i) {
+                if (ui->tabWidget->tabBar()->tabData(i).toInt() == gid) {
+                    hasTab = true;
+                    break;
+                }
+            }
+            if (hasTab) {
+                refresh_group(gid);
+            } else {
+                refresh_groups();
+            }
+            emit groupUpdated(gid);
+        }
+    });
 
     applyDataStoreSettings();
 
@@ -901,7 +933,7 @@ void MainWindow::on_menu_add_from_input_triggered() {
 }
 
 void MainWindow::on_menu_add_from_clipboard_triggered() {
-    NekoGui_sub::groupUpdater->AsyncUpdate(QApplication::clipboard()->text());
+    NekoGui_sub::subService->importText(QApplication::clipboard()->text());
 }
 
 void MainWindow::on_menu_clone_triggered() {
@@ -916,7 +948,7 @@ void MainWindow::on_menu_clone_triggered() {
         sls << ent->bean->ToNekorayShareLink(ent->type);
     }
 
-    NekoGui_sub::groupUpdater->AsyncUpdate(sls.join("\n"));
+    NekoGui_sub::subService->importText(sls.join("\n"));
 }
 
 void MainWindow::on_menu_move_triggered() {
@@ -1106,7 +1138,7 @@ void MainWindow::on_menu_scan_qr_triggered() {
         QMessageBox::warning(this, software_name, tr("QR Code not found"));
     } else {
         show_log_impl("QR Code Result:\n" + result);
-        NekoGui_sub::groupUpdater->AsyncUpdate(result);
+        NekoGui_sub::subService->importText(result);
     }
 }
 
@@ -1152,9 +1184,7 @@ void MainWindow::on_menu_delete_repeat_triggered() {
 void MainWindow::on_menu_update_subscription_triggered() {
     auto group = NekoGui::profileManager->CurrentGroup();
     if (group->url.isEmpty()) return;
-    if (mw_sub_updating) return;
-    mw_sub_updating = true;
-    NekoGui_sub::groupUpdater->AsyncUpdate(group->url, group->id, [&] { mw_sub_updating = false; });
+    NekoGui_sub::subService->updateGroup(group->id);
 }
 
 void MainWindow::on_menu_remove_unavailable_triggered() {

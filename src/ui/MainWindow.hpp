@@ -127,7 +127,6 @@ private:
     QMutex mu_state;
     int exit_reason = 0;
     //
-    bool mw_sub_updating = false;
     QTimer *autoUpdateSubscriptionTimer;
     QTimer *refreshTimer;
     //

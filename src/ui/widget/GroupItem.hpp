@@ -17,10 +17,6 @@ class GroupItem : public QWidget {
 public:
     explicit GroupItem(QWidget *parent, const std::shared_ptr<NekoGui::Group> &ent, QListWidgetItem *item);
 
-    static QString ParseSubInfo(const QString &info);
-
-    static QString parseFileName(const QString &contentDisposition);
-
     ~GroupItem() override;
 
     void refresh_data();
@@ -30,6 +26,7 @@ public:
 
 private:
     Ui::GroupItem *ui;
+    bool m_updating = false;
 
 public slots:
 

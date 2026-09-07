@@ -4,54 +4,11 @@
 #include <QMessageBox>
 
 #include "common/GuiUtils.hpp"
-#include "subscription/GroupUpdater.hpp"
+#include "subscription/SubscriptionParser.hpp"
+#include "subscription/SubscriptionService.hpp"
 #include "ui/edit/DialogEditGroup.hpp"
 #include "ui/MainWindow.hpp"
 
-QString GroupItem::ParseSubInfo(const QString &info) {
-    if (info.trimmed().isEmpty()) return {};
-
-    long long used = 0, total = 0, expire = 0;
-
-    QRegularExpressionMatch match;
-    match = QRegularExpression("total=([0-9]+)").match(info);
-    if (match.hasMatch()) {
-        total = match.captured(1).toLongLong();
-    }
-    match = QRegularExpression("upload=([0-9]+)").match(info);
-    if (match.hasMatch()) {
-        used += match.captured(1).toLongLong();
-    }
-    match = QRegularExpression("download=([0-9]+)").match(info);
-    if (match.hasMatch()) {
-        used += match.captured(1).toLongLong();
-    }
-    match = QRegularExpression("expire=([0-9]+)").match(info);
-    if (match.hasMatch()) {
-        expire = match.captured(1).toLongLong();
-    }
-    if (used == 0 && total == 0 && expire == 0) return {};
-
-    return QObject::tr("Used: %1 Remain: %2 Expire: %3").arg(ReadableSize(used), ReadableSize(total - used), DisplayTime(expire, QLocale::ShortFormat));
-}
-
-QString GroupItem::parseFileName(const QString &contentDisposition) {
-    if (contentDisposition.isEmpty()) return {};
-    QRegularExpressionMatch match;
-    QRegularExpression reFilenameStar(R"(filename\*\s*=\s*UTF-8''([^;]+))", QRegularExpression::CaseInsensitiveOption);
-    match = reFilenameStar.match(contentDisposition);
-    if (match.hasMatch()) {
-        return QUrl::fromPercentEncoding(match.captured(1).toUtf8());
-    }
-    QRegularExpression reFilename(R"REGEX(filename\s*=\s*(?:"([^"]+)"|([^;]+)))REGEX", QRegularExpression::CaseInsensitiveOption);
-    match = reFilename.match(contentDisposition);
-    if (match.hasMatch()) {
-        QString filename = match.captured(1);
-        if (filename.isEmpty()) filename = match.captured(2);
-        return filename.trimmed();
-    }
-    return {};
-}
 
 GroupItem::GroupItem(QWidget *parent, const std::shared_ptr<NekoGui::Group> &ent, QListWidgetItem *item) : QWidget(parent), ui(new Ui::GroupItem) {
     ui->setupUi(this);
@@ -63,6 +20,19 @@ GroupItem::GroupItem(QWidget *parent, const std::shared_ptr<NekoGui::Group> &ent
 
     connect(MainWindow::instance(), &MainWindow::groupUpdated, this, [this](int gid) {
         if (gid == this->ent->id) refresh_data();
+    });
+
+    connect(NekoGui_sub::subService, &NekoGui_sub::SubscriptionService::taskStarted, this, [this](int gid) {
+        if (gid == this->ent->id) {
+            m_updating = true;
+            refresh_data();
+        }
+    });
+    connect(NekoGui_sub::subService, &NekoGui_sub::SubscriptionService::taskFinished, this, [this](int gid, const NekoGui_sub::UpdateReport &) {
+        if (gid == this->ent->id) {
+            m_updating = false;
+            refresh_data();
+        }
     });
 
     refresh_data();
@@ -86,25 +56,32 @@ void GroupItem::refresh_data() {
         ui->update_sub->hide();
     } else {
         ui->url->setText(ent->url);
-        QStringList info;
-        if (ent->sub_last_update != 0) {
-            info << tr("Last update: %1").arg(DisplayTime(ent->sub_last_update, QLocale::ShortFormat));
-        }
-        if (!ent->info.isEmpty()) {
-            info << ParseSubInfo(ent->info);
-        }
-        if (info.isEmpty()) {
-            ui->subinfo->hide();
-        } else {
-            ui->subinfo->setText(info.join(" | "));
+        if (m_updating) {
+            ui->subinfo->setText(tr("Updating…"));
+            ui->subinfo->setStyleSheet("color: rgb(84, 130, 255);");
             ui->subinfo->show();
+        } else {
+            ui->subinfo->setStyleSheet("");
+            QStringList info;
+            if (ent->sub_last_update != 0) {
+                info << tr("Last update: %1").arg(DisplayTime(ent->sub_last_update, QLocale::ShortFormat));
+            }
+            if (!ent->info.isEmpty()) {
+                info << NekoGui_sub::SubscriptionParser::parseSubInfo(ent->info);
+            }
+            if (info.isEmpty()) {
+                ui->subinfo->hide();
+            } else {
+                ui->subinfo->setText(info.join(" | "));
+                ui->subinfo->show();
+            }
         }
     }
     item->setSizeHint(sizeHint());
 }
 
 void GroupItem::on_update_sub_clicked() {
-    NekoGui_sub::groupUpdater->AsyncUpdate(ent->url, ent->id);
+    NekoGui_sub::subService->updateGroup(ent->id);
 }
 
 void GroupItem::on_edit_clicked() {

@@ -1,15 +1,14 @@
-#include "GroupUpdater.hpp"
+#include "SubscriptionParser.hpp"
 
-#include <QInputDialog>
+#include <QLocale>
+#include <QRegularExpression>
 
-#include "network/HttpRequestHelper.hpp"
-#include "profile/ProfileFilter.hpp"
+#include "common/Utils.hpp"
+#include "profile/ProfileManager.hpp"
 #include "protocol/Includes.hpp"
-#include "protocol/Preset.hpp"
-#include "ui/MainWindow.hpp"
-#include "ui/widget/GroupItem.hpp"
 
 #include <yaml-cpp/yaml.h>
+
 namespace YAML {
     template<>
     struct convert<QString> {
@@ -34,9 +33,54 @@ namespace YAML {
 
 namespace NekoGui_sub {
 
-    GroupUpdater *groupUpdater = new GroupUpdater;
+    // 解析 Subscription-UserInfo 响应头：total / upload / download / expire
+    QString SubscriptionParser::parseSubInfo(const QString &info) {
+        if (info.trimmed().isEmpty()) return {};
 
-    void GroupUpdater::fixEnt(const std::shared_ptr<NekoGui::ProxyEntity> &ent) {
+        long long used = 0, total = 0, expire = 0;
+
+        QRegularExpressionMatch match;
+        match = QRegularExpression("total=([0-9]+)").match(info);
+        if (match.hasMatch()) {
+            total = match.captured(1).toLongLong();
+        }
+        match = QRegularExpression("upload=([0-9]+)").match(info);
+        if (match.hasMatch()) {
+            used += match.captured(1).toLongLong();
+        }
+        match = QRegularExpression("download=([0-9]+)").match(info);
+        if (match.hasMatch()) {
+            used += match.captured(1).toLongLong();
+        }
+        match = QRegularExpression("expire=([0-9]+)").match(info);
+        if (match.hasMatch()) {
+            expire = match.captured(1).toLongLong();
+        }
+        if (used == 0 && total == 0 && expire == 0) return {};
+
+        return QObject::tr("Used: %1 Remain: %2 Expire: %3").arg(ReadableSize(used), ReadableSize(total - used), DisplayTime(expire, QLocale::ShortFormat));
+    }
+
+    // 解析 Content-Disposition 响应头里的分组名（支持 filename* 与 filename）
+    QString SubscriptionParser::parseSubName(const QString &contentDisposition) {
+        if (contentDisposition.trimmed().isEmpty()) return {};
+        QRegularExpressionMatch match;
+        QRegularExpression reFilenameStar(R"(filename\*\s*=\s*UTF-8''([^;]+))", QRegularExpression::CaseInsensitiveOption);
+        match = reFilenameStar.match(contentDisposition);
+        if (match.hasMatch()) {
+            return QUrl::fromPercentEncoding(match.captured(1).toUtf8());
+        }
+        QRegularExpression reFilename(R"REGEX(filename\s*=\s*(?:"([^"]+)"|([^;]+)))REGEX", QRegularExpression::CaseInsensitiveOption);
+        match = reFilename.match(contentDisposition);
+        if (match.hasMatch()) {
+            QString filename = match.captured(1);
+            if (filename.isEmpty()) filename = match.captured(2);
+            return filename.trimmed();
+        }
+        return {};
+    }
+
+    void SubscriptionParser::fixEnt(const std::shared_ptr<NekoGui::ProxyEntity> &ent) {
         if (ent == nullptr) return;
         auto stream = ent->bean->_get<NekoGui_fmt::V2rayStreamSettings>("stream");
         if (stream == nullptr) return;
@@ -60,10 +104,10 @@ namespace NekoGui_sub {
         }
     }
 
-    QList<std::shared_ptr<NekoGui::ProxyEntity>> GroupUpdater::update(const QString &str) {
+    QList<std::shared_ptr<NekoGui::ProxyEntity>> SubscriptionParser::update(const QString &str, QStringList *diag) {
         // Clash YAML
         if (str.contains("proxies:")) {
-            return updateClash(str);
+            return updateClash(str, diag);
         }
 
         // Sing-Box JSON
@@ -75,10 +119,10 @@ namespace NekoGui_sub {
         QString decoded = DecodeB64IfValid(str);
         const QString &content = decoded.isEmpty() ? str : decoded;
 
-        return updateLink(content);
+        return updateLink(content, diag);
     }
 
-    QList<std::shared_ptr<NekoGui::ProxyEntity>> GroupUpdater::updateJson(const QString &str, const QJsonObject &obj) {
+    QList<std::shared_ptr<NekoGui::ProxyEntity>> SubscriptionParser::updateJson(const QString &str, const QJsonObject &obj) {
         auto ent = NekoGui::ProfileManager::NewProxyEntity("custom");
         auto bean = ent->Bean<NekoGui_fmt::CustomBean>();
         if (obj.contains("outbounds")) {
@@ -93,7 +137,7 @@ namespace NekoGui_sub {
         return {ent};
     }
 
-    QList<std::shared_ptr<NekoGui::ProxyEntity>> GroupUpdater::updateLink(const QString &str) {
+    QList<std::shared_ptr<NekoGui::ProxyEntity>> SubscriptionParser::updateLink(const QString &str, QStringList *diag) {
         QList<std::shared_ptr<NekoGui::ProxyEntity>> result;
         std::shared_ptr<NekoGui::ProxyEntity> ent;
 
@@ -124,7 +168,7 @@ namespace NekoGui_sub {
                 // End
                 result += ent;
             } else {
-                MW_show_log(QObject::tr("Failed to parse: %1").arg(str));
+                if (diag) diag->append(QObject::tr("Failed to parse: %1").arg(str));
             }
         }
 
@@ -151,7 +195,7 @@ namespace NekoGui_sub {
     }
 
     // https://github.com/Dreamacro/clash/wiki/configuration
-    QList<std::shared_ptr<NekoGui::ProxyEntity>> GroupUpdater::updateClash(const QString &str) {
+    QList<std::shared_ptr<NekoGui::ProxyEntity>> SubscriptionParser::updateClash(const QString &str, QStringList *diag) {
         QList<std::shared_ptr<NekoGui::ProxyEntity>> result;
 
         try {
@@ -244,9 +288,6 @@ namespace NekoGui_sub {
                     bean->stream->alpn = Node2Value<QList<QString>>(proxy["alpn"]).join(",");
                     bean->stream->allow_insecure = Node2Value<bool>(proxy["skip-cert-verify"]);
                     bean->stream->utlsFingerprint = Node2Value<QString>(proxy["client-fingerprint"]);
-                    if (bean->stream->utlsFingerprint.isEmpty()) {
-                        bean->stream->utlsFingerprint = NekoGui::dataStore->utlsFingerprint;
-                    }
 
                     // sing-mux
                     auto smux = NodeChild(proxy, {"smux"});
@@ -307,9 +348,6 @@ namespace NekoGui_sub {
                     if (Node2Value<bool>(proxy["tls"])) bean->stream->security = "tls";
                     if (Node2Value<bool>(proxy["skip-cert-verify"])) bean->stream->allow_insecure = true;
                     bean->stream->utlsFingerprint = Node2Value<QString>(proxy["client-fingerprint"]);
-                    if (bean->stream->utlsFingerprint.isEmpty()) {
-                        bean->stream->utlsFingerprint = NekoGui::dataStore->utlsFingerprint;
-                    }
 
                     // sing-mux
                     auto smux = NodeChild(proxy, {"smux"});
@@ -462,152 +500,10 @@ namespace NekoGui_sub {
                 result += ent;
             }
         } catch (const YAML::Exception &ex) {
-            runOnUiThread([=, this] {
-                MessageBoxWarning("YAML Exception", ex.what());
-            });
+            if (diag) diag->append(QString("YAML Exception: %1").arg(QString::fromUtf8(ex.what())));
         }
 
         return result;
     }
 
-    // 在新的 thread 运行
-    void GroupUpdater::AsyncUpdate(const QString &str, int _sub_gid, const std::function<void()> &finish) {
-        auto content = str.trimmed();
-        bool asURL = _sub_gid >= 0;
-        bool createNewGroup = false;
-        QUrl url(content);
-
-        if (_sub_gid < 0 && url.isValid() && (url.scheme() == "http" || url.scheme() == "https") && url.userInfo().isEmpty()) {
-            auto items = QStringList{
-                QObject::tr("As Subscription (create new group)"),
-                QObject::tr("As Subscription (add to this group)"),
-                QObject::tr("As link"),
-            };
-            bool ok;
-            auto a = QInputDialog::getItem(GetMessageBoxParent(),
-                                           QObject::tr("url detected"),
-                                           QObject::tr("%1\nHow to update?").arg(content),
-                                           items, 0, false, &ok);
-            if (!ok) return;
-            if (items.indexOf(a) <= 1) asURL = true;
-            if (items.indexOf(a) == 0) {
-                createNewGroup = true;
-                auto group = NekoGui::ProfileManager::NewGroup();
-                group->url = content;
-                NekoGui::profileManager->AddGroup(group);
-                _sub_gid = group->id;
-            }
-        }
-
-        auto done = [=] {
-            runOnUiThread([=] {
-                auto *mw = MainWindow::instance();
-                createNewGroup ? mw->refresh_groups() : mw->refresh_group(_sub_gid);
-                emit mw->groupUpdated(_sub_gid);
-            });
-            if (finish) finish();
-        };
-
-        if (asURL) {
-            auto group = NekoGui::profileManager->GetGroup(_sub_gid);
-            auto groupName = group && !group->name.isEmpty() ? group->name : content;
-            MW_show_log(">>>>>>>> " + QObject::tr("Requesting subscription: %1").arg(groupName));
-            NekoGui_network::NetworkRequestHelper::HttpGet(content, [=, this](const NekoGui_network::NekoHTTPResponse &resp) {
-                if (resp.error.isEmpty()) {
-                    if (group->name.isEmpty()) {
-                        QString parsedName = GroupItem::parseFileName(NekoGui_network::NetworkRequestHelper::GetHeader(resp.headers, "Content-Disposition"));
-                        group->name = parsedName.isEmpty() ? QUrl(group->url).host() : parsedName;
-                    }
-                    group->info = NekoGui_network::NetworkRequestHelper::GetHeader(resp.headers, "Subscription-UserInfo");
-                    group->sub_last_update = QDateTime::currentSecsSinceEpoch();
-                    MW_show_log("<<<<<<<< " + QObject::tr("Subscription request finished: %1").arg(groupName));
-                } else {
-                    MW_show_log("<<<<<<<< " + QObject::tr("Requesting subscription %1 error: %2").arg(groupName, resp.error + "\n" + resp.data));
-                }
-                runOnNewThread([=, this] {
-                    Update(resp.data.trimmed(), _sub_gid);
-                    done();
-                });
-            });
-        } else {
-            runOnNewThread([=, this] {
-                Update(content, _sub_gid);
-                done();
-            });
-        }
-    }
-
-    void GroupUpdater::Update(const QString &content, int _sub_gid) {
-        auto group = NekoGui::profileManager->GetGroup(_sub_gid);
-        if (group != nullptr && group->archive) return;
-
-        auto newProfiles = update(content);
-
-        if (group) {
-            auto [oldCommon, newCommon, oldOnly, newOnly] = NekoGui::ProfileFilter::Diff(group->Profiles(), newProfiles);
-
-            QString notice_added;
-            QString notice_deleted;
-            for (const auto &ent: newOnly) {
-                NekoGui::profileManager->AddProfile(ent, _sub_gid);
-                notice_added += "[+] " + ent->bean->DisplayTypeAndName() + "\n";
-            }
-            for (const auto &ent: oldOnly) {
-                NekoGui::profileManager->DeleteProfile(ent->id);
-                notice_deleted += "[-] " + ent->bean->DisplayTypeAndName() + "\n";
-            }
-
-            // sort according to order in remote
-            group->order.clear();
-            for (const auto &ent: newProfiles) {
-                auto deleted_index = newCommon.indexOf(ent);
-                if (deleted_index >= 0) {
-                    group->order.append(oldCommon[deleted_index]->id);
-                } else {
-                    group->order.append(ent->id);
-                }
-            }
-            group->Save();
-
-            QString change_text = newOnly.length() + oldOnly.length() == 0
-                                      ? QObject::tr("Nothing")
-                                      : QObject::tr("Added %1 profiles:\n%2\nDeleted %3 Profiles:\n%4")
-                                            .arg(newOnly.length())
-                                            .arg(notice_added)
-                                            .arg(oldOnly.length())
-                                            .arg(notice_deleted);
-
-            MW_show_log("<<<<<<<< " + QObject::tr("Change of %1:").arg(group->name) + "\n" + change_text);
-        } else {
-            for (const auto &ent: newProfiles) NekoGui::profileManager->AddProfile(ent, _sub_gid);
-            MW_show_log(QObject::tr("Imported %1 profile(s)").arg(newProfiles.count()));
-        }
-    }
 } // namespace NekoGui_sub
-
-bool UI_update_all_groups_Updating = false;
-
-void serialUpdateSubscription(const QList<int> &groupsTabOrder, int index, bool isAutoUpdate) {
-    while (index < groupsTabOrder.size()) {
-        auto g = NekoGui::profileManager->GetGroup(groupsTabOrder[index]);
-        if (!(!g || g->url.isEmpty() || g->archive || (isAutoUpdate && g->skip_auto_update))) {
-            UI_update_all_groups_Updating = true;
-            NekoGui_sub::groupUpdater->AsyncUpdate(g->url, g->id, [=] {
-                serialUpdateSubscription(groupsTabOrder, index + 1, isAutoUpdate);
-            });
-            return;
-        }
-        ++index;
-    }
-
-    UI_update_all_groups_Updating = false;
-}
-
-void UI_update_all_groups(bool isAutoUpdate) {
-    if (UI_update_all_groups_Updating) {
-        MW_show_log("The last subscription update has not exited.");
-        return;
-    }
-
-    serialUpdateSubscription(NekoGui::profileManager->groupsTabOrder, 0, isAutoUpdate);
-}
