@@ -13,24 +13,27 @@ namespace NekoGui_traffic {
     public:
         explicit TrafficLooper(QObject *parent = nullptr);
 
-        QList<std::shared_ptr<TrafficData>> items;
-        TrafficData *proxy = nullptr;
-
-        void start();
+        void start(const QList<std::shared_ptr<TrafficData>> &items, TrafficData *proxy);
         void stop();
+        void saveAll();
 
-        void SaveAll();
-        void UpdateAll();
+    signals:
+        void speedUpdated(const QString &text);
+        void profileUpdated(int id);
 
     private slots:
         void onTick();
 
     private:
-        QTimer m_timer;
-        QElapsedTimer elapsedTimer;
-        TrafficData *direct = new TrafficData("direct");
+        void applyInterval();
+        void updateAll();
+        void updateStats(TrafficData *item, const QJsonObject &stats);
 
-        void update_stats(TrafficData *item, QJsonObject &stats);
+        QTimer m_timer;
+        QElapsedTimer m_elapsedTimer;
+        QList<std::shared_ptr<TrafficData>> m_items;
+        TrafficData *m_proxy = nullptr;
+        TrafficData *m_direct = new TrafficData("direct");
     };
 
     extern TrafficLooper *trafficLooper;

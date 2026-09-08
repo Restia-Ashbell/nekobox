@@ -6,7 +6,6 @@
 
 #include "profile/DataStore.hpp"
 #include "profile/ProfileManager.hpp"
-#include "ui/MainWindow.hpp"
 
 namespace NekoGui_traffic {
 
@@ -16,42 +15,43 @@ namespace NekoGui_traffic {
         connect(&m_timer, &QTimer::timeout, this, &TrafficLooper::onTick);
     }
 
-    void TrafficLooper::start() {
+    void TrafficLooper::start(const QList<std::shared_ptr<TrafficData>> &items, TrafficData *proxy) {
+        m_items = items;
+        m_proxy = proxy;
         if (NekoGui::dataStore->traffic_loop_interval == 0) return; // user disabled
 
-        auto interval = qBound(500, NekoGui::dataStore->traffic_loop_interval, 5000);
-        if (!elapsedTimer.isValid()) elapsedTimer.start();
-        m_timer.start(interval);
+        if (!m_elapsedTimer.isValid()) m_elapsedTimer.start();
+        applyInterval();
+        m_timer.start();
     }
 
     void TrafficLooper::stop() {
         m_timer.stop();
+        m_items.clear();
+        m_proxy = nullptr;
+    }
+
+    void TrafficLooper::applyInterval() {
+        auto interval = qBound(500, NekoGui::dataStore->traffic_loop_interval, 5000);
+        if (m_timer.interval() != interval) m_timer.setInterval(interval);
     }
 
     void TrafficLooper::onTick() {
         if (NekoGui::dataStore->traffic_loop_interval == 0) return; // user disabled
 
-        // follow runtime interval change
-        auto interval = qBound(500, NekoGui::dataStore->traffic_loop_interval, 5000);
-        if (m_timer.interval() != interval) {
-            m_timer.setInterval(interval);
-        }
+        applyInterval(); // follow runtime interval change
 
-        UpdateAll();
+        updateAll();
 
-        auto m = MainWindow::instance();
-        if (proxy != nullptr) {
-            m->refresh_status(QObject::tr("Proxy: %1\nDirect: %2").arg(proxy->DisplaySpeed(), direct->DisplaySpeed()));
-        }
-        for (const auto &item: items) {
-            if (item->id >= 0)
-                m->refresh_proxy(item->id);
+        if (m_proxy) emit speedUpdated(QObject::tr("Proxy: %1\nDirect: %2").arg(m_proxy->DisplaySpeed(), m_direct->DisplaySpeed()));
+        for (const auto &item: m_items) {
+            if (item->id >= 0) emit profileUpdated(item->id);
         }
     }
 
-    void TrafficLooper::update_stats(TrafficData *item, QJsonObject &stats) {
+    void TrafficLooper::updateStats(TrafficData *item, const QJsonObject &stats) {
         // last update
-        auto now = elapsedTimer.elapsed();
+        auto now = m_elapsedTimer.elapsed();
         auto interval = now - item->last_update;
         item->last_update = now;
         if (interval <= 0) return;
@@ -69,19 +69,19 @@ namespace NekoGui_traffic {
         item->downlink_rate = downlink * 1000 / interval;
     }
 
-    void TrafficLooper::UpdateAll() {
+    void TrafficLooper::updateAll() {
         auto boxStatsResult = BoxStats();
         auto stats = QString2QJsonObject(boxStatsResult);
         free(boxStatsResult);
 
-        for (const auto &item: items) {
-            update_stats(item.get(), stats);
+        for (const auto &item: m_items) {
+            updateStats(item.get(), stats);
         }
-        update_stats(direct, stats);
+        updateStats(m_direct, stats);
     }
 
-    void TrafficLooper::SaveAll() {
-        for (const auto &item: items) {
+    void TrafficLooper::saveAll() {
+        for (const auto &item: m_items) {
             if (auto profile = NekoGui::profileManager->GetProfile(item->id)) profile->Save();
         }
     }

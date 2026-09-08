@@ -251,7 +251,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     refresh_status();
 
     BoxMain([](const char *log) { MW_show_log(log); });
+
     NekoGui_traffic::trafficLooper = new NekoGui_traffic::TrafficLooper(this);
+    connect(NekoGui_traffic::trafficLooper, &NekoGui_traffic::TrafficLooper::speedUpdated, this, &MainWindow::refresh_status);
+    connect(NekoGui_traffic::trafficLooper, &NekoGui_traffic::TrafficLooper::profileUpdated, this, &MainWindow::refresh_proxy);
 
     // Remember
     QTimer::singleShot(0, [this] { // 事件循环启动后立即执行
@@ -550,9 +553,7 @@ void MainWindow::neko_start(int _id) {
             running_ext = NekoGui_sys::CreateExtCFromExtR(result->extRs);
             for (const auto &extC: running_ext) extC->start();
 
-            NekoGui_traffic::trafficLooper->proxy = result->outboundStat.get();
-            NekoGui_traffic::trafficLooper->items = result->outboundStats;
-            NekoGui_traffic::trafficLooper->start();
+            NekoGui_traffic::trafficLooper->start(result->outboundStats, result->outboundStat.get());
 
             refresh_status();
             refresh_proxy(ent->id);
@@ -565,7 +566,7 @@ void MainWindow::neko_stop(bool wait) {
     auto id = running->id;
 
     // 提前保存避免退出时流量丢失
-    NekoGui_traffic::trafficLooper->SaveAll();
+    NekoGui_traffic::trafficLooper->saveAll();
 
     auto future = QtConcurrent::run([=, this] {
         QMutexLocker locker(&mu_state);
@@ -586,8 +587,6 @@ void MainWindow::neko_stop(bool wait) {
             running_ext.clear();
 
             NekoGui_traffic::trafficLooper->stop();
-            NekoGui_traffic::trafficLooper->items.clear();
-            NekoGui_traffic::trafficLooper->proxy = nullptr;
 
             refresh_status();
             refresh_proxy(id);
