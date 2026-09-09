@@ -2,8 +2,36 @@
 
 #include <QUrlQuery>
 
+#include "profile/ConfigItem.hpp"
+
 namespace NekoGui_fmt {
     class V2rayStreamSettings : public JsonStore {
+        Q_OBJECT
+        Q_PROPERTY(QString net MEMBER network)
+        Q_PROPERTY(QString sec MEMBER security)
+        Q_PROPERTY(QString pac_enc MEMBER packet_encoding)
+        // ws/http/grpc/httpupgrade
+        Q_PROPERTY(QString path MEMBER path)
+        Q_PROPERTY(QString host MEMBER host)
+        // tls
+        Q_PROPERTY(QString sni MEMBER sni)
+        Q_PROPERTY(QString alpn MEMBER alpn)
+        Q_PROPERTY(QString cert MEMBER certificate)
+        Q_PROPERTY(QString ech MEMBER ech)
+        Q_PROPERTY(bool insecure MEMBER allow_insecure)
+        Q_PROPERTY(bool ech_enabled MEMBER ech_enabled)
+        Q_PROPERTY(bool disable_sni MEMBER disable_sni)
+        // ws early data
+        Q_PROPERTY(QString ed_name MEMBER ws_early_data_name)
+        Q_PROPERTY(int ed_len MEMBER ws_early_data_length)
+        // reality
+        Q_PROPERTY(QString utls MEMBER utlsFingerprint)
+        Q_PROPERTY(QString pbk MEMBER reality_pbk)
+        Q_PROPERTY(QString sid MEMBER reality_sid)
+        Q_PROPERTY(QString spx MEMBER reality_spx)
+        Q_PROPERTY(bool tls_fragment MEMBER tls_fragment)
+        Q_PROPERTY(bool tls_record_fragment MEMBER tls_record_fragment)
+
     public:
         QString network = "";
         QString security = "";
@@ -31,28 +59,7 @@ namespace NekoGui_fmt {
         bool tls_fragment = false;
         bool tls_record_fragment = false;
 
-        V2rayStreamSettings() : JsonStore() {
-            _add("net", &network);
-            _add("sec", &security);
-            _add("pac_enc", &packet_encoding);
-            _add("path", &path);
-            _add("host", &host);
-            _add("sni", &sni);
-            _add("alpn", &alpn);
-            _add("cert", &certificate);
-            _add("ech", &ech);
-            _add("insecure", &allow_insecure);
-            _add("ech_enabled", &ech_enabled);
-            _add("disable_sni", &disable_sni);
-            _add("ed_name", &ws_early_data_name);
-            _add("ed_len", &ws_early_data_length);
-            _add("utls", &utlsFingerprint);
-            _add("pbk", &reality_pbk);
-            _add("sid", &reality_sid);
-            _add("spx", &reality_spx);
-            _add("tls_fragment", &tls_fragment);
-            _add("tls_record_fragment", &tls_record_fragment);
-        }
+        explicit V2rayStreamSettings(QObject *parent) : JsonStore(parent) {}
 
         void BuildStreamSettingsSingBox(QJsonObject *outbound);
 

@@ -8,8 +8,8 @@ namespace NekoGui {
         QString error;
         QJsonObject coreConfig;
 
-        QList<std::shared_ptr<NekoGui_traffic::TrafficData>> outboundStats; // all, but not including "bypass" "block"
-        std::shared_ptr<NekoGui_traffic::TrafficData> outboundStat;         // main
+        QList<NekoGui_traffic::TrafficData *> outboundStats; // all, but not including "bypass" "block"
+        NekoGui_traffic::TrafficData *outboundStat = nullptr; // main
 
         std::list<std::shared_ptr<NekoGui_fmt::ExternalBuildResult>> extRs;
     };

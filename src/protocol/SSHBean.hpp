@@ -4,6 +4,16 @@
 
 namespace NekoGui_fmt {
     class SSHBean : public AbstractBean {
+        Q_OBJECT
+        Q_PROPERTY(QString user MEMBER user)
+        Q_PROPERTY(QString password MEMBER password)
+        Q_PROPERTY(QString private_key MEMBER privateKey)
+        Q_PROPERTY(QString private_key_path MEMBER privateKeyPath)
+        Q_PROPERTY(QString private_key_passphrase MEMBER privateKeyPassphrase)
+        Q_PROPERTY(QString host_key MEMBER hostKey)
+        Q_PROPERTY(QString host_key_algorithms MEMBER hostKeyAlgorithms)
+        Q_PROPERTY(QString client_version MEMBER clientVersion)
+
     public:
         QString user;
         QString password;
@@ -16,15 +26,7 @@ namespace NekoGui_fmt {
 
         SSHBean() : AbstractBean(0) {
             serverPort = 22;
-            _add("user", &user);
-            _add("password", &password);
-            _add("private_key", &privateKey);
-            _add("private_key_path", &privateKeyPath);
-            _add("private_key_passphrase", &privateKeyPassphrase);
-            _add("host_key", &hostKey);
-            _add("host_key_algorithms", &hostKeyAlgorithms);
-            _add("client_version", &clientVersion);
-        };
+        }
 
         QString DisplayType() override { return "SSH"; };
 

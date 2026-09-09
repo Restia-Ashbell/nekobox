@@ -4,6 +4,15 @@
 
 namespace NekoGui_fmt {
     class WireGuardBean : public AbstractBean {
+        Q_OBJECT
+        Q_PROPERTY(QString private_key MEMBER privateKey)
+        Q_PROPERTY(QString public_key MEMBER publicKey)
+        Q_PROPERTY(QString pre_shared_key MEMBER preSharedKey)
+        Q_PROPERTY(QString local_address MEMBER localAddress)
+        Q_PROPERTY(QString reserved MEMBER reserved)
+        Q_PROPERTY(int mtu MEMBER MTU)
+        Q_PROPERTY(bool use_system_proxy MEMBER useSystemInterface)
+
     public:
         QString privateKey;
         QString publicKey;
@@ -13,15 +22,7 @@ namespace NekoGui_fmt {
         int MTU = 1408;
         bool useSystemInterface = false;
 
-        WireGuardBean() : AbstractBean(0) {
-            _add("private_key", &privateKey);
-            _add("public_key", &publicKey);
-            _add("pre_shared_key", &preSharedKey);
-            _add("local_address", &localAddress);
-            _add("reserved", &reserved);
-            _add("mtu", &MTU);
-            _add("use_system_proxy", &useSystemInterface);
-        };
+        WireGuardBean() : AbstractBean(0) {}
 
         QString DisplayType() override { return "WireGuard"; };
 

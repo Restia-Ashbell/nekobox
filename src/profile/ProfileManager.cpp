@@ -9,8 +9,8 @@ namespace NekoGui {
 
     ProfileManager *profileManager = new ProfileManager;
 
-    ProfileManager::ProfileManager() : JsonStore("groups/pm.json") {
-        _add("groups", &groupsTabOrder);
+    ProfileManager::ProfileManager() {
+        fn = "groups/pm.json";
     }
 
     QList<int> filterIntJsonFile(const QString &path) {

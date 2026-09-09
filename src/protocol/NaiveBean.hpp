@@ -4,6 +4,16 @@
 
 namespace NekoGui_fmt {
     class NaiveBean : public AbstractBean {
+        Q_OBJECT
+        Q_PROPERTY(QString username MEMBER username)
+        Q_PROPERTY(QString password MEMBER password)
+        Q_PROPERTY(QString protocol MEMBER protocol)
+        Q_PROPERTY(QString extra_headers MEMBER extra_headers)
+        Q_PROPERTY(QString sni MEMBER sni)
+        Q_PROPERTY(QString certificate MEMBER certificate)
+        Q_PROPERTY(int insecure_concurrency MEMBER insecure_concurrency)
+        Q_PROPERTY(bool disable_log MEMBER disable_log)
+
     public:
         QString username = "";
         QString password = "";
@@ -18,15 +28,7 @@ namespace NekoGui_fmt {
         NaiveBean() : AbstractBean(0) {
             serverPort = 443;
             external = true;
-            _add("username", &username);
-            _add("password", &password);
-            _add("protocol", &protocol);
-            _add("extra_headers", &extra_headers);
-            _add("sni", &sni);
-            _add("certificate", &certificate);
-            _add("insecure_concurrency", &insecure_concurrency);
-            _add("disable_log", &disable_log);
-        };
+        }
 
         QString DisplayCoreType() override { return "Naive"; };
 

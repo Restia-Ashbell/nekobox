@@ -25,6 +25,15 @@ namespace NekoGui_fmt {
     };
 
     class AbstractBean : public JsonStore {
+        Q_OBJECT
+        Q_PROPERTY(int _v MEMBER version)
+        Q_PROPERTY(QString name MEMBER name)
+        Q_PROPERTY(QString addr MEMBER serverAddress)
+        Q_PROPERTY(int port MEMBER serverPort)
+        Q_PROPERTY(QString c_cfg MEMBER custom_config)
+        Q_PROPERTY(QString c_out MEMBER custom_outbound)
+        Q_PROPERTY(bool external MEMBER external)
+
     public:
         int version;
 
@@ -37,15 +46,7 @@ namespace NekoGui_fmt {
 
         bool external = false;
 
-        explicit AbstractBean(int v) : version(v) {
-            _add("_v", &version);
-            _add("name", &name);
-            _add("addr", &serverAddress);
-            _add("port", &serverPort);
-            _add("c_cfg", &custom_config);
-            _add("c_out", &custom_outbound);
-            _add("external", &external);
-        }
+        explicit AbstractBean(int v, QObject *parent = nullptr) : JsonStore(parent), version(v) {}
 
         virtual ~AbstractBean() = default;
 
@@ -114,6 +115,14 @@ namespace NekoGui_fmt {
     };
 
     class MultiplexSettings : public JsonStore {
+        Q_OBJECT
+        Q_PROPERTY(bool enabled MEMBER enabled)
+        Q_PROPERTY(bool padding MEMBER padding)
+        Q_PROPERTY(QString protocol MEMBER protocol)
+        Q_PROPERTY(int max_streams MEMBER max_streams)
+        Q_PROPERTY(int brutal_up MEMBER brutal_up)
+        Q_PROPERTY(int brutal_down MEMBER brutal_down)
+
     public:
         bool enabled = false;
         bool padding = false;
@@ -122,14 +131,7 @@ namespace NekoGui_fmt {
         int brutal_up = 0;
         int brutal_down = 0;
 
-        MultiplexSettings() : JsonStore() {
-            _add("enabled", &enabled);
-            _add("padding", &padding);
-            _add("protocol", &protocol);
-            _add("max_streams", &max_streams);
-            _add("brutal_up", &brutal_up);
-            _add("brutal_down", &brutal_down);
-        }
+        explicit MultiplexSettings(QObject *parent) : JsonStore(parent) {}
 
         void BuildMultiplexSettingsSingBox(QJsonObject *outbound);
     };

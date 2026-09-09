@@ -4,6 +4,14 @@
 
 namespace NekoGui_fmt {
     class ShadowSocksRBean : public AbstractBean {
+        Q_OBJECT
+        Q_PROPERTY(QString method MEMBER method)
+        Q_PROPERTY(QString pass MEMBER password)
+        Q_PROPERTY(QString obfs MEMBER obfs)
+        Q_PROPERTY(QString obfs_param MEMBER obfsParam)
+        Q_PROPERTY(QString protocol MEMBER protocol)
+        Q_PROPERTY(QString protocol_param MEMBER protocolParam)
+
     public:
         QString method = "none";
         QString password = "";
@@ -12,14 +20,7 @@ namespace NekoGui_fmt {
         QString protocol = "origin";
         QString protocolParam = "";
 
-        ShadowSocksRBean() : AbstractBean(0) {
-            _add("method", &method);
-            _add("pass", &password);
-            _add("obfs", &obfs);
-            _add("obfs_param", &obfsParam);
-            _add("protocol", &protocol);
-            _add("protocol_param", &protocolParam);
-        };
+        ShadowSocksRBean() : AbstractBean(0) {}
 
         QString DisplayType() override { return "ShadowsocksR"; };
 

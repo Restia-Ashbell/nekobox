@@ -140,7 +140,7 @@ namespace NekoGui_fmt {
             outbound["plugin_opts"] = SubStrAfter(plugin, ";");
         }
 
-        multiplex.BuildMultiplexSettingsSingBox(&outbound);
+        multiplex->BuildMultiplexSettingsSingBox(&outbound);
         result.outbound = outbound;
         return result;
     }
@@ -176,7 +176,7 @@ namespace NekoGui_fmt {
         };
 
         stream->BuildStreamSettingsSingBox(&outbound);
-        multiplex.BuildMultiplexSettingsSingBox(&outbound);
+        multiplex->BuildMultiplexSettingsSingBox(&outbound);
         result.outbound = outbound;
         return result;
     }
@@ -206,7 +206,7 @@ namespace NekoGui_fmt {
         }
 
         stream->BuildStreamSettingsSingBox(&outbound);
-        multiplex.BuildMultiplexSettingsSingBox(&outbound);
+        multiplex->BuildMultiplexSettingsSingBox(&outbound);
         result.outbound = outbound;
         return result;
     }

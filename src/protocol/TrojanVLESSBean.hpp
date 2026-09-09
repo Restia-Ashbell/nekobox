@@ -4,6 +4,12 @@
 
 namespace NekoGui_fmt {
     class TrojanVLESSBean : public AbstractBean {
+        Q_OBJECT
+        Q_PROPERTY(QString pass MEMBER password)
+        Q_PROPERTY(QString flow MEMBER flow)
+        Q_PROPERTY(V2rayStreamSettings *stream MEMBER stream)
+        Q_PROPERTY(MultiplexSettings *multiplex MEMBER multiplex)
+
     public:
         static constexpr int proxy_Trojan = 0;
         static constexpr int proxy_VLESS = 1;
@@ -12,16 +18,13 @@ namespace NekoGui_fmt {
         QString password = "";
         QString flow = "";
 
-        std::shared_ptr<V2rayStreamSettings> stream = std::make_shared<V2rayStreamSettings>();
-        MultiplexSettings multiplex;
+        V2rayStreamSettings *stream = nullptr;
+        MultiplexSettings *multiplex = nullptr;
 
-        explicit TrojanVLESSBean(int _proxy_type) : AbstractBean(0) {
-            proxy_type = _proxy_type;
-            _add("pass", &password);
-            _add("flow", &flow);
-            _add("stream", dynamic_cast<JsonStore *>(stream.get()));
-            _add("multiplex", dynamic_cast<JsonStore *>(&multiplex));
-        };
+        explicit TrojanVLESSBean(int _proxy_type) : AbstractBean(0), proxy_type(_proxy_type) {
+            stream = new V2rayStreamSettings(this);
+            multiplex = new MultiplexSettings(this);
+        }
 
         QString DisplayType() override { return proxy_type == proxy_VLESS ? "VLESS" : "Trojan"; };
 

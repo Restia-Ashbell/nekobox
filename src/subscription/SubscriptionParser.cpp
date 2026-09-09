@@ -254,7 +254,7 @@ namespace NekoGui_sub {
 
                     // sing-mux
                     auto smux = NodeChild(proxy, {"smux"});
-                    bean->multiplex.enabled = Node2Value<bool>(smux["enabled"]);
+                    bean->multiplex->enabled = Node2Value<bool>(smux["enabled"]);
                 } else if (type == "shadowsocksr") {
                     auto bean = ent->Bean<NekoGui_fmt::ShadowSocksRBean>();
                     bean->method = Node2Value<QString>(proxy["cipher"]).replace("dummy", "none");
@@ -291,7 +291,7 @@ namespace NekoGui_sub {
 
                     // sing-mux
                     auto smux = NodeChild(proxy, {"smux"});
-                    bean->multiplex.enabled = Node2Value<bool>(smux["enabled"]);
+                    bean->multiplex->enabled = Node2Value<bool>(smux["enabled"]);
 
                     // opts
                     auto ws = NodeChild(proxy, {"ws-opts", "ws-opt"});
@@ -351,7 +351,7 @@ namespace NekoGui_sub {
 
                     // sing-mux
                     auto smux = NodeChild(proxy, {"smux"});
-                    bean->multiplex.enabled = Node2Value<bool>(smux["enabled"]);
+                    bean->multiplex->enabled = Node2Value<bool>(smux["enabled"]);
 
                     // meta packet encoding
                     bean->stream->packet_encoding = Node2Value<QString>(proxy["packet-encoding"]);

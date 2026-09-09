@@ -15,7 +15,7 @@ namespace NekoGui_traffic {
         connect(&m_timer, &QTimer::timeout, this, &TrafficLooper::onTick);
     }
 
-    void TrafficLooper::start(const QList<std::shared_ptr<TrafficData>> &items, TrafficData *proxy) {
+    void TrafficLooper::start(const QList<TrafficData *> &items, TrafficData *proxy) {
         m_items = items;
         m_proxy = proxy;
         if (NekoGui::dataStore->traffic_loop_interval == 0) return; // user disabled
@@ -75,7 +75,7 @@ namespace NekoGui_traffic {
         free(boxStatsResult);
 
         for (const auto &item: m_items) {
-            updateStats(item.get(), stats);
+            updateStats(item, stats);
         }
         updateStats(m_direct, stats);
     }

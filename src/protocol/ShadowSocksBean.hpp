@@ -4,21 +4,22 @@
 
 namespace NekoGui_fmt {
     class ShadowSocksBean : public AbstractBean {
+        Q_OBJECT
+        Q_PROPERTY(QString method MEMBER method)
+        Q_PROPERTY(QString pass MEMBER password)
+        Q_PROPERTY(QString plugin MEMBER plugin)
+        Q_PROPERTY(int uot MEMBER uot)
+        Q_PROPERTY(MultiplexSettings *multiplex MEMBER multiplex)
+
     public:
         QString method = "aes-128-gcm";
         QString password = "";
         QString plugin = "";
         int uot = 0;
 
-        MultiplexSettings multiplex;
+        MultiplexSettings *multiplex = nullptr;
 
-        ShadowSocksBean() : AbstractBean(0) {
-            _add("method", &method);
-            _add("pass", &password);
-            _add("plugin", &plugin);
-            _add("uot", &uot);
-            _add("multiplex", dynamic_cast<JsonStore *>(&multiplex));
-        };
+        ShadowSocksBean() : AbstractBean(0) { multiplex = new MultiplexSettings(this); }
 
         QString DisplayType() override { return "Shadowsocks"; };
 

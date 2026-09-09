@@ -4,18 +4,19 @@
 
 namespace NekoGui_fmt {
     class CustomBean : public AbstractBean {
+        Q_OBJECT
+        Q_PROPERTY(QString core MEMBER core)
+        Q_PROPERTY(QStringList cmd MEMBER command)
+        Q_PROPERTY(QString cs MEMBER config_simple)
+        Q_PROPERTY(QString cs_suffix MEMBER config_suffix)
+
     public:
         QString core;
         QList<QString> command;
         QString config_suffix;
         QString config_simple;
 
-        CustomBean() : AbstractBean(0) {
-            _add("core", &core);
-            _add("cmd", &command);
-            _add("cs", &config_simple);
-            _add("cs_suffix", &config_suffix);
-        }
+        CustomBean() : AbstractBean(0) {}
 
         QString DisplayType() override {
             if (core == "internal") {

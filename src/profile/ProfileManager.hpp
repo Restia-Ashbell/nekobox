@@ -5,6 +5,9 @@
 
 namespace NekoGui {
     class ProfileManager : private JsonStore {
+        Q_OBJECT
+        Q_PROPERTY(QList<int> groups MEMBER groupsTabOrder)
+
     public:
         // JsonStore
 

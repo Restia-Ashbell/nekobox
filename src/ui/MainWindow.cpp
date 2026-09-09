@@ -553,7 +553,7 @@ void MainWindow::neko_start(int _id) {
             running_ext = NekoGui_sys::CreateExtCFromExtR(result->extRs);
             for (const auto &extC: running_ext) extC->start();
 
-            NekoGui_traffic::trafficLooper->start(result->outboundStats, result->outboundStat.get());
+            NekoGui_traffic::trafficLooper->start(result->outboundStats, result->outboundStat);
 
             refresh_status();
             refresh_proxy(ent->id);

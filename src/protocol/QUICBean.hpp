@@ -4,10 +4,44 @@
 
 namespace NekoGui_fmt {
     class QUICBean : public AbstractBean {
+        Q_OBJECT
+        // Hysteria 1
+        Q_PROPERTY(QString protocol MEMBER protocol)
+        Q_PROPERTY(QString auth_str MEMBER auth_str)
+
+        // Hysteria 1&2
+        Q_PROPERTY(QString obfsPassword MEMBER obfsPassword)
+        Q_PROPERTY(int uploadMbps MEMBER uploadMbps)
+        Q_PROPERTY(int downloadMbps MEMBER downloadMbps)
+        Q_PROPERTY(qint64 streamReceiveWindow MEMBER streamReceiveWindow)
+        Q_PROPERTY(qint64 connectionReceiveWindow MEMBER connectionReceiveWindow)
+        Q_PROPERTY(bool disableMtuDiscovery MEMBER disableMtuDiscovery)
+        Q_PROPERTY(int hopInterval MEMBER hopInterval)
+        Q_PROPERTY(QString hopPort MEMBER hopPort)
+
+        // TUIC
+        Q_PROPERTY(QString uuid MEMBER uuid)
+        Q_PROPERTY(QString congestionControl MEMBER congestionControl)
+        Q_PROPERTY(QString udpRelayMode MEMBER udpRelayMode)
+        Q_PROPERTY(bool zeroRttHandshake MEMBER zeroRttHandshake)
+        Q_PROPERTY(QString heartbeat MEMBER heartbeat)
+        Q_PROPERTY(bool uos MEMBER uos)
+
+        // HY2&TUIC
+        Q_PROPERTY(QString password MEMBER password)
+
+        // TLS
+        Q_PROPERTY(bool allowInsecure MEMBER allowInsecure)
+        Q_PROPERTY(QString sni MEMBER sni)
+        Q_PROPERTY(QString alpn MEMBER alpn)
+        Q_PROPERTY(QString caText MEMBER caText)
+        Q_PROPERTY(bool disableSni MEMBER disableSni)
+
     public:
         static constexpr int proxy_Hysteria = 0;
         static constexpr int proxy_TUIC = 1;
         static constexpr int proxy_Hysteria2 = 3;
+
         int proxy_type = proxy_Hysteria;
 
         // Hysteria 1
@@ -52,39 +86,11 @@ namespace NekoGui_fmt {
 
         explicit QUICBean(int _proxy_type) : AbstractBean(0), proxy_type(_proxy_type) {
             serverPort = 443;
-            if (proxy_type == proxy_Hysteria || proxy_type == proxy_Hysteria2) {
-                _add("obfsPassword", &obfsPassword);
-                _add("uploadMbps", &uploadMbps);
-                _add("downloadMbps", &downloadMbps);
-                _add("streamReceiveWindow", &streamReceiveWindow);
-                _add("connectionReceiveWindow", &connectionReceiveWindow);
-                _add("disableMtuDiscovery", &disableMtuDiscovery);
-                _add("hopInterval", &hopInterval);
-                _add("hopPort", &hopPort);
-                if (proxy_type == proxy_Hysteria) { // hy1
-                    _add("auth_str", &auth_str);
-                    _add("protocol", &protocol);
-                } else { // hy2
-                    uploadMbps = 0;
-                    downloadMbps = 0;
-                    _add("password", &password);
-                }
-            } else if (proxy_type == proxy_TUIC) {
-                _add("uuid", &uuid);
-                _add("password", &password);
-                _add("congestionControl", &congestionControl);
-                _add("udpRelayMode", &udpRelayMode);
-                _add("zeroRttHandshake", &zeroRttHandshake);
-                _add("heartbeat", &heartbeat);
-                _add("uos", &uos);
+            if (proxy_type == proxy_Hysteria2) {
+                uploadMbps = 0;
+                downloadMbps = 0;
             }
-            // TLS
-            _add("allowInsecure", &allowInsecure);
-            _add("sni", &sni);
-            _add("alpn", &alpn);
-            _add("caText", &caText);
-            _add("disableSni", &disableSni);
-        };
+        }
 
         QString DisplayAddress() override {
             return !hopPort.trimmed().isEmpty() ? WrapIPV6Host(serverAddress) + ":" + hopPort : MakeHostPort(serverAddress, serverPort);

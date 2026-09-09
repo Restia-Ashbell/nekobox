@@ -4,6 +4,10 @@
 
 namespace NekoGui_traffic {
     class TrafficData : public JsonStore {
+        Q_OBJECT
+        Q_PROPERTY(qlonglong dl MEMBER downlink)
+        Q_PROPERTY(qlonglong ul MEMBER uplink)
+
     public:
         int id = -1; // ent id
         QString tag;
@@ -15,10 +19,7 @@ namespace NekoGui_traffic {
 
         long long last_update = 0;
 
-        explicit TrafficData(const QString &tag_) : tag(tag_) {
-            _add("dl", &downlink);
-            _add("ul", &uplink);
-        };
+        explicit TrafficData(const QString &tag_, QObject *parent = nullptr) : JsonStore(parent), tag(tag_) {}
 
         void Reset() {
             downlink = 0;

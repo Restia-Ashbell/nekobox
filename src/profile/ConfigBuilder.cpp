@@ -104,7 +104,7 @@ namespace NekoGui {
         status->forTest = forTest;
         status->forExport = forExport;
 
-        auto customBean = dynamic_cast<NekoGui_fmt::CustomBean *>(ent->bean.get());
+        auto customBean = dynamic_cast<NekoGui_fmt::CustomBean *>(ent->bean);
         if (customBean != nullptr && customBean->core == "internal-full") {
             result->coreConfig = QString2QJsonObject(customBean->config_simple);
         } else {

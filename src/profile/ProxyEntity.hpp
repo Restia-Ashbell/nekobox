@@ -1,36 +1,37 @@
 #pragma once
 
+#include "profile/DataStore.hpp"
 #include "profile/traffic/TrafficData.hpp"
 #include "protocol/Includes.hpp"
-#include "profile/DataStore.hpp"
 
 namespace NekoGui {
     class ProxyEntity : public JsonStore {
+        Q_OBJECT
+        Q_PROPERTY(QString type MEMBER type)
+        Q_PROPERTY(int id MEMBER id)
+        Q_PROPERTY(int gid MEMBER gid)
+        Q_PROPERTY(int yc MEMBER latency)
+        Q_PROPERTY(QString report MEMBER full_test_report)
+        Q_PROPERTY(NekoGui_fmt::AbstractBean *bean MEMBER bean)
+        Q_PROPERTY(NekoGui_traffic::TrafficData *traffic MEMBER traffic_data)
+
     public:
         QString type;
 
         int id = -1;
         int gid = 0;
         int latency = 0;
-        std::shared_ptr<NekoGui_fmt::AbstractBean> bean;
-        std::shared_ptr<NekoGui_traffic::TrafficData> traffic_data;
+        NekoGui_fmt::AbstractBean *bean = nullptr;
+        NekoGui_traffic::TrafficData *traffic_data = nullptr;
 
         QString full_test_report;
 
         ProxyEntity(NekoGui_fmt::AbstractBean *bean_, const QString &type_) : type(type_) {
-            _add("type", &type);
-            _add("id", &id);
-            _add("gid", &gid);
-            _add("yc", &latency);
-            _add("report", &full_test_report);
-
-            // 可以不关联 bean，只加载 ProxyEntity 的信息
+            // 可以不关联 bean,只加载 ProxyEntity 的信息
             if (bean_) {
-                bean = std::shared_ptr<NekoGui_fmt::AbstractBean>(bean_);
-                traffic_data = std::make_shared<NekoGui_traffic::TrafficData>("");
-                // 有虚函数就要在这里 dynamic_cast
-                _add("bean", dynamic_cast<JsonStore *>(bean.get()));
-                _add("traffic", dynamic_cast<JsonStore *>(traffic_data.get()));
+                bean = bean_;
+                bean->setParent(this);
+                traffic_data = new NekoGui_traffic::TrafficData("", this);
             }
         }
 
@@ -57,7 +58,7 @@ namespace NekoGui {
 
         template<typename T>
         [[nodiscard]] T *Bean() const {
-            return dynamic_cast<T *>(bean.get());
+            return dynamic_cast<T *>(bean);
         }
     };
 } // namespace NekoGui
