@@ -26,12 +26,11 @@ inline const QString software_core_name = "sing-box";
 inline QWidget *mainwindow;
 inline std::function<void(const QString &)> MW_show_log;
 inline std::function<void(const QString &, const QString &)> MW_show_log_ext;
-inline std::function<void(const QString &)> MW_show_log_ext_vt100;
 inline std::function<void(const QString &, const QString &)> MW_dialog_message;
 
 // String
 
-inline const QString UNICODE_LRO = QString::fromUtf8(QByteArray::fromHex("E280AD"));
+inline const QString UNICODE_LRO = QStringLiteral("\u202A");
 
 #define Int2String(num) (QString::number(num))
 
@@ -40,12 +39,12 @@ inline QString firstOrSecond(const QString &a, const QString &b) {
 }
 
 inline QString SubStrBefore(const QString &str, const QString &sub) {
-    int idx = str.indexOf(sub);
+    const int idx = str.indexOf(sub);
     return idx >= 0 ? str.left(idx) : str;
 }
 
 inline QString SubStrAfter(const QString &str, const QString &sub) {
-    int idx = str.indexOf(sub);
+    const int idx = str.indexOf(sub);
     return idx >= 0 ? str.sliced(idx + sub.size()) : str;
 }
 
@@ -54,14 +53,13 @@ inline QStringList SplitLines(const QString &str) {
 }
 
 inline QStringList SplitLinesSkipSharp(const QString &str, int maxLine = 0) {
-    QStringList res;
-    int count = 0;
+    QStringList out;
     for (const auto &line: SplitLines(str)) {
         if (line.trimmed().startsWith("#")) continue;
-        res << line;
-        if (maxLine > 0 && ++count >= maxLine) break;
+        out << line;
+        if (maxLine > 0 && out.size() >= maxLine) break;
     }
-    return res;
+    return out;
 }
 
 inline QString cleanVT100String(QString str) {
@@ -71,11 +69,11 @@ inline QString cleanVT100String(QString str) {
 // Base64
 
 inline QByteArray DecodeB64IfValid(const QString &input, QByteArray::Base64Options options = QByteArray::Base64Encoding) {
-    return QByteArray::fromBase64(input.toUtf8(), options | QByteArray::AbortOnBase64DecodingErrors);
+    return QByteArray::fromBase64(input.toLatin1(), options | QByteArray::AbortOnBase64DecodingErrors);
 }
 
 inline QByteArray DecodeBase64OrBase64Url(const QString &input) {
-    return QByteArray::fromBase64(input.toUtf8(), input.contains('-') || input.contains('_') ? QByteArray::Base64UrlEncoding : QByteArray::Base64Encoding);
+    return QByteArray::fromBase64(input.toLatin1(), input.contains('-') || input.contains('_') ? QByteArray::Base64UrlEncoding : QByteArray::Base64Encoding);
 }
 
 // URL
@@ -130,19 +128,17 @@ inline QList<T> QJsonArray2QList(const QJsonArray &arr) {
 inline QJsonArray QString2QJsonArray(const QString &str) {
     QJsonArray jsonArray;
     for (const QString &item: str.split(",", Qt::SkipEmptyParts)) {
-        QString trimmedItem = item.trimmed();
-
-        bool isInt, isDouble;
-        int intValue = trimmedItem.toInt(&isInt);
-        double doubleValue = trimmedItem.toDouble(&isDouble);
-
-        if (isInt) {
-            jsonArray.append(intValue);
-        } else if (isDouble) {
-            jsonArray.append(doubleValue);
-        } else {
-            jsonArray.append(trimmedItem);
+        const QString t = item.trimmed();
+        bool ok = false;
+        if (const int i = t.toInt(&ok); ok) {
+            jsonArray.append(i);
+            continue;
         }
+        if (const double d = t.toDouble(&ok); ok) {
+            jsonArray.append(d);
+            continue;
+        }
+        jsonArray.append(t);
     }
     return jsonArray;
 }
@@ -166,14 +162,12 @@ inline QString WriteTempFile(const QString &fileName, const QString &content, QS
 
 inline quint16 MkPort() {
     QTcpServer s;
-    s.listen();
-    quint16 port = s.serverPort();
-    s.close();
-    return port;
+    s.listen(QHostAddress::LocalHost);
+    return s.serverPort();
 }
 
 inline bool IsValidPort(int port) {
-    return 0 <= port && port <= 65535;
+    return port >= 0 && port <= 65535;
 }
 
 inline bool IsIpAddress(const QString &str) {
@@ -214,11 +208,8 @@ inline QString ReadableSize(qint64 bytes) {
 // UI
 
 inline QWidget *GetMessageBoxParent() {
-    auto activeWindow = QApplication::activeWindow();
-    if (activeWindow == nullptr && mainwindow != nullptr && mainwindow->isVisible()) {
-        return mainwindow;
-    }
-    return activeWindow;
+    if (QWidget *w = QApplication::activeWindow()) return w;
+    return mainwindow != nullptr && mainwindow->isVisible() ? mainwindow : nullptr;
 }
 
 inline int MessageBoxWarning(const QString &title, const QString &text) {
@@ -242,8 +233,9 @@ inline void runOnUiThread(const std::function<void()> &callback, QObject *contex
 }
 
 template<typename Function, typename... Args>
-inline void runOnNewThread(Function &&func, Args &&...args) {
+inline QThread *runOnNewThread(Function &&func, Args &&...args) {
     auto thread = QThread::create(std::forward<Function>(func), std::forward<Args>(args)...);
     QObject::connect(thread, &QThread::finished, thread, &QObject::deleteLater);
     thread->start();
+    return thread;
 }

@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QMutex>
 #include <QSystemTrayIcon>
+#include <QTextCursor>
 
 #include "profile/ProxyEntity.hpp"
 #include "common/GuiUtils.hpp"
@@ -115,10 +116,16 @@ private slots:
     void onTabBarContextMenuRequested(const QPoint &pos);
 
 private:
+    void refreshLogSearchSelection(bool moveCursor);
+
+    void findLogMatch(bool forward);
+
     Ui::MainWindow *ui;
     QSystemTrayIcon *tray;
     //
     bool qvLogAutoScoll = true;
+    int logSearchIndex = -1;
+    QList<QTextCursor> logSearchMatches;
     //
     std::shared_ptr<NekoGui::ProxyEntity> running;
     std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> running_ext;

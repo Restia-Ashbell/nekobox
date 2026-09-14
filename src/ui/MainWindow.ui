@@ -237,13 +237,134 @@
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QTextBrowser" name="masterLogBrowser">
-       <property name="contextMenuPolicy">
-        <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
-       </property>
-       <property name="openLinks">
-        <bool>false</bool>
-       </property>
+      <widget class="QWidget" name="logPage">
+       <layout class="QVBoxLayout" name="logPageLayout">
+        <property name="spacing">
+         <number>2</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QTextBrowser" name="masterLogBrowser">
+          <property name="contextMenuPolicy">
+           <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
+          </property>
+          <property name="openLinks">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QWidget" name="logSearchBar" native="true">
+          <property name="visible">
+           <bool>false</bool>
+          </property>
+          <layout class="QHBoxLayout" name="logSearchLayout">
+           <property name="spacing">
+            <number>6</number>
+           </property>
+           <property name="leftMargin">
+            <number>4</number>
+           </property>
+           <property name="topMargin">
+            <number>2</number>
+           </property>
+           <property name="rightMargin">
+            <number>4</number>
+           </property>
+           <property name="bottomMargin">
+            <number>2</number>
+           </property>
+           <item>
+            <widget class="QToolButton" name="logSearchIcon">
+             <property name="icon">
+              <iconset theme="edit-find"/>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="logSearchEdit">
+             <property name="clearButtonEnabled">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="logSearchCase">
+             <property name="toolTip">
+              <string>Match case</string>
+             </property>
+             <property name="text">
+              <string>Aa</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="logSearchLabel">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="logSearchPrev">
+             <property name="toolTip">
+              <string>Previous (Shift+F3)</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-up"/>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="logSearchNext">
+             <property name="toolTip">
+              <string>Next (F3)</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-down"/>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="logSearchClose">
+             <property name="toolTip">
+              <string>Close (Esc)</string>
+             </property>
+             <property name="icon">
+              <iconset theme="window-close"/>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>

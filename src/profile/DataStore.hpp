@@ -124,7 +124,6 @@ namespace NekoGui {
         Q_PROPERTY(QString sp_format MEMBER system_proxy_format)
         Q_PROPERTY(bool sub_insecure MEMBER sub_insecure)
         Q_PROPERTY(int sub_auto_update MEMBER sub_auto_update)
-        Q_PROPERTY(QStringList log_ignore MEMBER log_ignore)
         Q_PROPERTY(bool start_minimal MEMBER start_minimal)
         Q_PROPERTY(int max_log_line MEMBER max_log_line)
         Q_PROPERTY(QString splitter_state MEMBER splitter_state)
@@ -177,9 +176,8 @@ namespace NekoGui {
         QString icon_path = "";
         bool check_include_pre = false;
         QString system_proxy_format = "";
-        QStringList log_ignore = {};
         bool start_minimal = false;
-        int max_log_line = 200;
+        int max_log_line = 1000;
         QString splitter_state = "";
         QString mw_geometry = "";
 

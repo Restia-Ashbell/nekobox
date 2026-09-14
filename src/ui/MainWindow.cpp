@@ -85,6 +85,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // Setup log UI
     ui->splitter->restoreState(DecodeB64IfValid(NekoGui::dataStore->splitter_state));
+    connect(ui->logSearchEdit, &QLineEdit::textChanged, this, [this] { refreshLogSearchSelection(true); });
+    connect(ui->logSearchCase, &QCheckBox::toggled, this, [this] { refreshLogSearchSelection(true); });
+    connect(ui->logSearchEdit, &QLineEdit::returnPressed, this, [this] { findLogMatch(true); });
+    connect(ui->logSearchPrev, &QToolButton::clicked, this, [this] { findLogMatch(false); });
+    connect(ui->logSearchNext, &QToolButton::clicked, this, [this] { findLogMatch(true); });
+    connect(ui->logSearchClose, &QToolButton::clicked, this, [this] {
+        ui->logSearchEdit->clear();
+        ui->logSearchBar->setVisible(false);
+        ui->masterLogBrowser->setFocus();
+    });
+    auto *shortcut_next = new QShortcut(QKeySequence("F3"), ui->logSearchBar);
+    connect(shortcut_next, &QShortcut::activated, this, [this] { findLogMatch(true); });
+    auto *shortcut_prev = new QShortcut(QKeySequence("Shift+F3"), ui->logSearchBar);
+    connect(shortcut_prev, &QShortcut::activated, this, [this] { findLogMatch(false); });
     new SyntaxHighlighter(false, ui->masterLogBrowser->document());
     ui->masterLogBrowser->setUndoRedoEnabled(false);
     ui->masterLogBrowser->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
@@ -101,9 +115,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     MW_show_log_ext = [this](const QString &tag, const QString &log) {
         runOnUiThread([=, this] { show_log_impl("[" + tag + "] " + log); });
     };
-    MW_show_log_ext_vt100 = [this](const QString &log) {
-        runOnUiThread([=, this] { show_log_impl(cleanVT100String(log)); });
-    };
 
     // search box
     ui->search->setVisible(false);
@@ -116,13 +127,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     });
     auto *shortcut_ctrl_f = new QShortcut(QKeySequence("Ctrl+F"), this);
     connect(shortcut_ctrl_f, &QShortcut::activated, this, [this] {
-        if (!ui->search->isVisible()) {
+        if (ui->masterLogBrowser->hasFocus() || ui->logSearchEdit->hasFocus()) {
+            ui->logSearchBar->setVisible(true);
+            auto selected = ui->masterLogBrowser->textCursor().selectedText().trimmed();
+            if (!selected.isEmpty()) ui->logSearchEdit->setText(selected);
+            ui->logSearchEdit->setFocus();
+            ui->logSearchEdit->selectAll();
+        } else {
             ui->search->setVisible(true);
             ui->search->setFocus();
         }
     });
     auto *shortcut_esc = new QShortcut(QKeySequence("Esc"), this);
     connect(shortcut_esc, &QShortcut::activated, this, [this] {
+        if (ui->logSearchBar->isVisible()) {
+            ui->logSearchEdit->clear();
+            ui->logSearchBar->setVisible(false);
+            ui->masterLogBrowser->setFocus();
+        }
         if (ui->search->isVisible()) {
             ui->search->clear();
             ui->search->setVisible(false);
@@ -1245,24 +1267,8 @@ QList<std::shared_ptr<NekoGui::ProxyEntity>> MainWindow::get_now_selected_list()
 void MainWindow::show_log_impl(const QString &log) {
     auto logText = log.trimmed();
     if (logText.isEmpty()) return;
-
-    if (!NekoGui::dataStore->log_ignore.isEmpty()) {
-        QStringList newLines;
-        for (const auto &line: SplitLines(logText)) {
-            bool showThisLine = true;
-            for (const auto &str: NekoGui::dataStore->log_ignore) {
-                if (line.contains(str)) {
-                    showThisLine = false;
-                    break;
-                }
-            }
-            if (showThisLine) newLines << line;
-        }
-        if (newLines.isEmpty()) return;
-        logText = newLines.join("\n");
-    }
-
     ui->masterLogBrowser->append(logText);
+    if (ui->logSearchBar->isVisible()) refreshLogSearchSelection(false);
 }
 
 void MainWindow::on_masterLogBrowser_customContextMenuRequested(const QPoint &pos) {
@@ -1270,24 +1276,63 @@ void MainWindow::on_masterLogBrowser_customContextMenuRequested(const QPoint &po
 
     menu->addSeparator();
 
-    QAction *action_add_ignore = menu->addAction(tr("Set ignore keyword"));
-    connect(action_add_ignore, &QAction::triggered, this, [this] {
-        auto list = NekoGui::dataStore->log_ignore;
-        auto newStr = ui->masterLogBrowser->textCursor().selectedText().trimmed();
-        if (!newStr.isEmpty()) list << newStr;
-        bool ok;
-        newStr = QInputDialog::getMultiLineText(this, tr("Set ignore keyword"), tr("Set the following keywords to ignore?\nSplit by line."), list.join("\n"), &ok);
-        if (ok) {
-            NekoGui::dataStore->log_ignore = SplitLines(newStr);
-            NekoGui::dataStore->Save();
-        }
-    });
-
     QAction *action_clear = menu->addAction(tr("Clear"));
     connect(action_clear, &QAction::triggered, ui->masterLogBrowser, &QTextBrowser::clear);
 
     menu->exec(ui->masterLogBrowser->viewport()->mapToGlobal(pos)); // 弹出菜单
     menu->deleteLater();
+}
+
+void MainWindow::refreshLogSearchSelection(bool moveCursor) {
+    logSearchMatches.clear();
+    logSearchIndex = -1;
+    QList<QTextEdit::ExtraSelection> selections;
+    auto keyword = ui->logSearchEdit->text();
+    if (!keyword.isEmpty() && ui->logSearchBar->isVisible()) {
+        auto flags = QTextDocument::FindFlags();
+        if (ui->logSearchCase->isChecked()) flags |= QTextDocument::FindCaseSensitively;
+        auto doc = ui->masterLogBrowser->document();
+        QTextCursor cursor(doc);
+        int scanned = 0;
+        const int scanLimit = 2000;
+        while (scanned < scanLimit) {
+            cursor = doc->find(keyword, cursor, flags);
+            if (cursor.isNull()) break;
+            logSearchMatches.append(cursor);
+            ++scanned;
+        }
+        QTextCharFormat allFmt;
+        allFmt.setBackground(QColor(Qt::yellow).lighter(160));
+        for (const auto &match: logSearchMatches) {
+            QTextEdit::ExtraSelection sel;
+            sel.cursor = match;
+            sel.format = allFmt;
+            selections.append(sel);
+        }
+    }
+    ui->masterLogBrowser->setExtraSelections(selections);
+    if (!logSearchMatches.isEmpty()) {
+        logSearchIndex = 0;
+        if (moveCursor) {
+            ui->masterLogBrowser->setTextCursor(logSearchMatches.first());
+            qvLogAutoScoll = false;
+        }
+        ui->logSearchLabel->setText(tr("1/%1").arg(logSearchMatches.size()));
+    } else {
+        ui->logSearchLabel->setText(keyword.isEmpty() ? QString() : tr("0/0"));
+    }
+}
+
+void MainWindow::findLogMatch(bool forward) {
+    if (logSearchMatches.isEmpty()) return;
+    if (forward) {
+        logSearchIndex = (logSearchIndex + 1) % logSearchMatches.size();
+    } else {
+        logSearchIndex = (logSearchIndex - 1 + logSearchMatches.size()) % logSearchMatches.size();
+    }
+    ui->masterLogBrowser->setTextCursor(logSearchMatches.at(logSearchIndex));
+    qvLogAutoScoll = false;
+    ui->logSearchLabel->setText(tr("%1/%2").arg(logSearchIndex + 1).arg(logSearchMatches.size()));
 }
 
 // Group tab manage

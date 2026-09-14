@@ -9,7 +9,7 @@ namespace NekoGui_sys {
         // qDebug() << "[Debug] ExternalProcess()" << this << running_ext;
         setProcessChannelMode(QProcess::MergedChannels);
         connect(this, &QProcess::readyRead, this, [this] {
-            MW_show_log_ext_vt100(readAll());
+            MW_show_log(cleanVT100String(readAll()));
         });
         connect(this, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
             if (!killed) {
