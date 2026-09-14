@@ -530,7 +530,7 @@ void MainWindow::neko_start(int _id) {
 
     // stop current running
     if (running) {
-        neko_stop();
+        neko_stop(true);
     }
 
     auto future = QtConcurrent::run([=, this] {
