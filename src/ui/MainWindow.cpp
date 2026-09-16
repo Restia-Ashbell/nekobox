@@ -15,6 +15,7 @@
 #include <QPlainTextEdit>
 #include <QScrollBar>
 #include <QShortcut>
+#include <QStyleHints>
 #include <QThreadPool>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -99,7 +100,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(shortcut_next, &QShortcut::activated, this, [this] { findLogMatch(true); });
     auto *shortcut_prev = new QShortcut(QKeySequence("Shift+F3"), ui->logSearchBar);
     connect(shortcut_prev, &QShortcut::activated, this, [this] { findLogMatch(false); });
-    new SyntaxHighlighter(false, ui->masterLogBrowser->document());
+    auto *logHighlighter = new SyntaxHighlighter(QApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark, ui->masterLogBrowser->document());
+    connect(QApplication::styleHints(), &QStyleHints::colorSchemeChanged, this, [logHighlighter](Qt::ColorScheme scheme) {
+        logHighlighter->setDarkMode(scheme == Qt::ColorScheme::Dark);
+    });
     ui->masterLogBrowser->setUndoRedoEnabled(false);
     ui->masterLogBrowser->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     auto *vBar = ui->masterLogBrowser->verticalScrollBar();

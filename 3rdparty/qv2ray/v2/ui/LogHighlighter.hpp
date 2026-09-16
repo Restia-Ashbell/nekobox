@@ -50,6 +50,7 @@
 
 #pragma once
 
+#include <QColor>
 #include <QRegularExpression>
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
@@ -62,6 +63,7 @@ namespace Qv2ray {
 
         public:
             explicit SyntaxHighlighter(bool darkMode, QTextDocument *parent = nullptr);
+            void setDarkMode(bool darkMode);
 
         protected:
             void highlightBlock(const QString &text) override;
@@ -69,22 +71,22 @@ namespace Qv2ray {
         private:
             struct HighlightingRule {
                 QRegularExpression pattern;
-                QTextCharFormat format;
+                QTextCharFormat *format = nullptr;
             };
+            static QColor colorForId(quint32 id, bool dark);
+            void applyColors();
+
+            bool m_darkMode;
             QVector<HighlightingRule> highlightingRules;
 
-            QTextCharFormat tcpudpFormat;
-            QTextCharFormat dateFormat;
-            QTextCharFormat acceptedFormat;
-            QTextCharFormat failedFormat;
-            QTextCharFormat warningFormat;
-            QTextCharFormat debugFormat;
+            // sing-box level colors
+            QTextCharFormat traceDebugFormat;
             QTextCharFormat infoFormat;
             QTextCharFormat warnFormat;
             QTextCharFormat errorFormat;
-            QTextCharFormat timeFormat;
+            // GUI extras
             QTextCharFormat ipHostFormat;
-            QTextCharFormat v2rayComponentFormat;
+            QTextCharFormat warningFormat;
         };
     } // namespace ui
 } // namespace Qv2ray
