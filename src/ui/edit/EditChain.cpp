@@ -38,10 +38,8 @@ bool EditChain::onEnd() {
 }
 
 void EditChain::on_select_profile_clicked() {
-    get_edit_dialog()->hide();
     MainWindow::instance()->start_select_mode(this, [=, this](int id) {
-        get_edit_dialog()->show();
-        AddProfileToListIfExist(id);
+        if (id >= 0) AddProfileToListIfExist(id);
     });
 }
 
@@ -55,10 +53,8 @@ void EditChain::AddProfileToListIfExist(int profileId) {
         ui->listWidget->setItemWidget(wI, w);
         // change button
         connect(w->get_change_button(), &QPushButton::clicked, w, [=, this] {
-            get_edit_dialog()->hide();
             MainWindow::instance()->start_select_mode(w, [=, this](int newId) {
-                get_edit_dialog()->show();
-                ReplaceProfile(w, newId);
+                if (newId >= 0) ReplaceProfile(w, newId);
             });
         });
     }

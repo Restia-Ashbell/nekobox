@@ -1,11 +1,11 @@
 #include "ui/edit/DialogEditGroup.hpp"
 #include "ui_DialogEditGroup.h"
 
-#include "profile/ProfileManager.hpp"
-#include "common/GuiUtils.hpp"
-#include "ui/MainWindow.hpp"
-
 #include <QClipboard>
+
+#include "common/GuiUtils.hpp"
+#include "profile/ProfileManager.hpp"
+#include "ui/MainWindow.hpp"
 
 DialogEditGroup::DialogEditGroup(const std::shared_ptr<NekoGui::Group> &ent, QWidget *parent) : QDialog(parent), ui(new Ui::DialogEditGroup) {
     ui->setupUi(this);
@@ -89,13 +89,8 @@ void DialogEditGroup::refresh_front_proxy() {
 }
 
 void DialogEditGroup::on_front_proxy_clicked() {
-    auto parent = dynamic_cast<QWidget *>(this->parent());
-    parent->hide();
-    this->hide();
     MainWindow::instance()->start_select_mode(this, [=, this](int id) {
-        CACHE.front_proxy = id;
+        if (id >= 0) CACHE.front_proxy = id;
         refresh_front_proxy();
-        parent->show();
-        show();
     });
 }

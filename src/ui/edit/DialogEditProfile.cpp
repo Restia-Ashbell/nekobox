@@ -255,7 +255,6 @@ void DialogEditProfile::typeSelected() {
     ui->bean->setTitle(ent->bean->DisplayType());
 
     // 左边 bean inner editor
-    innerEditor->get_edit_dialog = [&]() { return this; };
     innerEditor->editor_cache_updated = [=, this] { editor_cache_updated_impl(); };
     innerEditor->onStart(ent);
 

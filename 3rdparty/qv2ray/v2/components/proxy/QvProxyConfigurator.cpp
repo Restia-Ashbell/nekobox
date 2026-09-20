@@ -36,8 +36,7 @@ namespace Qv2ray::components::proxy {
         p.waitForStarted();
         p.waitForFinished();
         LOG(p.errorString());
-        auto str = p.readAllStandardOutput();
-        auto lines = SplitLines(str);
+        const auto lines = QString::fromUtf8(p.readAllStandardOutput()).split('\n', Qt::SkipEmptyParts);
         QStringList result;
 
         // Start from 1 since first line is unneeded.

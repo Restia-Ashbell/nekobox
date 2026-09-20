@@ -155,8 +155,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         }
         if (select_mode) {
             emit profile_selected(-1);
-            select_mode = false;
-            refresh_status();
         }
     });
 
@@ -540,8 +538,6 @@ void MainWindow::neko_start(int _id) {
 
     if (select_mode) {
         emit profile_selected(ent->id);
-        select_mode = false;
-        refresh_status();
         return;
     }
 
@@ -881,8 +877,6 @@ ProfileTableView *MainWindow::createProfileTable(int gid) {
         if (ent == nullptr) return;
         if (select_mode) {
             emit profile_selected(ent->id);
-            select_mode = false;
-            refresh_status();
             return;
         }
         auto dialog = new DialogEditProfile("", ent->id, this);
@@ -1415,7 +1409,20 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
 
 void MainWindow::start_select_mode(QObject *context, const std::function<void(int)> &callback) {
     select_mode = true;
-    connect(this, &MainWindow::profile_selected, context, callback, Qt::SingleShotConnection);
+    QList<QWidget *> select_hidden_windows;
+    for (QWidget *w: QApplication::topLevelWidgets()) {
+        if (w != this && w->isWindow() && w->isVisible()) {
+            select_hidden_windows << w;
+            w->hide();
+        }
+    }
+    connect(this, &MainWindow::profile_selected, context, [=, this](int id) {
+        for (const auto &w: select_hidden_windows) {
+            if (w) w->show();
+        }
+        select_mode = false;
+        refresh_status();
+        callback(id); }, Qt::SingleShotConnection);
     refresh_status();
 }
 

@@ -48,14 +48,11 @@ inline QString SubStrAfter(const QString &str, const QString &sub) {
     return idx >= 0 ? str.sliced(idx + sub.size()) : str;
 }
 
-inline QStringList SplitLines(const QString &str) {
-    return str.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
-}
-
 inline QStringList SplitLinesSkipSharp(const QString &str, int maxLine = 0) {
     QStringList out;
-    for (const auto &line: SplitLines(str)) {
-        if (line.trimmed().startsWith("#")) continue;
+    for (const auto &raw: str.split('\n')) {
+        const auto line = raw.trimmed();
+        if (line.isEmpty() || line.startsWith("#")) continue;
         out << line;
         if (maxLine > 0 && out.size() >= maxLine) break;
     }
@@ -63,7 +60,8 @@ inline QStringList SplitLinesSkipSharp(const QString &str, int maxLine = 0) {
 }
 
 inline QString cleanVT100String(QString str) {
-    return str.remove(QRegularExpression("\x1B\\[[0-9;]*m"));
+    static const QRegularExpression vt100("\x1B\\[[0-9;]*m");
+    return str.remove(vt100);
 }
 
 // Base64
