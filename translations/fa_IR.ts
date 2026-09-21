@@ -1689,8 +1689,7 @@ Deleted %3 Profiles:
         <translation type="unfinished">هسته برنامه یافت نشد : %1</translation>
     </message>
     <message>
-        <source>Proxy: %1
-Direct: %2</source>
+        <source>Proxy: %1 | Direct: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

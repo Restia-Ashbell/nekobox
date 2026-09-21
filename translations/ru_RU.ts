@@ -1622,10 +1622,8 @@ End: %2</source>
         <translation>Недоступно</translation>
     </message>
     <message>
-        <source>Proxy: %1
-Direct: %2</source>
-        <translation>Через прокси: %1
-Напрямую: %2</translation>
+        <source>Proxy: %1 | Direct: %2</source>
+        <translation>Через прокси: %1 | Напрямую: %2</translation>
     </message>
     <message>
         <source>Chain Proxy</source>

@@ -57,6 +57,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     // Setup misc UI
     ui->setupUi(this);
     //
+    status_running = new QLabel(ui->statusbar);
+    status_running->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+    status_speed = new QLabel(ui->statusbar);
+    ui->statusbar->addWidget(status_running, 1);
+    ui->statusbar->addPermanentWidget(status_speed);
+    //
     connect(ui->menu_start, &QAction::triggered, this, [=, this] { neko_start(); });
     connect(ui->menu_stop, &QAction::triggered, this, [=, this] { neko_stop(); });
     //
@@ -70,7 +76,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         }
         NekoGui::profileManager->SaveManager();
     });
-    ui->label_running->installEventFilter(this);
+    status_running->installEventFilter(this);
     //
     RegisterHotkey(false);
     //
@@ -288,10 +294,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     });
 
     connect(qApp, &QGuiApplication::commitDataRequest, this, &MainWindow::on_commitDataRequest);
-
-    refreshTimer = new QTimer(this);
-    refreshTimer->setSingleShot(true);
-    connect(refreshTimer, &QTimer::timeout, this, [this] { refresh_status(); });
 
     autoUpdateSubscriptionTimer = new QTimer(this);
     connect(autoUpdateSubscriptionTimer, &QTimer::timeout, this, [this] { NekoGui_sub::subService->updateAll(true); });
@@ -756,7 +758,7 @@ void MainWindow::speedtest_current_group(int mode) {
 }
 
 void MainWindow::speedtest_current() {
-    ui->label_running->setText(tr("Testing"));
+    ui->statusbar->showMessage(tr("Testing"));
 
     runOnNewThread([=, this] {
         auto Url = NekoGui::dataStore->test_latency_url.toUtf8();
@@ -767,24 +769,23 @@ void MainWindow::speedtest_current() {
         runOnUiThread([=, this] {
             bool testOK;
             testResult.toInt(&testOK);
-            if (testOK)
-                ui->label_running->setText(tr("Test Result") + ": " + testResult + " ms");
-            else {
-                ui->label_running->setText(tr("Test Result") + ": " + tr("Unavailable"));
+            if (testOK) {
+                ui->statusbar->showMessage(tr("Test Result") + ": " + testResult + " ms", 2000);
+            } else {
+                ui->statusbar->showMessage(tr("Test Result") + ": " + tr("Unavailable"), 2000);
                 MW_show_log(QString("UrlTest : %1").arg(testResult));
             }
-            refreshTimer->start(2000);
         });
     });
 }
 
 void MainWindow::refresh_status(const QString &traffic_update) {
     if (NekoGui::dataStore->traffic_loop_interval == 0) {
-        ui->label_speed->clear();
+        status_speed->clear();
     } else if (!running) {
-        ui->label_speed->setText(QObject::tr("Proxy: %1\nDirect: %2").arg("", ""));
+        status_speed->setText(QObject::tr("Proxy: %1 | Direct: %2").arg("", ""));
     } else if (!traffic_update.isEmpty()) {
-        ui->label_speed->setText(traffic_update);
+        status_speed->setText(traffic_update);
         return;
     }
 
@@ -795,21 +796,15 @@ void MainWindow::refresh_status(const QString &traffic_update) {
         if (group != nullptr) group_name = group->name;
     }
 
-    QFontMetrics fm(ui->label_running->font());
-    QString text = running ? QString("[%1] %2").arg(group_name, running->bean->DisplayName()) : tr("Not Running");
-    ui->label_running->setText(fm.elidedText(text, Qt::ElideRight, ui->label_running->width()));
-    //
-    ui->label_inbound->setText(QString("Mixed: %1").arg(MakeHostPort(NekoGui::dataStore->inbound_address, NekoGui::dataStore->inbound_port)));
-    //
+    status_running->setText(running ? QString("● %1 @ %2").arg(running->bean->DisplayTypeAndName(), group_name) : QString("○ %1").arg(tr("Not Running")));
     ui->checkBox_VPN->setChecked(NekoGui::dataStore->spmode_vpn);
     ui->checkBox_SystemProxy->setChecked(NekoGui::dataStore->spmode_system_proxy);
     if (select_mode) {
-        ui->label_running->setText(tr("Select") + " *");
-        ui->label_running->setToolTip(tr("Select mode, double-click or press Enter to select a profile, press ESC to exit."));
+        status_running->setText(tr("Select") + " *");
+        status_running->setToolTip(tr("Select mode, double-click or press Enter to select a profile, press ESC to exit."));
     } else {
-        ui->label_running->setToolTip({});
+        status_running->setToolTip({});
     }
-
     QStringList tt;
     if (isRunAsAdmin()) tt << "[Admin]";
     if (NekoGui::dataStore->spmode_vpn && !NekoGui::dataStore->spmode_system_proxy) tt << "[Tun]";
@@ -828,7 +823,7 @@ void MainWindow::refresh_status(const QString &traffic_update) {
 
     // refresh tray
     if (tray != nullptr) {
-        if (running) title += "\n" + running->bean->DisplayTypeAndName() + "@" + group_name;
+        if (running) title += "\n" + QString("%1 @ %2").arg(running->bean->DisplayTypeAndName(), group_name);
         tray->setToolTip(title);
         tray->setIcon(getIcon(true));
     }
@@ -1397,7 +1392,7 @@ void MainWindow::onTabBarContextMenuRequested(const QPoint &pos) {
 bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
     if (event->type() == QEvent::MouseButtonPress) {
         auto mouseEvent = dynamic_cast<QMouseEvent *>(event);
-        if (obj == ui->label_running && mouseEvent->button() == Qt::LeftButton && NekoGui::dataStore->started_id >= 0) {
+        if (obj == status_running && mouseEvent->button() == Qt::LeftButton && NekoGui::dataStore->started_id >= 0) {
             speedtest_current();
             return true;
         }

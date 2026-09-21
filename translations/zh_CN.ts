@@ -1650,10 +1650,8 @@ Deleted %3 Profiles:
 %4</translation>
     </message>
     <message>
-        <source>Proxy: %1
-Direct: %2</source>
-        <translation>代理: %1
-直连: %2</translation>
+        <source>Proxy: %1 | Direct: %2</source>
+        <translation>代理: %1 | 直连: %2</translation>
     </message>
     <message>
         <source>Used: %1 Remain: %2 Expire: %3</source>

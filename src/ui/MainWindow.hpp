@@ -121,6 +121,8 @@ private:
     void findLogMatch(bool forward);
 
     Ui::MainWindow *ui;
+    QLabel *status_running = nullptr;
+    QLabel *status_speed = nullptr;
     QSystemTrayIcon *tray;
     //
     bool qvLogAutoScoll = true;
@@ -135,7 +137,6 @@ private:
     int exit_reason = 0;
     //
     QTimer *autoUpdateSubscriptionTimer;
-    QTimer *refreshTimer;
     //
     enum TestMode {
         TcpPing = 1 << 0,

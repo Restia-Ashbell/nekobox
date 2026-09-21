@@ -43,7 +43,7 @@ namespace NekoGui_traffic {
 
         updateAll();
 
-        if (m_proxy) emit speedUpdated(QObject::tr("Proxy: %1\nDirect: %2").arg(m_proxy->DisplaySpeed(), m_direct->DisplaySpeed()));
+        if (m_proxy) emit speedUpdated(QObject::tr("Proxy: %1 | Direct: %2").arg(m_proxy->DisplaySpeed(), m_direct->DisplaySpeed()));
         for (const auto &item: m_items) {
             if (item->id >= 0) emit profileUpdated(item->id);
         }
