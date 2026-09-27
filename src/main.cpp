@@ -13,13 +13,6 @@
 
 #include "ui/MainWindow.hpp"
 
-void signal_handler(int signum) {
-    if (qApp) {
-        MainWindow::instance()->on_commitDataRequest();
-        qApp->exit();
-    }
-}
-
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
@@ -111,6 +104,7 @@ int main(int argc, char *argv[]) {
     QApplication::setStyle(NekoGui::dataStore->theme);
 
     // Signals
+    auto signal_handler = [](int) { QApplication::quit(); };
     signal(SIGTERM, signal_handler);
     signal(SIGINT, signal_handler);
 

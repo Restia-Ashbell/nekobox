@@ -1,15 +1,14 @@
 #pragma once
 
 #include <QFuture>
-#include <QKeyEvent>
 #include <QMainWindow>
 #include <QMutex>
 #include <QSystemTrayIcon>
 #include <QTextCursor>
 
-#include "profile/ProxyEntity.hpp"
 #include "common/GuiUtils.hpp"
 #include "profile/DataStore.hpp"
+#include "profile/ProxyEntity.hpp"
 #include "system/ExternalProcess.hpp"
 #include "ui/table/ProfileTableView.hpp"
 
@@ -42,6 +41,8 @@ public:
     void neko_set_spmode_vpn(bool enable);
 
     void neko_set_spmode_system_proxy(bool enable);
+
+    void cleanup_on_exit();
 
     bool get_elevated_permissions();
 

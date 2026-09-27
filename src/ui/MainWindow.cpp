@@ -293,7 +293,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         neko_start(NekoGui::dataStore->started_id);
     });
 
-    connect(qApp, &QGuiApplication::commitDataRequest, this, &MainWindow::on_commitDataRequest);
+    connect(qApp, &QGuiApplication::aboutToQuit, this, &MainWindow::cleanup_on_exit, Qt::DirectConnection);
 
     autoUpdateSubscriptionTimer = new QTimer(this);
     connect(autoUpdateSubscriptionTimer, &QTimer::timeout, this, [this] { NekoGui_sub::subService->updateAll(true); });
@@ -451,7 +451,8 @@ void MainWindow::on_commitDataRequest() {
     qDebug() << "End of data save";
 }
 
-void MainWindow::on_menu_exit_triggered() {
+void MainWindow::cleanup_on_exit() {
+    if (NekoGui::dataStore->prepare_exit) return;
     NekoGui::dataStore->prepare_exit = true;
     //
     RegisterHotkey(true);
@@ -459,14 +460,14 @@ void MainWindow::on_menu_exit_triggered() {
     on_commitDataRequest();
     NekoGui::dataStore->save_control_no_save = true; // don't change datastore after this line
     //
-    neko_stop(true);
-    //
     neko_set_spmode_system_proxy(false);
-    neko_set_spmode_vpn(false);
     //
-    if (exit_reason == 2 || exit_reason == 3) {
-        QDir::setCurrent(QApplication::applicationDirPath());
+    neko_stop(true);
+}
 
+void MainWindow::on_menu_exit_triggered() {
+    cleanup_on_exit();
+    if (exit_reason == 2 || exit_reason == 3) {
         auto arguments = NekoGui::dataStore->argv;
         if (!arguments.isEmpty()) {
             arguments.removeFirst();
@@ -474,9 +475,7 @@ void MainWindow::on_menu_exit_triggered() {
             arguments.removeAll("-flag_restart_tun_on");
             arguments.removeAll("-flag_reorder");
         }
-        auto isLauncher = qEnvironmentVariable("NKR_FROM_LAUNCHER") == "1";
-        if (isLauncher) arguments.prepend("--");
-        auto program = isLauncher ? "./launcher" : QApplication::applicationFilePath();
+        auto program = QApplication::applicationFilePath();
 
         if (exit_reason == 3) {
             // Tun restart as admin
