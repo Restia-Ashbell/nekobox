@@ -6,21 +6,21 @@
 namespace NekoGui_fmt {
     void V2rayStreamSettings::ParseShareLinkQuery(const QUrlQuery &query) {
         sni = FirstQueryValue(query, {"sni", "peer"});
-        alpn = GetQueryValue(query, "alpn");
-        if (!query.queryItemValue("allowInsecure").isEmpty()) allow_insecure = true;
-        reality_pbk = GetQueryValue(query, "pbk", "");
-        reality_sid = GetQueryValue(query, "sid", "");
-        reality_spx = GetQueryValue(query, "spx", "");
-        utlsFingerprint = GetQueryValue(query, "fp", "");
+        alpn = query.queryItemValue("alpn");
+        allow_insecure = QVariant(query.queryItemValue("allowInsecure")).toBool();
+        reality_pbk = query.queryItemValue("pbk");
+        reality_sid = query.queryItemValue("sid");
+        reality_spx = query.queryItemValue("spx");
+        utlsFingerprint = query.queryItemValue("fp");
         if (utlsFingerprint.isEmpty()) utlsFingerprint = NekoGui::dataStore->utlsFingerprint;
 
         network = FirstQueryValue(query, {"type", "obfs"});
-        if (GetQueryValue(query, "headerType") == "http") network = "http";
+        if (query.queryItemValue("headerType") == "http") network = "http";
         if (network == "grpc") {
             path = FirstQueryValue(query, {"serviceName", "path"});
         } else {
-            path = GetQueryValue(query, "path");
-            host = GetQueryValue(query, "host");
+            path = query.queryItemValue("path");
+            host = query.queryItemValue("host");
         }
     }
 
@@ -46,8 +46,8 @@ namespace NekoGui_fmt {
             }
         }
 
-        stream->security = GetQueryValue(query, "security", "");
-        stream->sni = GetQueryValue(query, "sni");
+        stream->security = query.queryItemValue("security");
+        stream->sni = query.queryItemValue("sni");
         if (link.startsWith("https")) stream->security = "tls";
 
         return !serverAddress.isEmpty();
@@ -83,8 +83,8 @@ namespace NekoGui_fmt {
         }
 
         QUrlQuery query(url);
-        if (!query.queryItemValue("plugin").startsWith("none")) {
-            plugin = query.queryItemValue("plugin").replace("simple-obfs;", "obfs-local;");
+        if (auto plugin_name = query.queryItemValue("plugin"); !plugin_name.startsWith("none")) {
+            plugin = plugin_name.replace("simple-obfs;", "obfs-local;");
         }
 
         // *ray misnomer
@@ -99,8 +99,7 @@ namespace NekoGui_fmt {
     bool ShadowSocksRBean::TryParseLink(const QString &link) {
         QString decoded = DecodeBase64OrBase64Url(SubStrAfter(link, "://"));
         QStringList parts = SubStrBefore(decoded, "/?").split(':');
-        if (parts.size() != 6)
-            return false;
+        if (parts.size() != 6) return false;
 
         serverAddress = parts[0];
         serverPort = parts[1].toInt();
@@ -150,17 +149,17 @@ namespace NekoGui_fmt {
                 name = query.queryItemValue("remarks");
                 uuid = url.password();
                 security = url.userName();
-                if (GetQueryValue(query, "tls") == "1") stream->security = "tls";
+                if (query.queryItemValue("tls") == "1") stream->security = "tls";
             } else {
                 // https://github.com/XTLS/Xray-core/discussions/716
                 name = url.fragment(QUrl::FullyDecoded);
                 uuid = url.userName();
                 security = GetQueryValue(query, "encryption", "auto");
-                stream->security = GetQueryValue(query, "security");
+                stream->security = query.queryItemValue("security");
             }
             serverAddress = url.host();
             serverPort = url.port();
-            aid = GetQueryValue(query, "alterId", "0").toInt();
+            aid = query.queryItemValue("alterId").toInt();
 
             stream->ParseShareLinkQuery(query);
         }
@@ -177,14 +176,14 @@ namespace NekoGui_fmt {
         if (!url.password().isEmpty()) {
             name = query.queryItemValue("remarks");
             password = url.password();
-            if (GetQueryValue(query, "tls") == "1") stream->security = "tls";
+            if (query.queryItemValue("tls") == "1") stream->security = "tls";
         } else {
             name = url.fragment(QUrl::FullyDecoded);
             password = url.userName();
             if (proxy_type == proxy_Trojan) {
                 stream->security = GetQueryValue(query, "security", "tls");
             } else {
-                stream->security = GetQueryValue(query, "security", "");
+                stream->security = query.queryItemValue("security");
             }
         }
         serverAddress = url.host();
@@ -194,7 +193,7 @@ namespace NekoGui_fmt {
 
         // protocol
         if (proxy_type == proxy_VLESS) {
-            if (GetQueryValue(query, "flow").startsWith("xtls-rprx-vision") || GetQueryValue(query, "xtls") == "2")
+            if (query.queryItemValue("flow").startsWith("xtls-rprx-vision") || query.queryItemValue("xtls") == "2")
                 flow = "xtls-rprx-vision";
         }
 
@@ -205,7 +204,7 @@ namespace NekoGui_fmt {
         QUrl url(link);
         if (!url.isValid()) return false;
 
-        protocol = url.scheme().replace("naive+", "");
+        protocol = SubStrAfter(url.scheme(), "naive+");
         if (protocol != "https" && protocol != "quic") return false;
 
         name = url.fragment(QUrl::FullyDecoded);
@@ -238,8 +237,8 @@ namespace NekoGui_fmt {
             auth_str = query.queryItemValue("auth");
             protocol = GetQueryValue(query, "protocol", "udp");
 
-            connectionReceiveWindow = query.queryItemValue("recv_window").toInt();
-            streamReceiveWindow = query.queryItemValue("recv_window_conn").toInt();
+            connectionReceiveWindow = query.queryItemValue("recv_window").toLongLong();
+            streamReceiveWindow = query.queryItemValue("recv_window_conn").toLongLong();
         } else if (url.scheme() == "tuic") {
             // by daeuniverse
             // https://github.com/daeuniverse/dae/discussions/182
@@ -255,12 +254,7 @@ namespace NekoGui_fmt {
             hopPort = query.queryItemValue("mport");
             obfsPassword = query.queryItemValue("obfs-password");
             allowInsecure = QStringList{"1", "true"}.contains(query.queryItemValue("insecure"));
-
-            if (url.password().isEmpty()) {
-                password = url.userName();
-            } else {
-                password = url.userName() + ":" + url.password();
-            }
+            password = url.password().isEmpty() ? url.userName() : url.userName() + ":" + url.password();
         }
         return !serverAddress.isEmpty();
     }

@@ -76,7 +76,7 @@ inline QByteArray DecodeBase64OrBase64Url(const QString &input) {
 
 // URL
 
-inline QString GetQueryValue(const QUrlQuery &query, const QString &key, const QString &def = {}) {
+inline QString GetQueryValue(const QUrlQuery &query, const QString &key, const QString &def) {
     return query.hasQueryItem(key) ? query.queryItemValue(key) : def;
 }
 
