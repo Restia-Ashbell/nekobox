@@ -12,7 +12,6 @@ namespace NekoGui_fmt {
         Q_PROPERTY(QString sni MEMBER sni)
         Q_PROPERTY(QString certificate MEMBER certificate)
         Q_PROPERTY(int insecure_concurrency MEMBER insecure_concurrency)
-        Q_PROPERTY(bool disable_log MEMBER disable_log)
 
     public:
         QString username = "";
@@ -22,8 +21,6 @@ namespace NekoGui_fmt {
         QString sni = "";
         QString certificate = "";
         int insecure_concurrency = 0;
-
-        bool disable_log = false;
 
         NaiveBean() : AbstractBean(0) {
             serverPort = 443;
