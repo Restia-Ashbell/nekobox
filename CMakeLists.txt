@@ -34,11 +34,6 @@ if (WIN32)
     endif ()
 endif ()
 
-# Package builds store config in the OS appdata dir
-if (NKR_PACKAGE)
-    add_compile_definitions(NKR_USE_APPDATA)
-endif ()
-
 set(BUILD_SHARED_LIBS OFF)
 set(QHOTKEY_INSTALL OFF)
 set(YAML_CPP_BUILD_TOOLS OFF)

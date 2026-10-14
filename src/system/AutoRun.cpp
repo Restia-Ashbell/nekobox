@@ -177,10 +177,6 @@ void AutoRun_SetEnabled(bool enable) {
 
     appCmdList << "-tray";
 
-    if (NekoGui::dataStore->flag_use_appdata) {
-        appCmdList << "-appdata";
-    }
-
     if (enable) {
         if (!QDir().exists(userAutoStartPath) && !QDir().mkpath(userAutoStartPath)) {
             // qCWarning(lcUtility) << "Could not create autostart folder"

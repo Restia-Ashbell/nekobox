@@ -36,28 +36,13 @@ int main(int argc, char *argv[]) {
     if (NekoGui::dataStore->argv.contains("-tray")) NekoGui::dataStore->flag_tray = true;
     if (NekoGui::dataStore->argv.contains("-flag_restart_tun_on")) NekoGui::dataStore->flag_restart_tun_on = true;
     if (NekoGui::dataStore->argv.contains("-flag_reorder")) NekoGui::dataStore->flag_reorder = true;
-    QString appdataDir;
-    if (NekoGui::dataStore->argv.contains("-appdata")) {
-        NekoGui::dataStore->flag_use_appdata = true;
-        auto appdataIndex = NekoGui::dataStore->argv.indexOf("-appdata");
-        if (NekoGui::dataStore->argv.size() > appdataIndex + 1 && !NekoGui::dataStore->argv.at(appdataIndex + 1).startsWith("-")) {
-            appdataDir = NekoGui::dataStore->argv.at(appdataIndex + 1);
-        }
-    }
-#ifdef NKR_USE_APPDATA
-    NekoGui::dataStore->flag_use_appdata = true; // Example: Package & MacOS
-#endif
 
     // dirs & clean
     QDir appDir(QApplication::applicationDirPath());
     QApplication::setApplicationName("nekobox");
-    if (NekoGui::dataStore->flag_use_appdata) {
-        if (!appdataDir.isEmpty()) {
-            appDir.setPath(appdataDir);
-        } else {
-            appDir.setPath(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
-        }
-    }
+#ifdef NDEBUG
+    if (!appDir.exists("config")) appDir.setPath(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
+#endif
     if (!appDir.mkpath("config")) {
         QMessageBox::critical(nullptr, "Error", "Cannot create config directory:\n" + appDir.absoluteFilePath("config"));
         return 1;

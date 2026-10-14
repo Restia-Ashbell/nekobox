@@ -155,7 +155,6 @@ namespace NekoGui {
 
         // Flags
         QStringList argv = {};
-        bool flag_use_appdata = false;
         bool flag_tray = false;
         bool flag_restart_tun_on = false;
         bool flag_reorder = false;
