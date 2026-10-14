@@ -161,10 +161,19 @@ if (APPLE)
 endif ()
 
 if (WIN32)
+    FetchContent_Declare(
+            NotoFlagFont
+            URL https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/fonts/NotoColorEmoji-flagsonly.ttf
+            DOWNLOAD_NO_EXTRACT TRUE
+            # TLS_VERIFY FALSE
+    )
+    FetchContent_MakeAvailable(NotoFlagFont)
+    set(FLAG_FONT_FILE ${notoflagfont_SOURCE_DIR}/NotoColorEmoji-flagsonly.ttf)
+    set_source_files_properties(${FLAG_FONT_FILE} PROPERTIES QT_RESOURCE_ALIAS fonts/NotoColorEmoji-flagsonly.ttf)
+
     qt_add_resources(nekobox "emoji_fonts"
-        BASE "res"
         FILES
-            res/fonts/NotoColorEmoji-flagsonly.ttf
+            ${FLAG_FONT_FILE}
     )
 endif ()
 
