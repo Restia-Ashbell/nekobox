@@ -78,6 +78,12 @@ private slots:
 
     void on_menu_hotkey_settings_triggered();
 
+    void on_menu_documentation_triggered();
+
+    void on_menu_source_code_triggered();
+
+    void on_menu_check_update_triggered();
+
     void on_menu_add_from_input_triggered();
 
     void on_menu_add_from_clipboard_triggered();

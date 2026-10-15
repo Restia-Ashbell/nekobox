@@ -91,7 +91,7 @@
          <string>Server</string>
         </property>
         <property name="icon">
-         <iconset theme="folder-new"/>
+         <iconset theme="network-wired"/>
         </property>
         <property name="iconSize">
          <size>
@@ -108,7 +108,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QToolButton" name="toolButton_document">
+       <widget class="QToolButton" name="toolButton_help">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -116,38 +116,10 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Document</string>
+         <string>Help</string>
         </property>
         <property name="icon">
-         <iconset theme="help-about"/>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-        <property name="popupMode">
-         <enum>QToolButton::ToolButtonPopupMode::InstantPopup</enum>
-        </property>
-        <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="toolButton_update">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Update</string>
-        </property>
-        <property name="icon">
-         <iconset theme="system-software-update"/>
+         <iconset theme="help-browser"/>
         </property>
         <property name="iconSize">
          <size>
@@ -472,9 +444,18 @@
     <addaction name="menu_profile_debug_info"/>
     <addaction name="separator"/>
    </widget>
+   <widget class="QMenu" name="menu_help">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="menu_documentation"/>
+    <addaction name="menu_source_code"/>
+    <addaction name="menu_check_update"/>
+   </widget>
    <addaction name="menu_program"/>
    <addaction name="menu_preferences"/>
    <addaction name="menu_server"/>
+   <addaction name="menu_help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="menu_exit">
@@ -727,6 +708,21 @@
   <action name="actionOpen_Dashboard">
    <property name="text">
     <string>Open Dashboard</string>
+   </property>
+  </action>
+  <action name="menu_documentation">
+   <property name="text">
+    <string>Documentation</string>
+   </property>
+  </action>
+  <action name="menu_source_code">
+   <property name="text">
+    <string>Source Code</string>
+   </property>
+  </action>
+  <action name="menu_check_update">
+   <property name="text">
+    <string>Check for Updates</string>
    </property>
   </action>
  </widget>

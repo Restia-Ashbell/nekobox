@@ -1270,12 +1270,20 @@ This needs to be run NekoBox with administrator privileges.</source>
         <translation>HTTP 入站未启用，无法设置系统代理。</translation>
     </message>
     <message>
-        <source>Update</source>
-        <translation>更新</translation>
+        <source>Help</source>
+        <translation>帮助</translation>
     </message>
     <message>
-        <source>Document</source>
+        <source>Documentation</source>
         <translation>文档</translation>
+    </message>
+    <message>
+        <source>Check for Updates</source>
+        <translation>检查更新</translation>
+    </message>
+    <message>
+        <source>Source Code</source>
+        <translation>源代码</translation>
     </message>
     <message>
         <source>Select</source>

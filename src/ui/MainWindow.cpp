@@ -86,9 +86,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->toolButton_program->setMenu(ui->menu_program);
     ui->toolButton_preferences->setMenu(ui->menu_preferences);
     ui->toolButton_server->setMenu(ui->menu_server);
+    ui->toolButton_help->setMenu(ui->menu_help);
     ui->menubar->setVisible(false);
-    connect(ui->toolButton_document, &QToolButton::clicked, this, [=, this] { QDesktopServices::openUrl(QUrl("https://matsuridayo.github.io/")); });
-    connect(ui->toolButton_update, &QToolButton::clicked, this, &MainWindow::CheckUpdate);
 
     // Setup log UI
     ui->splitter->restoreState(DecodeB64IfValid(NekoGui::dataStore->splitter_state));
@@ -438,6 +437,18 @@ void MainWindow::on_menu_routing_settings_triggered() {
 
 void MainWindow::on_menu_hotkey_settings_triggered() {
     openDialog<DialogHotkey>();
+}
+
+void MainWindow::on_menu_documentation_triggered() {
+    QDesktopServices::openUrl(QUrl("https://matsuridayo.github.io/"));
+}
+
+void MainWindow::on_menu_source_code_triggered() {
+    QDesktopServices::openUrl(QUrl("https://github.com/Restia-Ashbell/nekobox"));
+}
+
+void MainWindow::on_menu_check_update_triggered() {
+    CheckUpdate();
 }
 
 void MainWindow::on_commitDataRequest() {

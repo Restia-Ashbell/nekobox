@@ -1136,12 +1136,20 @@ This needs to be run NekoBox with administrator privileges.</source>
         <translation>تبلیغات</translation>
     </message>
     <message>
-        <source>Document</source>
+        <source>Help</source>
+        <translation>راهنما</translation>
+    </message>
+    <message>
+        <source>Documentation</source>
         <translation>اسناد</translation>
     </message>
     <message>
-        <source>Update</source>
-        <translation>بروزرسانی</translation>
+        <source>Check for Updates</source>
+        <translation>بررسی برای بروزرسانی</translation>
+    </message>
+    <message>
+        <source>Source Code</source>
+        <translation>کد منبع</translation>
     </message>
     <message>
         <source>Tun Mode</source>

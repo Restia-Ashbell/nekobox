@@ -1141,12 +1141,20 @@ https://matsuridayo.github.io/n-configuration/#vpn-tun</translation>
         <translation>Реклама</translation>
     </message>
     <message>
-        <source>Document</source>
+        <source>Help</source>
+        <translation>Справка</translation>
+    </message>
+    <message>
+        <source>Documentation</source>
         <translation>Документация</translation>
     </message>
     <message>
-        <source>Update</source>
-        <translation>Обновление</translation>
+        <source>Check for Updates</source>
+        <translation>Проверить обновления</translation>
+    </message>
+    <message>
+        <source>Source Code</source>
+        <translation>Исходный код</translation>
     </message>
     <message>
         <source>Tun Mode</source>
