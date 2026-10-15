@@ -174,12 +174,16 @@ endif ()
 
 # Target Source Translations
 
-set(TS_FILES
+qt_add_translations(nekobox
+    TS_FILES
         translations/zh_CN.ts
         translations/fa_IR.ts
         translations/ru_RU.ts
+    LUPDATE_OPTIONS
+        -locations none
+        -no-obsolete
+    MERGE_QT_TRANSLATIONS
 )
-qt_add_translations(nekobox TS_FILES ${TS_FILES} MERGE_QT_TRANSLATIONS)
 
 # Target Link
 

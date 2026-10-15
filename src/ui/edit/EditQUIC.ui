@@ -307,7 +307,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="sni_l">
        <property name="text">
-        <string>SNI</string>
+        <string notr="true">SNI</string>
        </property>
       </widget>
      </item>

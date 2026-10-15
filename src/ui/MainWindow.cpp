@@ -1320,9 +1320,9 @@ void MainWindow::refreshLogSearchSelection(bool moveCursor) {
             ui->masterLogBrowser->setTextCursor(logSearchMatches.first());
             qvLogAutoScoll = false;
         }
-        ui->logSearchLabel->setText(tr("1/%1").arg(logSearchMatches.size()));
+        ui->logSearchLabel->setText(QStringLiteral("1/%1").arg(logSearchMatches.size()));
     } else {
-        ui->logSearchLabel->setText(keyword.isEmpty() ? QString() : tr("0/0"));
+        ui->logSearchLabel->setText(keyword.isEmpty() ? QString() : QStringLiteral("0/0"));
     }
 }
 
@@ -1335,7 +1335,7 @@ void MainWindow::findLogMatch(bool forward) {
     }
     ui->masterLogBrowser->setTextCursor(logSearchMatches.at(logSearchIndex));
     qvLogAutoScoll = false;
-    ui->logSearchLabel->setText(tr("%1/%2").arg(logSearchIndex + 1).arg(logSearchMatches.size()));
+    ui->logSearchLabel->setText(QStringLiteral("%1/%2").arg(logSearchIndex + 1).arg(logSearchMatches.size()));
 }
 
 // Group tab manage

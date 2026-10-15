@@ -12,24 +12,12 @@
         <translation>启用</translation>
     </message>
     <message>
-        <source>HTTP Listen Port</source>
-        <translation>HTTP 监听端口</translation>
-    </message>
-    <message>
         <source>Listen Address</source>
         <translation>监听地址</translation>
     </message>
     <message>
-        <source>Socks Listen Port</source>
-        <translation>Socks 监听端口</translation>
-    </message>
-    <message>
-        <source>concurrency</source>
-        <translation>并发</translation>
-    </message>
-    <message>
         <source>User Agent</source>
-        <translation></translation>
+        <translation>用户代理</translation>
     </message>
     <message>
         <source>Common</source>
@@ -44,8 +32,8 @@
         <translation>主题</translation>
     </message>
     <message>
-        <source>System</source>
-        <translation>系统</translation>
+        <source>Language</source>
+        <translation>语言</translation>
     </message>
     <message>
         <source>Subscription</source>
@@ -68,16 +56,8 @@
         <translation>选择</translation>
     </message>
     <message>
-        <source>Edit</source>
-        <translation>编辑</translation>
-    </message>
-    <message>
         <source>Custom Inbound</source>
         <translation>自定义入站</translation>
-    </message>
-    <message>
-        <source>Asset Location</source>
-        <translation>资源文件路径</translation>
     </message>
     <message>
         <source>Concurrent</source>
@@ -96,8 +76,96 @@
         <translation>流量统计刷新率</translation>
     </message>
     <message>
+        <source>System Proxy Format</source>
+        <translation>系统代理格式</translation>
+    </message>
+    <message>
+        <source>Font</source>
+        <translation>字体</translation>
+    </message>
+    <message>
         <source>Off</source>
         <translation>关闭</translation>
+    </message>
+    <message>
+        <source>Stack</source>
+        <translation>协议栈</translation>
+    </message>
+    <message>
+        <source>Enable IPv6</source>
+        <translation>启用 IPv6</translation>
+    </message>
+    <message>
+        <source>Strict Route</source>
+        <translation>严格路由</translation>
+    </message>
+    <message>
+        <source>Listen Port</source>
+        <translation>监听端口</translation>
+    </message>
+    <message>
+        <source>Auth</source>
+        <translation>认证</translation>
+    </message>
+    <message>
+        <source>Log</source>
+        <translation>日志</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <translation>禁用</translation>
+    </message>
+    <message>
+        <source>Timestamp</source>
+        <translation>时间戳</translation>
+    </message>
+    <message>
+        <source>Level</source>
+        <translation>级别</translation>
+    </message>
+    <message>
+        <source>External Controller</source>
+        <translation>外部控制器</translation>
+    </message>
+    <message>
+        <source>Dashboard</source>
+        <translation>仪表盘</translation>
+    </message>
+    <message>
+        <source>Secret</source>
+        <translation>密钥</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>启用</translation>
+    </message>
+    <message>
+        <source>Server</source>
+        <translation>服务器</translation>
+    </message>
+    <message>
+        <source>Server Port</source>
+        <translation>服务器端口</translation>
+    </message>
+    <message>
+        <source>Interval</source>
+        <translation>间隔</translation>
+    </message>
+    <message>
+        <source>Certificate</source>
+        <translation>证书</translation>
+    </message>
+    <message>
+        <source>Store</source>
+        <translation>存储</translation>
+    </message>
+    <message>
+        <source>Certificate Path</source>
+        <translation>证书路径</translation>
+    </message>
+    <message>
+        <source>Certificate Directory Path</source>
+        <translation>证书目录路径</translation>
     </message>
     <message>
         <source>Add</source>
@@ -116,24 +184,12 @@
         <translation>请选择核心名.</translation>
     </message>
     <message>
-        <source>Connection statistics</source>
-        <translation>连接统计</translation>
-    </message>
-    <message>
         <source>Include Pre-release when checking update</source>
         <translation>检查更新时包括 Pre-release 版本</translation>
     </message>
     <message>
         <source>Set custom icon</source>
         <translation>自定义图标</translation>
-    </message>
-    <message>
-        <source>Please select a PNG file.</source>
-        <translation>请选择一个 PNG 文件。</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>重置</translation>
     </message>
     <message>
         <source>Please select a valid square image.</source>
@@ -144,26 +200,6 @@
         <translation>取消</translation>
     </message>
     <message>
-        <source>Switch core</source>
-        <translation>切换核心</translation>
-    </message>
-    <message>
-        <source>Confirmation</source>
-        <translation>确认</translation>
-    </message>
-    <message>
-        <source>Switching the core to %1, click &quot;Yes&quot; to complete the switch and the program will restart. This feature may be unstable, please do not switch frequently.</source>
-        <translation>将核心切换到 %1。点击 &quot;是&quot; 完成切换，程序将重新启动。此功能可能不稳定，请不要频繁切换。</translation>
-    </message>
-    <message>
-        <source>System proxy format</source>
-        <translation>系统代理格式</translation>
-    </message>
-    <message>
-        <source>Advanced system proxy settings. Please select a format.</source>
-        <translation>高级系统代理设置。请选择一种格式。</translation>
-    </message>
-    <message>
         <source>Old Share Link Format</source>
         <translation>旧分享链接格式</translation>
     </message>
@@ -172,16 +208,8 @@
         <translation>用 v2rayN 的格式分享 VMess 链接</translation>
     </message>
     <message>
-        <source>Clear servers before updating subscription</source>
-        <translation>更新订阅前清除服务器</translation>
-    </message>
-    <message>
         <source>Ignore TLS errors when updating subscription</source>
         <translation>更新订阅时忽略 TLS 错误</translation>
-    </message>
-    <message>
-        <source>Enable hook.js</source>
-        <translation>启用 hook.js 功能</translation>
     </message>
     <message>
         <source>Launch at startup</source>
@@ -214,26 +242,6 @@
     <message>
         <source>Default uTLS Fingerprint</source>
         <translation>默认 uTLS 指纹</translation>
-    </message>
-    <message>
-        <source>Core Options</source>
-        <translation>核心选项</translation>
-    </message>
-    <message>
-        <source>Override underlying DNS</source>
-        <translation>覆盖底层 DNS</translation>
-    </message>
-    <message>
-        <source>If you Tun Mode is not working, try to change this option.</source>
-        <translation>如果您的 Tun 模式有问题，请尝试更改此选项。</translation>
-    </message>
-    <message>
-        <source>Default On</source>
-        <translation>默认开启</translation>
-    </message>
-    <message>
-        <source>Multiplex (mux)</source>
-        <translation>多路复用 Mux</translation>
     </message>
     <message>
         <source>Latency Test URL</source>
@@ -279,10 +287,6 @@
         <translation>订阅</translation>
     </message>
     <message>
-        <source>URL</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>Archive</source>
         <translation>归档</translation>
     </message>
@@ -305,10 +309,6 @@
     <message>
         <source>Copy profile share links (Neko Links)</source>
         <translation>复制分组内配置的分享链接 (Neko Links)</translation>
-    </message>
-    <message>
-        <source>Manually column width</source>
-        <translation>手动调节列宽</translation>
     </message>
     <message>
         <source>Front Proxy</source>
@@ -374,6 +374,38 @@
         <translation>传输设置 (%1)</translation>
     </message>
     <message>
+        <source>Allow Insecure</source>
+        <translation>不检查服务器证书</translation>
+    </message>
+    <message>
+        <source>Enabled ECH</source>
+        <translation>启用 ECH</translation>
+    </message>
+    <message>
+        <source>Fragment</source>
+        <translation>分片</translation>
+    </message>
+    <message>
+        <source>Record Fragment</source>
+        <translation>记录分片</translation>
+    </message>
+    <message>
+        <source>Multiplex Settings</source>
+        <translation>多路复用设置</translation>
+    </message>
+    <message>
+        <source>Max Streams</source>
+        <translation>最大流数</translation>
+    </message>
+    <message>
+        <source>Protocol</source>
+        <translation>协议</translation>
+    </message>
+    <message>
+        <source>Padding</source>
+        <translation>填充</translation>
+    </message>
+    <message>
         <source>The underlying transport method. It must be consistent with the server, otherwise, the connection cannot be established.</source>
         <translation>底层传输方式。必须与服务器一致，否则无法建立连接。</translation>
     </message>
@@ -386,20 +418,12 @@
         <translation>包编码，用于实现 UDP FullCone 等特性。需要服务器支持，选错无法连接。不懂请留空。</translation>
     </message>
     <message>
-        <source>When enabled, V2Ray will not check the validity of the TLS certificate provided by the remote host (the security is equivalent to plaintext)</source>
-        <translation>开启后 V2Ray 不会检查远端主机所提供的 TLS 证书的有效性（安全性相当于明文）</translation>
-    </message>
-    <message>
         <source>Server name indication, clear text.</source>
         <translation>服务器名称指示，明文。</translation>
     </message>
     <message>
         <source>Application layer protocol negotiation, clear text. Please separate them with commas.</source>
         <translation>应用层协议协商，明文。多个请以英文逗号分隔。</translation>
-    </message>
-    <message>
-        <source>Allow insecure</source>
-        <translation>不检查服务器证书</translation>
     </message>
     <message>
         <source>Certificate</source>
@@ -426,16 +450,8 @@
         <translation>自定义 (其他核心)</translation>
     </message>
     <message>
-        <source>TLS Security Settings</source>
-        <translation>TLS 安全设置</translation>
-    </message>
-    <message>
-        <source>TLS Camouflage Settings</source>
-        <translation>TLS 伪装设置</translation>
-    </message>
-    <message>
         <source>Reality public key. If not empty, turn TLS into REALITY.</source>
-        <translation>Reality public key. 如果不为空，则将 TLS 变为 REALITY。</translation>
+        <translation>Reality 公钥。如果不为空，则将 TLS 变为 REALITY。</translation>
     </message>
     <message>
         <source>Custom (%1 outbound)</source>
@@ -454,16 +470,8 @@
         <translation>自定义配置 JSON 设置</translation>
     </message>
     <message>
-        <source>Apply settings to this group</source>
-        <translation>将设置应用于该组</translation>
-    </message>
-    <message>
         <source>Multiplex</source>
         <translation>多路复用</translation>
-    </message>
-    <message>
-        <source>Keep Default</source>
-        <translation>保持默认</translation>
     </message>
     <message>
         <source>On</source>
@@ -474,35 +482,20 @@
         <translation>关闭</translation>
     </message>
     <message>
-        <source>Confirm</source>
-        <translation>确认</translation>
-    </message>
-    <message>
         <source>Server support is required</source>
         <translation>需要服务器支持</translation>
     </message>
     <message>
+        <source>TLS Settings</source>
+        <translation>TLS 设置</translation>
+    </message>
+    <message>
+        <source>Disable SNI</source>
+        <translation>不发送服务器名称指示</translation>
+    </message>
+    <message>
         <source>Reality short id. Accept only one value.</source>
-        <translation>Reality short id. 只接受一个值。</translation>
-    </message>
-</context>
-<context>
-    <name>DialogFirstSetup</name>
-    <message>
-        <source>First time setup</source>
-        <translation>首次设置</translation>
-    </message>
-    <message>
-        <source>It looks like you are using this software for the first time, please select a core.
-
-These settings can be changed later.</source>
-        <translation>看来您是第一次使用该软件，请选择内核。
-
-这些设置可以稍后更改。</translation>
-    </message>
-    <message>
-        <source>Quit</source>
-        <translation>退出</translation>
+        <translation>Reality 短 ID。只接受一个值。</translation>
     </message>
 </context>
 <context>
@@ -566,6 +559,18 @@ These settings can be changed later.</source>
         <translation>流量探测</translation>
     </message>
     <message>
+        <source>Custom</source>
+        <translation>自定义</translation>
+    </message>
+    <message>
+        <source>Custom DNS and Route</source>
+        <translation>自定义 DNS 与路由</translation>
+    </message>
+    <message>
+        <source>Enable Custom</source>
+        <translation>启用自定义</translation>
+    </message>
+    <message>
         <source>Sniff result for routing</source>
         <translation>探测结果用于路由判断</translation>
     </message>
@@ -578,8 +583,16 @@ These settings can be changed later.</source>
         <translation>直连 DNS</translation>
     </message>
     <message>
+        <source>Enable FakeIP</source>
+        <translation>启用 FakeIP</translation>
+    </message>
+    <message>
         <source>Remote DNS</source>
         <translation>远程 DNS</translation>
+    </message>
+    <message>
+        <source>Rule Sets Provider</source>
+        <translation>规则集提供者</translation>
     </message>
     <message>
         <source>Enable DNS Routing</source>
@@ -592,10 +605,6 @@ These settings can be changed later.</source>
     <message>
         <source>Direct</source>
         <translation>直连</translation>
-    </message>
-    <message>
-        <source>Domain</source>
-        <translation>域名</translation>
     </message>
     <message>
         <source>Proxy</source>
@@ -612,10 +621,6 @@ These settings can be changed later.</source>
     <message>
         <source>Global</source>
         <translation>全局</translation>
-    </message>
-    <message>
-        <source>IP</source>
-        <translation></translation>
     </message>
     <message>
         <source>Save</source>
@@ -666,32 +671,12 @@ These settings can be changed later.</source>
         <translation>通用</translation>
     </message>
     <message>
-        <source>DNS</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>Simple DNS Settings</source>
         <translation>简易 DNS 设置</translation>
     </message>
     <message>
-        <source>Use DNS Object</source>
-        <translation>使用 DNS Object</translation>
-    </message>
-    <message>
-        <source>DNS Object Settings</source>
-        <translation>DNS Object 设置</translation>
-    </message>
-    <message>
         <source>Simple Route</source>
         <translation>简易路由</translation>
-    </message>
-    <message>
-        <source>Custom Route</source>
-        <translation>自定义路由</translation>
-    </message>
-    <message>
-        <source>Custom Route (global)</source>
-        <translation>自定义路由（全局）</translation>
     </message>
     <message>
         <source>Note: Other settings are independent for each route set.</source>
@@ -706,95 +691,27 @@ These settings can be changed later.</source>
         <translation>查询策略</translation>
     </message>
     <message>
-        <source>Document</source>
-        <translation>文档</translation>
-    </message>
-    <message>
-        <source>Format</source>
-        <translation>格式化</translation>
-    </message>
-    <message>
-        <source>This is especially important and it is recommended to use the default value of &quot;localhost&quot;.
-If the default value does not work, try changing it to &quot;223.5.5.5&quot;.
-For more information, see the document &quot;Configuration/DNS&quot;.</source>
-        <translation>此项尤为重要，建议使用默认值 &quot;localhost&quot;。
-如果默认值不工作，可以尝试更改为 &quot;223.5.5.5&quot;。
-更多信息，请参阅文档 &quot;配置/DNS&quot;。</translation>
-    </message>
-    <message>
         <source>Final DNS Out</source>
         <translation>默认 DNS 出站</translation>
     </message>
 </context>
 <context>
-    <name>DialogVPNSettings</name>
+    <name>EditAnyTLS</name>
     <message>
-        <source>Tun Settings</source>
-        <translation>Tun 设置</translation>
+        <source>Password</source>
+        <translation>密码</translation>
     </message>
     <message>
-        <source>Hide Console</source>
-        <translation>隐藏控制台</translation>
+        <source>Idle Session Check Interval</source>
+        <translation>空闲会话检查间隔</translation>
     </message>
     <message>
-        <source>Tun Enable IPv6</source>
-        <translation>启用 Tun IPv6</translation>
+        <source>Idle Session Timeout</source>
+        <translation>空闲会话超时</translation>
     </message>
     <message>
-        <source>Bypass CIDR</source>
-        <translation>绕过 CIDR</translation>
-    </message>
-    <message>
-        <source>Bypass Process Name</source>
-        <translation>绕过进程名</translation>
-    </message>
-    <message>
-        <source>Whitelist mode</source>
-        <translation>白名单模式</translation>
-    </message>
-    <message>
-        <source>Proxy CIDR</source>
-        <translation>代理 CIDR</translation>
-    </message>
-    <message>
-        <source>Proxy Process Name</source>
-        <translation>代理进程名</translation>
-    </message>
-    <message>
-        <source>Whether blacklisted or whitelisted, your traffic will be handled by nekobox_core (sing-tun). This is NOT equal to &quot;process mode&quot; of some software.</source>
-        <translation>无论是黑名单还是白名单，您的流量都将由 nekobox_core (sing-tun) 处理。这不等于某些软件的「进程模式」。</translation>
-    </message>
-    <message>
-        <source>Troubleshooting</source>
-        <translation>故障排除</translation>
-    </message>
-    <message>
-        <source>If you have trouble starting VPN, you can force reset nekobox_core process here.
-
-If still not working, see documentation for more information.
-https://matsuridayo.github.io/n-configuration/#vpn-tun</source>
-        <translation>如果您在启动 Tun 时遇到问题，您可以在此处强制重置 nekobox_core 进程。
-
-如果仍然无法正常工作，请参阅文档以获取更多信息。
-https://matsuridayo.github.io/n-configuration/#vpn-tun</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>重置</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>取消</translation>
-    </message>
-    <message>
-        <source>Internal Tun</source>
-        <translation>内部 Tun</translation>
-    </message>
-    <message>
-        <source>Add a tun inbound to the profile startup, instead of using two processes.
-This needs to be run NekoBox with administrator privileges.</source>
-        <translation>在配置文件启动时添加一个tun inbound，而不是使用两个进程。
-这需要以管理员权限运行NekoBox。</translation>
+        <source>Min Idle Session</source>
+        <translation>最小空闲会话</translation>
     </message>
 </context>
 <context>
@@ -806,10 +723,6 @@ This needs to be run NekoBox with administrator privileges.</source>
     <message>
         <source>Traffic order is from top to bottom</source>
         <translation>流量顺序是从上到下（最后一个配置为流量的出口）</translation>
-    </message>
-    <message>
-        <source>Name cannot be empty.</source>
-        <translation>名称 不能为空</translation>
     </message>
 </context>
 <context>
@@ -839,28 +752,8 @@ This needs to be run NekoBox with administrator privileges.</source>
         <translation>配置文件后缀</translation>
     </message>
     <message>
-        <source>Random if it&apos;s empty or zero.</source>
-        <translation>如果为空或为零，则表示使用随机端口。</translation>
-    </message>
-    <message>
-        <source>Preview</source>
-        <translation>预览</translation>
-    </message>
-    <message>
-        <source>Preview replace</source>
-        <translation>预览替换串</translation>
-    </message>
-    <message>
-        <source>Preview config</source>
-        <translation>预览配置</translation>
-    </message>
-    <message>
         <source>Please fill the complete config.</source>
         <translation>请填写完整配置。</translation>
-    </message>
-    <message>
-        <source>Name cannot be empty.</source>
-        <translation>名称 不能为空</translation>
     </message>
 </context>
 <context>
@@ -876,10 +769,6 @@ This needs to be run NekoBox with administrator privileges.</source>
     <message>
         <source>Extra headers</source>
         <translation>附加标头</translation>
-    </message>
-    <message>
-        <source>SNI</source>
-        <translation></translation>
     </message>
     <message>
         <source>Username</source>
@@ -899,10 +788,6 @@ This needs to be run NekoBox with administrator privileges.</source>
     <message>
         <source>Certificate</source>
         <translation>证书</translation>
-    </message>
-    <message>
-        <source>Auth Type</source>
-        <translation>认证类型</translation>
     </message>
     <message>
         <source>Protocol</source>
@@ -937,10 +822,6 @@ This needs to be run NekoBox with administrator privileges.</source>
         <translation>混淆密码</translation>
     </message>
     <message>
-        <source>SNI</source>
-        <translation>SNI</translation>
-    </message>
-    <message>
         <source>Auth Payload</source>
         <translation>认证有效载荷</translation>
     </message>
@@ -954,7 +835,7 @@ This needs to be run NekoBox with administrator privileges.</source>
     </message>
     <message>
         <source>Zero Rtt Handshake</source>
-        <translation>0-Rtt 握手</translation>
+        <translation>0-RTT 握手</translation>
     </message>
     <message>
         <source>UDP Relay Mode</source>
@@ -975,6 +856,41 @@ This needs to be run NekoBox with administrator privileges.</source>
     <message>
         <source>Force use external core</source>
         <translation>强制使用外部核心</translation>
+    </message>
+</context>
+<context>
+    <name>EditSSH</name>
+    <message>
+        <source>Private Key</source>
+        <translation>私钥</translation>
+    </message>
+    <message>
+        <source>Private Key Path</source>
+        <translation>私钥路径</translation>
+    </message>
+    <message>
+        <source>Private Key Passphrase</source>
+        <translation>私钥口令</translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <translation>密码</translation>
+    </message>
+    <message>
+        <source>User</source>
+        <translation>用户</translation>
+    </message>
+    <message>
+        <source>Host Key</source>
+        <translation>主机密钥</translation>
+    </message>
+    <message>
+        <source>Host Key Algorithms</source>
+        <translation>主机密钥算法</translation>
+    </message>
+    <message>
+        <source>Client Version</source>
+        <translation>客户端版本</translation>
     </message>
 </context>
 <context>
@@ -1002,6 +918,33 @@ This needs to be run NekoBox with administrator privileges.</source>
     <message>
         <source>Off</source>
         <translation>关闭</translation>
+    </message>
+</context>
+<context>
+    <name>EditShadowSocksR</name>
+    <message>
+        <source>Obfs Param</source>
+        <translation>混淆参数</translation>
+    </message>
+    <message>
+        <source>Protocol</source>
+        <translation>协议</translation>
+    </message>
+    <message>
+        <source>Obfuscator</source>
+        <translation>混淆器</translation>
+    </message>
+    <message>
+        <source>Encryption</source>
+        <translation>加密</translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <translation>密码</translation>
+    </message>
+    <message>
+        <source>Protocol Param</source>
+        <translation>协议参数</translation>
     </message>
 </context>
 <context>
@@ -1034,15 +977,38 @@ This needs to be run NekoBox with administrator privileges.</source>
     </message>
     <message>
         <source>Alter Id</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>UUID</source>
-        <translation></translation>
+        <translation>额外 ID</translation>
     </message>
     <message>
         <source>Generate UUID</source>
         <translation>生成 UUID</translation>
+    </message>
+</context>
+<context>
+    <name>EditWireGuard</name>
+    <message>
+        <source>Pre Shared Key</source>
+        <translation>预共享密钥</translation>
+    </message>
+    <message>
+        <source>Public Key</source>
+        <translation>公钥</translation>
+    </message>
+    <message>
+        <source>Local Address</source>
+        <translation>本地地址</translation>
+    </message>
+    <message>
+        <source>Private Key</source>
+        <translation>私钥</translation>
+    </message>
+    <message>
+        <source>Reserved</source>
+        <translation>保留</translation>
+    </message>
+    <message>
+        <source>Use System Interface</source>
+        <translation>使用系统接口</translation>
     </message>
 </context>
 <context>
@@ -1062,6 +1028,10 @@ This needs to be run NekoBox with administrator privileges.</source>
     <message>
         <source>Subscription</source>
         <translation>订阅</translation>
+    </message>
+    <message>
+        <source>Updating…</source>
+        <translation>更新中…</translation>
     </message>
     <message>
         <source>Confirmation</source>
@@ -1088,47 +1058,43 @@ This needs to be run NekoBox with administrator privileges.</source>
     <name>JsonEditor</name>
     <message>
         <source>JSON Editor</source>
-        <translation></translation>
+        <translation>JSON 编辑器</translation>
     </message>
     <message>
         <source>Format JSON</source>
-        <translation></translation>
+        <translation>格式化 JSON</translation>
     </message>
     <message>
         <source>Remove All Comments</source>
-        <translation></translation>
+        <translation>删除所有注释</translation>
     </message>
     <message>
         <source>Json Editor</source>
-        <translation></translation>
+        <translation>JSON 编辑器</translation>
     </message>
     <message>
         <source>Structure Preview</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation></translation>
+        <translation>结构预览</translation>
     </message>
     <message>
         <source>Json Contains Syntax Errors</source>
-        <translation></translation>
+        <translation>JSON 存在语法错误</translation>
     </message>
     <message>
         <source>Original Json may contain syntax errors. Json tree is disabled.</source>
-        <translation></translation>
+        <translation>原始 JSON 可能存在语法错误，JSON 树已禁用。</translation>
     </message>
     <message>
         <source>You must correct these errors before continuing.</source>
-        <translation></translation>
+        <translation>继续之前必须先修正这些错误。</translation>
     </message>
     <message>
         <source>Syntax Errors</source>
-        <translation></translation>
+        <translation>语法错误</translation>
     </message>
     <message>
         <source>Please fix the JSON errors or remove the comments before continue</source>
-        <translation></translation>
+        <translation>请先修复 JSON 错误或删除注释再继续</translation>
     </message>
 </context>
 <context>
@@ -1146,32 +1112,28 @@ This needs to be run NekoBox with administrator privileges.</source>
         <translation>服务器</translation>
     </message>
     <message>
-        <source>Ads</source>
-        <translation>推广</translation>
-    </message>
-    <message>
-        <source>Type</source>
-        <translation>类型</translation>
-    </message>
-    <message>
-        <source>Address</source>
-        <translation>地址</translation>
-    </message>
-    <message>
-        <source>Name</source>
-        <translation>名称</translation>
-    </message>
-    <message>
         <source>Test Result</source>
         <translation>测试结果</translation>
     </message>
     <message>
-        <source>Traffic</source>
-        <translation>流量</translation>
-    </message>
-    <message>
         <source>System Proxy</source>
         <translation>系统代理</translation>
+    </message>
+    <message>
+        <source>Match case</source>
+        <translation>区分大小写</translation>
+    </message>
+    <message>
+        <source>Previous (Shift+F3)</source>
+        <translation>上一个 (Shift+F3)</translation>
+    </message>
+    <message>
+        <source>Next (F3)</source>
+        <translation>下一个 (F3)</translation>
+    </message>
+    <message>
+        <source>Close (Esc)</source>
+        <translation>关闭 (Esc)</translation>
     </message>
     <message>
         <source>Share</source>
@@ -1202,10 +1164,6 @@ This needs to be run NekoBox with administrator privileges.</source>
         <translation>调试信息</translation>
     </message>
     <message>
-        <source>Copy Link</source>
-        <translation>复制链接</translation>
-    </message>
-    <message>
         <source>Clear Test Result</source>
         <translation>清理测试结果</translation>
     </message>
@@ -1218,24 +1176,12 @@ This needs to be run NekoBox with administrator privileges.</source>
         <translation>禁用</translation>
     </message>
     <message>
-        <source>Error</source>
-        <translation>错误</translation>
-    </message>
-    <message>
         <source>Confirmation</source>
         <translation>确认</translation>
     </message>
     <message>
         <source>Settings changed, restart proxy?</source>
         <translation>设置已改变，是否重启代理？</translation>
-    </message>
-    <message>
-        <source>Imported %1 profile(s)</source>
-        <translation>导入了 %1 个配置</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>无</translation>
     </message>
     <message>
         <source>Unavailable</source>
@@ -1246,10 +1192,6 @@ This needs to be run NekoBox with administrator privileges.</source>
         <translation>删除 %1 个项目？</translation>
     </message>
     <message>
-        <source>Config copied</source>
-        <translation>配置已复制</translation>
-    </message>
-    <message>
         <source>[%1] test error: %2</source>
         <translation>[%1] 测试错误: %2</translation>
     </message>
@@ -1258,16 +1200,8 @@ This needs to be run NekoBox with administrator privileges.</source>
         <translation>清除</translation>
     </message>
     <message>
-        <source>fake</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>Testing</source>
         <translation>正在测试</translation>
-    </message>
-    <message>
-        <source>Http inbound is not enabled, can&apos;t set system proxy.</source>
-        <translation>HTTP 入站未启用，无法设置系统代理。</translation>
     </message>
     <message>
         <source>Help</source>
@@ -1298,32 +1232,6 @@ This needs to be run NekoBox with administrator privileges.</source>
         <translation>移动</translation>
     </message>
     <message>
-        <source>Log</source>
-        <translation>日志</translation>
-    </message>
-    <message>
-        <source>Connection</source>
-        <translation>连接</translation>
-    </message>
-    <message>
-        <source>Status</source>
-        <translation>状态</translation>
-    </message>
-    <message>
-        <source>Outbound</source>
-        <translation>出站</translation>
-    </message>
-    <message>
-        <source>Destination</source>
-        <translation>目标地址</translation>
-    </message>
-    <message>
-        <source>Start: %1
-End: %2</source>
-        <translation>开始: %1
-结束: %2</translation>
-    </message>
-    <message>
         <source>Starting profile %1</source>
         <translation>正在启动配置 %1</translation>
     </message>
@@ -1332,24 +1240,12 @@ End: %2</source>
         <translation>正在停止配置 %1</translation>
     </message>
     <message>
-        <source>Start with system</source>
-        <translation>跟随系统启动</translation>
-    </message>
-    <message>
-        <source>Remember last profile</source>
-        <translation>记住最后的配置</translation>
-    </message>
-    <message>
         <source>Move %1 item(s)</source>
         <translation>移动 %1 个项目</translation>
     </message>
     <message>
         <source>Remove Unavailable</source>
         <translation>删除无效配置</translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation>设置</translation>
     </message>
     <message>
         <source>New profile</source>
@@ -1384,10 +1280,6 @@ End: %2</source>
         <translation>完整测试</translation>
     </message>
     <message>
-        <source>Current Group</source>
-        <translation>当前分组</translation>
-    </message>
-    <message>
         <source>Reset Traffic</source>
         <translation>重置流量统计</translation>
     </message>
@@ -1402,10 +1294,6 @@ End: %2</source>
     <message>
         <source>Tun Mode</source>
         <translation>Tun 模式</translation>
-    </message>
-    <message>
-        <source>Failed to stop Tun process</source>
-        <translation>停止 Tun 失败</translation>
     </message>
     <message>
         <source>Enable System Proxy</source>
@@ -1452,16 +1340,8 @@ End: %2</source>
         <translation>批量复制选中项目的分享链接 (Neko Links)</translation>
     </message>
     <message>
-        <source>Allow other devices to connect</source>
-        <translation>允许其他设备连接</translation>
-    </message>
-    <message>
         <source>Resolve domain</source>
         <translation>解析域名</translation>
-    </message>
-    <message>
-        <source>Resolving domain to IP, if support.</source>
-        <translation>将服务器域名解析为 IP（如果支持）。</translation>
     </message>
     <message>
         <source>Export %1 config</source>
@@ -1472,10 +1352,6 @@ End: %2</source>
         <translation>路由设置</translation>
     </message>
     <message>
-        <source>Tun Settings</source>
-        <translation>Tun 设置</translation>
-    </message>
-    <message>
         <source>Restart Program</source>
         <translation>重启程序</translation>
     </message>
@@ -1484,46 +1360,12 @@ End: %2</source>
         <translation>未启动</translation>
     </message>
     <message>
-        <source>Current server is incompatible with Tun. Please stop the server first, enable Tun Mode, and then restart.</source>
-        <translation>当前服务器与 Tun 不兼容。请先停止服务器，打开 Tun 模式后再启动。</translation>
-    </message>
-    <message>
         <source>Open Dashboard</source>
-        <translation>打开仪表板</translation>
+        <translation>打开仪表盘</translation>
     </message>
     <message>
         <source>Open Config Folder</source>
         <translation>打开配置目录</translation>
-    </message>
-    <message>
-        <source>Set ignore keyword</source>
-        <translation>设置忽略关键字</translation>
-    </message>
-    <message>
-        <source>Set the following keywords to ignore?
-Split by line.</source>
-        <translation>将以下关键字设置为忽略？
-一行一个。</translation>
-    </message>
-    <message>
-        <source>Save as route</source>
-        <translation>保存为路由规则</translation>
-    </message>
-    <message>
-        <source>Save &quot;%1&quot; as a routing rule?</source>
-        <translation>将&quot;%1&quot;保存为一条路由规则？</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation>编辑</translation>
-    </message>
-    <message>
-        <source>Current Select</source>
-        <translation>当前选中</translation>
-    </message>
-    <message>
-        <source>Show Window</source>
-        <translation>显示主窗口</translation>
     </message>
     <message>
         <source>Settings changed</source>
@@ -1534,10 +1376,6 @@ Split by line.</source>
         <translation>重启程序生效。</translation>
     </message>
     <message>
-        <source>Please run NekoBox as admin</source>
-        <translation>请以管理员权限运行 NekoBox</translation>
-    </message>
-    <message>
         <source>Restart Proxy</source>
         <translation>重启代理</translation>
     </message>
@@ -1546,20 +1384,42 @@ Split by line.</source>
         <translation>启动配置失败: %1</translation>
     </message>
     <message>
-        <source>Failed to stop, please restart the program.</source>
-        <translation>停止失败，请重启程序。</translation>
-    </message>
-    <message>
-        <source>If there is no response for a long time, it is recommended to restart the software.</source>
-        <translation>如果长时间没有反应，建议重启软件。</translation>
-    </message>
-    <message>
         <source>Select mode, double-click or press Enter to select a profile, press ESC to exit.</source>
         <translation>选择模式，双击或按回车键选择一个配置文件，按ESC键退出。</translation>
     </message>
     <message>
         <source>Latency</source>
         <translation>延迟</translation>
+    </message>
+    <message>
+        <source>Unable to Open Dashboard</source>
+        <translation>无法打开仪表盘</translation>
+    </message>
+    <message>
+        <source>Please configure the Clash API and start first.</source>
+        <translation>请先配置 Clash API 并启动。</translation>
+    </message>
+    <message>
+        <source>As Subscription (create new group)</source>
+        <translation>作为订阅（创建新组）</translation>
+    </message>
+    <message>
+        <source>As link</source>
+        <translation>作为链接</translation>
+    </message>
+    <message>
+        <source>url detected</source>
+        <translation>检测到 URL</translation>
+    </message>
+    <message>
+        <source>%1
+How to update?</source>
+        <translation>%1
+如何处理？</translation>
+    </message>
+    <message>
+        <source>Failed to stop profile %1</source>
+        <translation>停止配置 %1 失败</translation>
     </message>
     <message>
         <source>UDP latency</source>
@@ -1572,6 +1432,56 @@ Split by line.</source>
     <message>
         <source>In and Out IP</source>
         <translation>入口出口IP</translation>
+    </message>
+    <message>
+        <source>Add new Group</source>
+        <translation>添加新分组</translation>
+    </message>
+    <message>
+        <source>Edit selected Group</source>
+        <translation>编辑所选分组</translation>
+    </message>
+    <message>
+        <source>Delete selected Group</source>
+        <translation>删除所选分组</translation>
+    </message>
+    <message>
+        <source>Remove %1?</source>
+        <translation>删除 %1 ?</translation>
+    </message>
+    <message>
+        <source>Update Check Failed</source>
+        <translation>检查更新失败</translation>
+    </message>
+    <message>
+        <source>Network error: %1</source>
+        <translation>网络错误：%1</translation>
+    </message>
+    <message>
+        <source>Could not parse version tag.</source>
+        <translation>无法解析版本标签。</translation>
+    </message>
+    <message>
+        <source>New Version Available</source>
+        <translation>发现新版本</translation>
+    </message>
+    <message>
+        <source>A new version (%1) is available.
+Your current version is %2.
+
+Do you want to download it now?</source>
+        <translation>发现新版本 (%1)。
+当前版本为 %2。
+
+要现在下载吗？</translation>
+    </message>
+    <message>
+        <source>Check Update</source>
+        <translation>检查更新</translation>
+    </message>
+    <message>
+        <source>You are already using the latest version (%1).</source>
+        <translation>当前已是最新版本 (%1)。</translation>
     </message>
     <message>
         <source>Test Options</source>
@@ -1617,38 +1527,18 @@ Split by line.</source>
     </message>
 </context>
 <context>
-    <name>QGuiApplication</name>
+    <name>QHotkey</name>
     <message>
-        <source>QT_LAYOUT_DIRECTION</source>
-        <translation>LTR</translation>
+        <source>Failed to register %1. Error: %2</source>
+        <translation>注册 %1 失败，错误：%2</translation>
+    </message>
+    <message>
+        <source>Failed to unregister %1. Error: %2</source>
+        <translation>注销 %1 失败，错误：%2</translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
-    <message>
-        <source>As link</source>
-        <translation>作为链接</translation>
-    </message>
-    <message>
-        <source>url detected</source>
-        <translation>检测到 URL</translation>
-    </message>
-    <message>
-        <source>%1
-How to update?</source>
-        <translation>%1
-如何处理？</translation>
-    </message>
-    <message>
-        <source>Added %1 profiles:
-%2
-Deleted %3 Profiles:
-%4</source>
-        <translation>增加了 %1 个配置：
-%2
-删除了 %3 个配置：
-%4</translation>
-    </message>
     <message>
         <source>Proxy: %1 | Direct: %2</source>
         <translation>代理: %1 | 直连: %2</translation>
@@ -1658,36 +1548,16 @@ Deleted %3 Profiles:
         <translation>已用 %1 剩余 %2 过期 %3</translation>
     </message>
     <message>
+        <source>Failed to parse: %1</source>
+        <translation>解析失败：%1</translation>
+    </message>
+    <message>
+        <source>Unsupported proxy type: %1</source>
+        <translation>不支持的代理类型：%1</translation>
+    </message>
+    <message>
         <source>Core not found: %1</source>
-        <translation>找不到 &quot;%1&quot; 核心。请前往设置</translation>
-    </message>
-    <message>
-        <source>Update</source>
-        <translation>更新</translation>
-    </message>
-    <message>
-        <source>No update</source>
-        <translation>无更新</translation>
-    </message>
-    <message>
-        <source>Open in browser</source>
-        <translation>浏览器打开</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation>关闭</translation>
-    </message>
-    <message>
-        <source>Update is ready, restart to install?</source>
-        <translation>更新已下载好，重启应用？</translation>
-    </message>
-    <message>
-        <source>Update found: %1
-Release note:
-%2</source>
-        <translation>检测到更新: %1
-更新日志:
-%2</translation>
+        <translation>找不到 %1 核心。请前往设置</translation>
     </message>
     <message>
         <source>Unavailable</source>
@@ -1702,59 +1572,70 @@ Release note:
         <translation>链式代理</translation>
     </message>
     <message>
+        <source>The subscription is already being updated.</source>
+        <translation>该订阅正在更新中。</translation>
+    </message>
+    <message>
         <source>Requesting subscription: %1</source>
         <translation>正在请求订阅: %1</translation>
+    </message>
+    <message>
+        <source>The last subscription update has not exited.</source>
+        <translation>上一次订阅更新尚未结束。</translation>
+    </message>
+    <message>
+        <source>Group was already removed.</source>
+        <translation>该分组已被移除。</translation>
     </message>
     <message>
         <source>Requesting subscription %1 error: %2</source>
         <translation>请求订阅 %1 错误: %2</translation>
     </message>
     <message>
+        <source>Subscription request finished: %1</source>
+        <translation>订阅请求完成：%1</translation>
+    </message>
+    <message>
+        <source>Subscription parse: %1</source>
+        <translation>订阅解析：%1</translation>
+    </message>
+    <message>
+        <source>Empty subscription response; existing profiles are kept.</source>
+        <translation>订阅返回内容为空，已保留现有配置。</translation>
+    </message>
+    <message>
         <source>Nothing</source>
         <translation>无</translation>
+    </message>
+    <message>
+        <source>Added %1 profiles:
+%2
+Deleted %3 profiles:
+%4</source>
+        <translation>已添加 %1 个配置：
+%2
+已删除 %3 个配置：
+%4</translation>
     </message>
     <message>
         <source>Change of %1:</source>
         <translation>%1 变化:</translation>
     </message>
     <message>
+        <source>No usable profile found in the input.</source>
+        <translation>输入内容中没有可用的配置。</translation>
+    </message>
+    <message>
+        <source>Imported %1 profile(s)</source>
+        <translation>导入了 %1 个配置</translation>
+    </message>
+    <message>
         <source>Select</source>
         <translation>选择</translation>
     </message>
     <message>
-        <source>Clearing servers...</source>
-        <translation>正在清理服务器...</translation>
-    </message>
-    <message>
-        <source>Subscription request fininshed: %1</source>
-        <translation>订阅请求完成: %1</translation>
-    </message>
-    <message>
-        <source>Core exited, restarting.</source>
-        <translation>Core 退出，正在重新启动。</translation>
-    </message>
-    <message>
-        <source>Core exits too frequently, stop automatic restart this profile.</source>
-        <translation>Core 退出太频繁，停止自动重启。</translation>
-    </message>
-    <message>
-        <source>As Subscription (create new group)</source>
-        <translation>作为订阅（创建新组）</translation>
-    </message>
-    <message>
-        <source>As Subscription (add to this group)</source>
-        <translation>作为订阅（添加到该组）</translation>
-    </message>
-    <message>
         <source>Default</source>
         <translation>默认</translation>
-    </message>
-</context>
-<context>
-    <name>Qv2ray::ui::widgets::AutoCompleteTextEdit</name>
-    <message>
-        <source>You can not input space characters here.</source>
-        <translation></translation>
     </message>
 </context>
 </TS>

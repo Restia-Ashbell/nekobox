@@ -184,7 +184,7 @@
             <item>
              <widget class="QLabel" name="label_15">
               <property name="text">
-               <string notr="true">Language</string>
+               <string>Language</string>
               </property>
              </widget>
             </item>
@@ -432,7 +432,7 @@
        <item row="0" column="1">
         <widget class="QGroupBox" name="groupBox_9">
          <property name="title">
-          <string>Tun</string>
+          <string notr="true">Tun</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_11">
           <item row="0" column="0">
@@ -444,7 +444,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string notr="true">Stack</string>
+             <string>Stack</string>
             </property>
            </widget>
           </item>
@@ -495,7 +495,7 @@
           <item row="3" column="0" colspan="2">
            <widget class="QCheckBox" name="tun_strict_route">
             <property name="text">
-             <string notr="true">Strict Route</string>
+             <string>Strict Route</string>
             </property>
            </widget>
           </item>
@@ -505,7 +505,7 @@
        <item row="0" column="0">
         <widget class="QGroupBox" name="groupBox_8">
          <property name="title">
-          <string>Mixed</string>
+          <string notr="true">Mixed</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_10">
           <item row="0" column="0">
@@ -553,17 +553,17 @@
             </property>
             <item>
              <property name="text">
-              <string>127.0.0.1</string>
+              <string notr="true">127.0.0.1</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>0.0.0.0</string>
+              <string notr="true">0.0.0.0</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>::</string>
+              <string notr="true">::</string>
              </property>
             </item>
            </widget>
@@ -621,7 +621,7 @@
        <item row="0" column="1">
         <widget class="QGroupBox" name="groupBox_5">
          <property name="title">
-          <string>Clash API</string>
+          <string notr="true">Clash API</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_6">
           <item row="0" column="0">
@@ -643,7 +643,7 @@
              <string/>
             </property>
             <property name="placeholderText">
-             <string>127.0.0.1:9090</string>
+             <string notr="true">127.0.0.1:9090</string>
             </property>
            </widget>
           </item>
@@ -658,17 +658,17 @@
            <widget class="QComboBox" name="clash_api_dashboard">
             <item>
              <property name="text">
-              <string>yacd-meta</string>
+              <string notr="true">yacd-meta</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>metacubexd</string>
+              <string notr="true">metacubexd</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>zashboard</string>
+              <string notr="true">zashboard</string>
              </property>
             </item>
            </widget>
@@ -696,7 +696,7 @@
        <item row="1" column="0">
         <widget class="QGroupBox" name="groupBox_6">
          <property name="title">
-          <string>NTP</string>
+          <string notr="true">NTP</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
           <item row="0" column="0">
@@ -751,17 +751,17 @@
            <widget class="QComboBox" name="ntp_interval">
             <item>
              <property name="text">
-              <string>5m</string>
+              <string notr="true">5m</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>10m</string>
+              <string notr="true">10m</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>30m</string>
+              <string notr="true">30m</string>
              </property>
             </item>
            </widget>

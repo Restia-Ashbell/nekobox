@@ -283,7 +283,7 @@
               <string>Match case</string>
              </property>
              <property name="text">
-              <string>Aa</string>
+              <string notr="true">Aa</string>
              </property>
             </widget>
            </item>
@@ -702,7 +702,7 @@
     <string>Stop Testing</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+S</string>
+    <string notr="true">Ctrl+Shift+S</string>
    </property>
   </action>
   <action name="actionOpen_Dashboard">

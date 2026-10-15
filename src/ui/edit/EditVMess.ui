@@ -63,7 +63,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>UUID</string>
+      <string notr="true">UUID</string>
      </property>
     </widget>
    </item>

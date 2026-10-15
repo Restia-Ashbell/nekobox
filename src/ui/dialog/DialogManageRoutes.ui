@@ -147,7 +147,7 @@ For sing-box, it sets inbound.domain_strategy</string>
      </widget>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
-       <string>DNS</string>
+       <string notr="true">DNS</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
