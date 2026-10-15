@@ -1,5 +1,7 @@
 #include "profile/ConfigItem.hpp"
 
+#include <QSaveFile>
+
 namespace NekoGui_ConfigItem {
 
     QJsonObject JsonStore::ToJson(const QStringList &without) {
@@ -100,13 +102,11 @@ namespace NekoGui_ConfigItem {
             return false;
         }
 
-        QFile file(fn);
-        if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate)) {
-            MessageBoxWarning("error", "can not open config " + fn + "\n" + file.errorString());
+        QSaveFile file(fn);
+        if (!file.open(QIODevice::WriteOnly) || file.write(save_content) != save_content.size() || !file.commit()) {
+            MessageBoxWarning("error", "can not write config " + fn + "\n" + file.errorString());
             return false;
         }
-        file.write(save_content);
-        file.close();
         last_save_hash = new_hash;
 
         return changed;
