@@ -402,8 +402,6 @@ void MainWindow::dialog_message_impl(const QString &sender, const QString &info)
     } else if (sender == "ExternalProcess") {
         if (info == "Crashed") {
             neko_stop();
-        } else if (info.startsWith("CoreStarted")) {
-            neko_start(info.split(",")[1].toInt());
         }
     }
 }

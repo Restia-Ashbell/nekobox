@@ -30,9 +30,7 @@ void ProxyItem::refresh_data() {
 }
 
 void ProxyItem::on_remove_clicked() {
-    if (!this->remove_confirm ||
-        QMessageBox::question(this, tr("Confirmation"), tr("Remove %1?").arg(ent->bean->DisplayName())) == QMessageBox::StandardButton::Yes) {
-        // TODO do remove (or not) -> callback
+    if (QMessageBox::question(this, tr("Confirmation"), tr("Remove %1?").arg(ent->bean->DisplayName())) == QMessageBox::StandardButton::Yes) {
         delete item;
     }
 }

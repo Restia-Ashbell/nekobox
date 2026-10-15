@@ -34,6 +34,8 @@ namespace NekoGui_network {
                 proxy.setPassword(NekoGui::dataStore->inbound_auth->password);
             }
             networkManager->setProxy(proxy);
+        } else {
+            networkManager->setProxy(QNetworkProxy::NoProxy);
         }
 
         QNetworkRequest request(url);

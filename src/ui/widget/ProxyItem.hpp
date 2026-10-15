@@ -27,7 +27,6 @@ public:
 
     std::shared_ptr<NekoGui::ProxyEntity> ent;
     QListWidgetItem *item;
-    bool remove_confirm = false;
 
 private:
     Ui::ProxyItem *ui;

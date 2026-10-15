@@ -44,7 +44,7 @@ namespace NekoGui_fmt {
             relay["zero_rtt_handshake"] = zeroRttHandshake;
             relay["disable_sni"] = disableSni;
             if (!heartbeat.trimmed().isEmpty()) relay["heartbeat"] = heartbeat;
-            if (!alpn.trimmed().isEmpty()) relay["alpn"] = QList2QJsonArray(alpn.split(","));
+            if (!alpn.trimmed().isEmpty()) relay["alpn"] = QJsonArray::fromStringList(alpn.split(","));
 
             if (!caText.trimmed().isEmpty()) {
                 QJsonArray certificate;

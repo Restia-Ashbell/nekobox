@@ -27,7 +27,7 @@ namespace NekoGui_fmt {
             } else if (network == "http") {
                 if (security != "tls") transport["method"] = "GET";
                 if (!path.isEmpty()) transport["path"] = path;
-                if (!host.isEmpty()) transport["host"] = QList2QJsonArray(host.split(","));
+                if (!host.isEmpty()) transport["host"] = QJsonArray::fromStringList(host.split(","));
             } else if (network == "grpc") {
                 if (!path.isEmpty()) transport["service_name"] = path;
             } else if (network == "httpupgrade") {
@@ -49,7 +49,7 @@ namespace NekoGui_fmt {
             }
             if (disable_sni) tls["disable_sni"] = true;
             if (!sni.trimmed().isEmpty()) tls["server_name"] = sni;
-            if (!alpn.trimmed().isEmpty()) tls["alpn"] = QList2QJsonArray(alpn.split(","));
+            if (!alpn.trimmed().isEmpty()) tls["alpn"] = QJsonArray::fromStringList(alpn.split(","));
             QString fp = utlsFingerprint;
             if (fp.isEmpty()) fp = NekoGui::dataStore->utlsFingerprint;
             if (!reality_pbk.trimmed().isEmpty()) {
@@ -190,7 +190,6 @@ namespace NekoGui_fmt {
             {"server_port", serverPort},
         };
 
-        QJsonObject settings;
         if (proxy_type == proxy_VLESS) {
             if (flow.right(7) == "-udp443") {
                 // 检查末尾是否包含"-udp443"，如果是，则删去
@@ -221,7 +220,7 @@ namespace NekoGui_fmt {
             {"certificate", caText.trimmed()},
             {"server_name", sni},
         };
-        if (!alpn.trimmed().isEmpty()) coreTlsObj["alpn"] = QList2QJsonArray(alpn.split(","));
+        if (!alpn.trimmed().isEmpty()) coreTlsObj["alpn"] = QJsonArray::fromStringList(alpn.split(","));
         if (proxy_type == proxy_Hysteria2) coreTlsObj["alpn"] = "h3";
 
         QJsonObject outbound{

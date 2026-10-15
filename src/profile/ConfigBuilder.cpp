@@ -528,7 +528,7 @@ namespace NekoGui {
                 if (!externalProcessPaths.isEmpty()) {
                     QJsonObject rule{
                         {"outbound", "direct"},
-                        {"process_path", QList2QJsonArray(externalProcessPaths)},
+                        {"process_path", QJsonArray::fromStringList(externalProcessPaths)},
                     };
                     routeRules += rule;
                 }
