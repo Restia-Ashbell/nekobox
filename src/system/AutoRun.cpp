@@ -3,56 +3,38 @@
 #include <QApplication>
 #include <QDir>
 
-#include "profile/DataStore.hpp"
-
-// macOS headers (possibly OBJ-c)
-#if defined(Q_OS_MACOS)
-#include <CoreFoundation/CoreFoundation.h>
-#include <CoreServices/CoreServices.h>
-#endif
-
 #ifdef Q_OS_WIN
 
 #include <QSettings>
 
-QString Windows_GenAutoRunString() {
-    auto appPath = QApplication::applicationFilePath();
-    appPath = "\"" + QDir::toNativeSeparators(appPath) + "\"";
-    appPath += " -tray";
-    return appPath;
-}
-
 void AutoRun_SetEnabled(bool enable) {
-    // 以程序名称作为注册表中的键
-    // 根据键获取对应的值（程序路径）
-    auto appPath = QApplication::applicationFilePath();
-    QFileInfo fInfo(appPath);
-    QString name = fInfo.baseName();
-
     QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
 
+    QString appPath = QDir::toNativeSeparators(QApplication::applicationFilePath());
+    QString appName = QFileInfo(appPath).baseName();
+
     if (enable) {
-        settings.setValue(name, Windows_GenAutoRunString());
+        settings.setValue(appName, QString("\"%1\" -tray").arg(appPath));
     } else {
-        settings.remove(name);
+        settings.remove(appName);
     }
 }
 
 bool AutoRun_IsEnabled() {
     QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
 
-    // 以程序名称作为注册表中的键
-    // 根据键获取对应的值（程序路径）
-    auto appPath = QApplication::applicationFilePath();
-    QFileInfo fInfo(appPath);
-    QString name = fInfo.baseName();
+    QString appPath = QDir::toNativeSeparators(QApplication::applicationFilePath());
+    QString appName = QFileInfo(appPath).baseName();
 
-    return settings.value(name).toString() == Windows_GenAutoRunString();
+    return settings.value(appName).toString() == QString("\"%1\" -tray").arg(appPath);
 }
 
 #endif
 
 #ifdef Q_OS_MACOS
+
+#include <CoreFoundation/CoreFoundation.h>
+#include <CoreServices/CoreServices.h>
 
 void AutoRun_SetEnabled(bool enable) {
     // From
