@@ -11,6 +11,9 @@
 #include <QInputDialog>
 #include <QLabel>
 #include <QMessageBox>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QPainter>
 #include <QPlainTextEdit>
 #include <QScrollBar>
@@ -26,7 +29,6 @@
 
 #include "3rdparty/qv2ray/v2/components/proxy/QvProxyConfigurator.hpp"
 #include "3rdparty/qv2ray/v2/ui/LogHighlighter.hpp"
-#include "network/HttpRequestHelper.hpp"
 #include "profile/ConfigBuilder.hpp"
 #include "profile/ProfileFilter.hpp"
 #include "profile/traffic/TrafficLooper.hpp"
@@ -51,8 +53,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // Load Manager
     NekoGui::profileManager->LoadManager();
-
-    NekoGui_network::networkManager = new QNetworkAccessManager(this);
 
     // Setup misc UI
     ui->setupUi(this);
@@ -1461,16 +1461,24 @@ void MainWindow::RegisterHotkey(bool unregister) {
 void MainWindow::CheckUpdate() {
     QUrl url("https://api.github.com/repos/Restia-Ashbell/nekobox/releases");
 
-    NekoGui_network::NetworkRequestHelper::HttpGet(url, [this](const NekoGui_network::NekoHTTPResponse &resp) {
-        if (!resp.error.isEmpty()) {
+    QNetworkRequest request(url);
+    request.setTransferTimeout(10000);
+    auto *manager = new QNetworkAccessManager(this);
+    QNetworkReply *reply = manager->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [this, reply, manager] {
+        reply->deleteLater();
+        manager->deleteLater();
+
+        if (reply->error() != QNetworkReply::NetworkError::NoError) {
             QMessageBox::warning(
                 this,
                 tr("Update Check Failed"),
-                tr("Network error: %1").arg(resp.error));
+                tr("Network error: %1").arg(reply->errorString()));
             return;
         }
 
-        QJsonObject jsonObj = QJsonDocument::fromJson(resp.data).array().at(0).toObject();
+        QJsonObject jsonObj = QJsonDocument::fromJson(reply->readAll()).array().at(0).toObject();
         QString latestVersion = jsonObj.value("tag_name").toString();
         QString releaseUrl = jsonObj.value("html_url").toString();
 

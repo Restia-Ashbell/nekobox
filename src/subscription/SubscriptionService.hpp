@@ -1,13 +1,11 @@
 #pragma once
 
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QSet>
 #include <QString>
 
 #include "profile/ProxyEntity.hpp"
-
-namespace NekoGui_network {
-    struct NekoHTTPResponse;
-}
 
 namespace NekoGui_sub {
 
@@ -51,10 +49,11 @@ namespace NekoGui_sub {
 
     private:
         QSet<int> m_inflight;
+        QNetworkAccessManager m_nam;
 
         void startUpdate(int gid);
 
-        void onNetworkResponse(int gid, const NekoGui_network::NekoHTTPResponse &resp);
+        void onNetworkResponse(int gid, QNetworkReply *reply);
 
         void applySubscription(int gid, const QString &content);
 

@@ -1,10 +1,11 @@
 #include "SubscriptionService.hpp"
 
 #include <QDateTime>
+#include <QNetworkProxy>
+#include <QNetworkRequest>
 #include <QUrl>
 
 #include "common/Utils.hpp"
-#include "network/HttpRequestHelper.hpp"
 #include "profile/DataStore.hpp"
 #include "profile/ProfileFilter.hpp"
 #include "profile/ProfileManager.hpp"
@@ -13,6 +14,13 @@
 namespace NekoGui_sub {
 
     SubscriptionService *subService = new SubscriptionService;
+
+    static QByteArray getHeader(const QList<QPair<QByteArray, QByteArray>> &headers, const QByteArray &name) {
+        for (const auto &[k, v]: headers) {
+            if (k.toLower() == name.toLower()) return v;
+        }
+        return {};
+    }
 
     bool SubscriptionService::isUpdating(int gid) const {
         return m_inflight.contains(gid);
@@ -29,7 +37,7 @@ namespace NekoGui_sub {
         m_inflight.insert(gid);
         emit taskStarted(gid);
         MW_show_log(">>>>>>>> " + QObject::tr("Requesting subscription: %1")
-                                  .arg(group->name.isEmpty() ? group->url : group->name));
+                                      .arg(group->name.isEmpty() ? group->url : group->name));
         startUpdate(gid);
     }
 
@@ -46,7 +54,7 @@ namespace NekoGui_sub {
             m_inflight.insert(gid);
             emit taskStarted(gid);
             MW_show_log(">>>>>>>> " + QObject::tr("Requesting subscription: %1")
-                                      .arg(g->name.isEmpty() ? g->url : g->name));
+                                          .arg(g->name.isEmpty() ? g->url : g->name));
             startUpdate(gid);
             started++;
         }
@@ -94,13 +102,37 @@ namespace NekoGui_sub {
             return;
         }
 
-        QUrl url(group->url);
-        NekoGui_network::NetworkRequestHelper::HttpGet(url, [gid, this](const NekoGui_network::NekoHTTPResponse &resp) {
-            onNetworkResponse(gid, resp);
+        if (NekoGui::dataStore->sub_use_proxy && NekoGui::dataStore->started_id >= 0) {
+            QNetworkProxy proxy;
+            proxy.setType(QNetworkProxy::HttpProxy);
+            proxy.setHostName("127.0.0.1");
+            proxy.setPort(NekoGui::dataStore->inbound_port);
+            if (NekoGui::dataStore->inbound_auth->NeedAuth()) {
+                proxy.setUser(NekoGui::dataStore->inbound_auth->username);
+                proxy.setPassword(NekoGui::dataStore->inbound_auth->password);
+            }
+            m_nam.setProxy(proxy);
+        } else {
+            m_nam.setProxy(QNetworkProxy::NoProxy);
+        }
+
+        QNetworkRequest request(QUrl(group->url));
+        request.setTransferTimeout(10000);
+        request.setHeader(QNetworkRequest::KnownHeaders::UserAgentHeader, NekoGui::dataStore->GetUserAgent());
+        if (NekoGui::dataStore->sub_insecure) {
+            QSslConfiguration ssl;
+            ssl.setPeerVerifyMode(QSslSocket::PeerVerifyMode::VerifyNone);
+            request.setSslConfiguration(ssl);
+        }
+
+        QNetworkReply *reply = m_nam.get(request);
+        QObject::connect(reply, &QNetworkReply::finished, this, [this, gid, reply] {
+            reply->deleteLater();
+            onNetworkResponse(gid, reply);
         });
     }
 
-    void SubscriptionService::onNetworkResponse(int gid, const NekoGui_network::NekoHTTPResponse &resp) {
+    void SubscriptionService::onNetworkResponse(int gid, QNetworkReply *reply) {
         if (!isUpdating(gid)) return; // 已被移除（理论上不会发生）
 
         auto group = NekoGui::profileManager->GetGroup(gid);
@@ -110,11 +142,11 @@ namespace NekoGui_sub {
         }
 
         // 网络错误：保留旧节点并记录失败
-        if (!resp.error.isEmpty()) {
+        if (reply->error() != QNetworkReply::NetworkError::NoError) {
             auto report = UpdateReport{
                 .status = TaskStatus::FailedNetwork,
                 .message = QObject::tr("Requesting subscription %1 error: %2")
-                               .arg(group->name, resp.error + "\n" + resp.data),
+                               .arg(group->name, reply->errorString() + "\n" + reply->readAll()),
             };
             MW_show_log("<<<<<<<< " + report.message);
             group->Save();
@@ -122,15 +154,18 @@ namespace NekoGui_sub {
             return;
         }
 
+        auto data = reply->readAll();
+        auto headers = reply->rawHeaderPairs();
+
         // 成功：更新分组元信息（名称来自 Content-Disposition / info 解析自 Subscription-UserInfo）
         MW_show_log("<<<<<<<< " + QObject::tr("Subscription request finished: %1").arg(group->name));
         if (group->name.isEmpty()) {
-            QString parsedName = SubscriptionParser::parseSubName(NekoGui_network::NetworkRequestHelper::GetHeader(resp.headers, "Content-Disposition"));
+            QString parsedName = SubscriptionParser::parseSubName(getHeader(headers, "Content-Disposition"));
             group->name = parsedName.isEmpty() ? QUrl(group->url).host() : parsedName;
         }
-        group->info = NekoGui_network::NetworkRequestHelper::GetHeader(resp.headers, "Subscription-UserInfo");
+        group->info = getHeader(headers, "Subscription-UserInfo");
 
-        applySubscription(gid, resp.data.trimmed());
+        applySubscription(gid, data.trimmed());
     }
 
     void SubscriptionService::applySubscription(int gid, const QString &content) {
@@ -141,7 +176,7 @@ namespace NekoGui_sub {
             MW_show_log(QObject::tr("Subscription parse: %1").arg(line));
         }
 
-        auto report = UpdateReport{.status = TaskStatus::Succeeded, .total = (int)nodes.count()};
+        auto report = UpdateReport{.status = TaskStatus::Succeeded, .total = (int) nodes.count()};
         auto group = NekoGui::profileManager->GetGroup(gid);
         if (group == nullptr || group->archive) {
             report.status = TaskStatus::Skipped;
