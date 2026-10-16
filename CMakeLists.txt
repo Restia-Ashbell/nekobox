@@ -1,6 +1,5 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.28)
 
-set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 project(nekobox LANGUAGES CXX)
@@ -9,15 +8,13 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (CMAKE_BUILD_TYPE MATCHES "Release")
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
-endif ()
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 
 # Version string from git
 execute_process(
-        COMMAND git describe --tags --always --dirty
-        OUTPUT_VARIABLE GIT_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE
+    COMMAND git describe --tags --always --dirty
+    OUTPUT_VARIABLE GIT_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 add_compile_definitions(NKR_VERSION="${GIT_VERSION}")
 
@@ -25,15 +22,16 @@ add_compile_definitions(NKR_VERSION="${GIT_VERSION}")
 find_package(Qt6 REQUIRED COMPONENTS Widgets Network LinguistTools Concurrent)
 
 # Platform-specific sources, libraries and options
-if (WIN32)
+if(WIN32)
     set(PLATFORM_SOURCES res/neko.rc)
     set(PLATFORM_LIBRARIES wininet rasapi32)
-    add_definitions(-DUNICODE -D_UNICODE -DNOMINMAX)
-    if (MSVC)
-        add_compile_options("/utf-8")
-    endif ()
-endif ()
+    add_compile_definitions(UNICODE _UNICODE NOMINMAX)
+    if(MSVC)
+        add_compile_options(/utf-8)
+    endif()
+endif()
 
+# Dependencies
 set(BUILD_SHARED_LIBS OFF)
 set(QHOTKEY_INSTALL OFF)
 set(YAML_CPP_BUILD_TOOLS OFF)
@@ -41,139 +39,130 @@ set(YAML_MSVC_SHARED_RT ON)
 set(ZXING_EXAMPLES OFF)
 
 include(FetchContent)
+
 FetchContent_Declare(
-        QJsonModel
-        GIT_REPOSITORY https://github.com/dridk/QJsonModel.git
-        GIT_TAG master
+    QJsonModel
+    GIT_REPOSITORY https://github.com/dridk/QJsonModel.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE
+    EXCLUDE_FROM_ALL
 )
 FetchContent_Declare(
-        QHotkey
-        GIT_REPOSITORY https://github.com/Skycoder42/QHotkey.git
-        GIT_TAG master
+    QHotkey
+    GIT_REPOSITORY https://github.com/Skycoder42/QHotkey.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE
+    EXCLUDE_FROM_ALL
 )
 FetchContent_Declare(
-        yaml-cpp
-        GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
-        GIT_TAG master
+    yaml-cpp
+    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE
+    EXCLUDE_FROM_ALL
 )
 FetchContent_Declare(
-        zxing-cpp
-        GIT_REPOSITORY https://github.com/zxing-cpp/zxing-cpp.git
-        GIT_TAG master
-        EXCLUDE_FROM_ALL
+    zxing-cpp
+    GIT_REPOSITORY https://github.com/zxing-cpp/zxing-cpp.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE
+    EXCLUDE_FROM_ALL
 )
-if (EXISTS ${CMAKE_SOURCE_DIR}/../sing-box)
-    FetchContent_Declare(
-        sing-box
-        SOURCE_DIR ${CMAKE_SOURCE_DIR}/../sing-box
-    )
-else()
-    FetchContent_Declare(
-        sing-box
-        GIT_REPOSITORY https://github.com/Restia-Ashbell/sing-box.git
-        GIT_TAG nekobox
-    )
+FetchContent_Declare(
+    sing-box
+    GIT_REPOSITORY https://github.com/Restia-Ashbell/sing-box.git
+    GIT_TAG nekobox
+    GIT_SHALLOW TRUE
+)
+
+if(EXISTS ${CMAKE_SOURCE_DIR}/../sing-box)
+    set(FETCHCONTENT_SOURCE_DIR_SING-BOX ${CMAKE_SOURCE_DIR}/../sing-box)
 endif()
 FetchContent_MakeAvailable(QJsonModel QHotkey yaml-cpp zxing-cpp sing-box)
 
 # internal compiler error
 if(MINGW)
-    set_target_properties(ZXing PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
+    set_target_properties(ZXing PROPERTIES INTERPROCEDURAL_OPTIMIZATION_RELEASE OFF)
 endif()
 
 set(LIBBOX_SRC_DIR ${sing-box_SOURCE_DIR})
-set(LIBBOX_OUTPUT "${CMAKE_BINARY_DIR}/libbox${CMAKE_SHARED_LIBRARY_SUFFIX}")
-
 execute_process(
-        COMMAND git rev-parse --short HEAD
-        WORKING_DIRECTORY ${LIBBOX_SRC_DIR}
-        OUTPUT_VARIABLE LIBBOX_GIT_HASH
-        OUTPUT_STRIP_TRAILING_WHITESPACE
+    COMMAND git rev-parse --short HEAD
+    WORKING_DIRECTORY ${LIBBOX_SRC_DIR}
+    OUTPUT_VARIABLE LIBBOX_GIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-file(GLOB_RECURSE LIBBOX_SOURCES "${LIBBOX_SRC_DIR}/*.go")
+set(LIBBOX_LDFLAGS "-w -s -X github.com/sagernet/sing-box/constant.Version=${LIBBOX_GIT_HASH} -checklinkname=0")
+set(LIBBOX_SHARED_LIBRARY ${CMAKE_BINARY_DIR}/libbox${CMAKE_SHARED_LIBRARY_SUFFIX})
+set(LIBBOX_LINK_LIBRARY ${LIBBOX_SHARED_LIBRARY})
+set(LIBBOX_OUTPUTS ${LIBBOX_SHARED_LIBRARY})
 if(MSVC)
-    set(LIBBOX_LIB "${CMAKE_BINARY_DIR}/libbox.lib")
-    add_custom_command(
-        OUTPUT ${LIBBOX_OUTPUT} ${LIBBOX_LIB}
-        COMMAND go build -v -buildmode=c-shared -trimpath
-                -ldflags "-w -s -X github.com/sagernet/sing-box/constant.Version=${LIBBOX_GIT_HASH} -checklinkname=0 -extldflags '-Wl,--out-implib,${LIBBOX_LIB}'"
-                -tags "with_clash_api,with_gvisor,with_quic,with_wireguard,with_utls,with_dhcp,badlinkname,tfogo_checklinkname0"
-                -o ${LIBBOX_OUTPUT} ./cmd/sing-box
-        WORKING_DIRECTORY ${LIBBOX_SRC_DIR}
-        DEPENDS ${LIBBOX_SOURCES}
-        COMMENT "Building Go shared library and converting to MSVC .lib"
-    )
-    set(LIBBOX_LINK_TARGET ${LIBBOX_LIB})
-else()
-    add_custom_command(
-        OUTPUT ${LIBBOX_OUTPUT}
-        COMMAND go build -v -buildmode=c-shared -trimpath
-                -ldflags "-w -s -X github.com/sagernet/sing-box/constant.Version=${LIBBOX_GIT_HASH} -checklinkname=0"
-                -tags "with_clash_api,with_gvisor,with_quic,with_wireguard,with_utls,with_dhcp,badlinkname,tfogo_checklinkname0"
-                -o ${LIBBOX_OUTPUT} ./cmd/sing-box
-        WORKING_DIRECTORY ${LIBBOX_SRC_DIR}
-        DEPENDS ${LIBBOX_SOURCES}
-        COMMENT "Building Go shared library"
-    )
-    set(LIBBOX_LINK_TARGET ${LIBBOX_OUTPUT})
+    set(LIBBOX_IMPORT_LIBRARY ${CMAKE_BINARY_DIR}/libbox.lib)
+    set(LIBBOX_LINK_LIBRARY ${LIBBOX_IMPORT_LIBRARY})
+    list(APPEND LIBBOX_OUTPUTS ${LIBBOX_IMPORT_LIBRARY})
+    string(APPEND LIBBOX_LDFLAGS " -extldflags '-Wl,--out-implib,${LIBBOX_IMPORT_LIBRARY}'")
 endif()
 
-add_custom_target(BuildCore ALL DEPENDS ${LIBBOX_OUTPUT})
+file(GLOB_RECURSE LIBBOX_SOURCES CONFIGURE_DEPENDS "${LIBBOX_SRC_DIR}/*.go")
+add_custom_command(
+    OUTPUT ${LIBBOX_OUTPUTS}
+    BYPRODUCTS ${CMAKE_BINARY_DIR}/libbox.h
+    COMMAND go build -v -buildmode=c-shared -trimpath
+            -ldflags "${LIBBOX_LDFLAGS}"
+            -tags "with_clash_api,with_gvisor,with_quic,with_wireguard,with_utls,with_dhcp,badlinkname,tfogo_checklinkname0"
+            -o ${LIBBOX_SHARED_LIBRARY} ./cmd/sing-box
+    WORKING_DIRECTORY ${LIBBOX_SRC_DIR}
+    DEPENDS ${LIBBOX_SOURCES} ${LIBBOX_SRC_DIR}/go.mod ${LIBBOX_SRC_DIR}/go.sum
+    COMMENT "Building Go shared library"
+)
+add_custom_target(libbox DEPENDS ${LIBBOX_OUTPUTS})
 
 # Sources
-file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS
-        src/*
-        3rdparty/*
-)
+file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS src/* 3rdparty/*)
 
-list(APPEND PROJECT_SOURCES
-        ${PLATFORM_SOURCES}
-        res/neko.qrc
-)
-
-# Qt exe
 qt_add_executable(nekobox
-        WIN32 MACOSX_BUNDLE
-        ${PROJECT_SOURCES}
+    WIN32 MACOSX_BUNDLE
+    ${PROJECT_SOURCES}
+    ${PLATFORM_SOURCES}
+    res/neko.qrc
 )
-add_dependencies(nekobox BuildCore)
+add_dependencies(nekobox libbox)
 
-# Target
+set_target_properties(nekobox PROPERTIES
+    AUTOMOC ON
+    AUTOUIC ON
+    AUTORCC ON
+)
 
-set_property(TARGET nekobox PROPERTY AUTOUIC ON)
-set_property(TARGET nekobox PROPERTY AUTOMOC ON)
-set_property(TARGET nekobox PROPERTY AUTORCC ON)
-
-if (APPLE)
+if(APPLE)
     set(MACOSX_ICON ${CMAKE_SOURCE_DIR}/res/nekobox.icns)
     target_sources(nekobox PRIVATE ${MACOSX_ICON})
     set_target_properties(nekobox PROPERTIES
-            MACOSX_BUNDLE_ICON_FILE "nekobox.icns"
-            RESOURCE ${MACOSX_ICON}
-            MACOSX_BUNDLE_GUI_IDENTIFIER moe.nekobox.macosx
+        MACOSX_BUNDLE_ICON_FILE nekobox.icns
+        RESOURCE ${MACOSX_ICON}
+        MACOSX_BUNDLE_GUI_IDENTIFIER moe.nekobox.macosx
     )
-endif ()
+endif()
 
-if (WIN32)
+if(WIN32)
     FetchContent_Declare(
-            NotoFlagFont
-            URL https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/fonts/NotoColorEmoji-flagsonly.ttf
-            DOWNLOAD_NO_EXTRACT TRUE
-            # TLS_VERIFY FALSE
+        NotoFlagFont
+        URL https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/fonts/NotoColorEmoji-flagsonly.ttf
+        DOWNLOAD_NO_EXTRACT TRUE
+        TLS_VERIFY FALSE
     )
     FetchContent_MakeAvailable(NotoFlagFont)
-    set(FLAG_FONT_FILE ${notoflagfont_SOURCE_DIR}/NotoColorEmoji-flagsonly.ttf)
-    set_source_files_properties(${FLAG_FONT_FILE} PROPERTIES QT_RESOURCE_ALIAS fonts/NotoColorEmoji-flagsonly.ttf)
+    set(NOTO_FLAG_FONT_FILE ${notoflagfont_SOURCE_DIR}/NotoColorEmoji-flagsonly.ttf)
+    set_source_files_properties(${NOTO_FLAG_FONT_FILE} PROPERTIES QT_RESOURCE_ALIAS fonts/NotoColorEmoji-flagsonly.ttf)
 
-    qt_add_resources(nekobox "emoji_fonts"
+    qt_add_resources(nekobox emoji_fonts
         FILES
-            ${FLAG_FONT_FILE}
+            ${NOTO_FLAG_FONT_FILE}
     )
-endif ()
+endif()
 
-# Target Source Translations
-
+# Translations
 qt_add_translations(nekobox
     TS_FILES
         translations/zh_CN.ts
@@ -185,13 +174,10 @@ qt_add_translations(nekobox
     MERGE_QT_TRANSLATIONS
 )
 
-# Target Link
+target_include_directories(nekobox PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
-target_include_directories(nekobox PRIVATE
-        ${CMAKE_SOURCE_DIR}/src
-)
-
-target_link_libraries(nekobox PRIVATE
+target_link_libraries(nekobox
+    PRIVATE
         Qt::Widgets
         Qt::Network
         Qt::Concurrent
@@ -200,7 +186,7 @@ target_link_libraries(nekobox PRIVATE
         QHotkey::QHotkey
         yaml-cpp::yaml-cpp
         ZXing::ZXing
-        ${LIBBOX_LINK_TARGET}
+        ${LIBBOX_LINK_LIBRARY}
 )
 
 install(TARGETS nekobox
@@ -208,13 +194,11 @@ install(TARGETS nekobox
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-set(deploy_tool_options_arg "")
-set(DEPLOY_EXTRA_ARGS "")
 if(APPLE)
     set(deploy_tool_options_arg -libpath=${CMAKE_BINARY_DIR})
 elseif(WIN32)
     set(deploy_tool_options_arg --no-system-d3d-compiler --no-system-dxc-compiler --no-opengl-sw)
-    install(FILES ${LIBBOX_OUTPUT} DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(FILES ${LIBBOX_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
 elseif(LINUX)
     set_target_properties(nekobox PROPERTIES
         INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}"
