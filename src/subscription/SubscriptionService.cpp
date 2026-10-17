@@ -5,8 +5,6 @@
 #include <QNetworkRequest>
 #include <QUrl>
 
-#include "common/Utils.hpp"
-#include "profile/DataStore.hpp"
 #include "profile/ProfileFilter.hpp"
 #include "profile/ProfileManager.hpp"
 #include "subscription/SubscriptionParser.hpp"
@@ -106,11 +104,8 @@ namespace NekoGui_sub {
             QNetworkProxy proxy;
             proxy.setType(QNetworkProxy::HttpProxy);
             proxy.setHostName("127.0.0.1");
-            proxy.setPort(NekoGui::dataStore->inbound_port);
-            if (NekoGui::dataStore->inbound_auth->NeedAuth()) {
-                proxy.setUser(NekoGui::dataStore->inbound_auth->username);
-                proxy.setPassword(NekoGui::dataStore->inbound_auth->password);
-            }
+            proxy.setUser(NekoGui::dataStore->inbound_username);
+            proxy.setPassword(NekoGui::dataStore->inbound_password);
             m_nam.setProxy(proxy);
         } else {
             m_nam.setProxy(QNetworkProxy::NoProxy);
@@ -118,7 +113,7 @@ namespace NekoGui_sub {
 
         QNetworkRequest request(QUrl(group->url));
         request.setTransferTimeout(10000);
-        request.setHeader(QNetworkRequest::KnownHeaders::UserAgentHeader, NekoGui::dataStore->GetUserAgent());
+        request.setHeader(QNetworkRequest::UserAgentHeader, NekoGui::dataStore->user_agent.isEmpty() ? UserAgent() : NekoGui::dataStore->user_agent);
         if (NekoGui::dataStore->sub_insecure) {
             QSslConfiguration ssl;
             ssl.setPeerVerifyMode(QSslSocket::PeerVerifyMode::VerifyNone);
@@ -185,7 +180,7 @@ namespace NekoGui_sub {
             return;
         }
 
-        auto oldProfiles = group->Profiles();
+        auto oldProfiles = NekoGui::profileManager->Profiles(group->id);
 
         // 空结果守卫：已有节点时绝不应用空结果（防止远端异常把订阅清空）
         if (nodes.isEmpty() && !oldProfiles.isEmpty()) {

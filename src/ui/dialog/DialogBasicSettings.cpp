@@ -21,7 +21,7 @@ public:
     QLineEdit *lineEdit_path;
     QPushButton *pushButton_pick;
 
-    explicit ExtraCoreWidget(QJsonObject *extraCore, const QString &coreName_,
+    explicit ExtraCoreWidget(QVariantMap *extraCore, const QString &coreName_,
                              QWidget *parent = nullptr)
         : QWidget(parent) {
         coreName = coreName_;
@@ -116,16 +116,17 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     // Subscription
 
     ui->user_agent->setText(NekoGui::dataStore->user_agent);
-    ui->user_agent->setPlaceholderText(NekoGui::dataStore->GetUserAgent(true));
+    ui->user_agent->setPlaceholderText(UserAgent());
     D_LOAD_BOOL(sub_use_proxy)
     D_LOAD_BOOL(sub_insecure)
     D_LOAD_INT_ENABLE(sub_auto_update, sub_auto_update_enable)
 
     // Inbound
 
-    refresh_auth();
     D_LOAD_COMBO_STRING(inbound_address)
     D_LOAD_INT(inbound_port)
+    ui->inbound_username->setText(NekoGui::dataStore->inbound_username);
+    ui->inbound_password->setText(NekoGui::dataStore->inbound_password);
     CACHE.custom_inbound = NekoGui::dataStore->custom_inbound;
 
     ui->tun_stack->addItems(Preset::SingBox::TunStack);
@@ -136,7 +137,7 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
 
     // Core
 
-    CACHE.extraCore = QString2QJsonObject(NekoGui::dataStore->extraCore->core_map);
+    CACHE.extraCore = NekoGui::dataStore->extra_core;
     if (!CACHE.extraCore.contains("naive")) CACHE.extraCore.insert("naive", "");
     if (!CACHE.extraCore.contains("hysteria")) CACHE.extraCore.insert("hysteria", "");
     if (!CACHE.extraCore.contains("hysteria2")) CACHE.extraCore.insert("hysteria2", "");
@@ -242,6 +243,8 @@ void DialogBasicSettings::accept() {
     // Inbound
     D_SAVE_COMBO_STRING(inbound_address)
     D_SAVE_INT(inbound_port)
+    NekoGui::dataStore->inbound_username = ui->inbound_username->text();
+    NekoGui::dataStore->inbound_password = ui->inbound_password->text();
     NekoGui::dataStore->custom_inbound = CACHE.custom_inbound;
 
     NekoGui::dataStore->tun_stack = ui->tun_stack->currentText();
@@ -250,7 +253,7 @@ void DialogBasicSettings::accept() {
     NekoGui::dataStore->tun_strict_route = ui->tun_strict_route->isChecked();
 
     // Core
-    NekoGui::dataStore->extraCore->core_map = QJsonObject2QString(CACHE.extraCore, true);
+    NekoGui::dataStore->extra_core = CACHE.extraCore;
 
     // Log
     NekoGui::dataStore->log_disabled = ui->log_disabled->isChecked();
@@ -283,17 +286,6 @@ void DialogBasicSettings::accept() {
     if (CACHE.needRestart) str << "NeedRestart";
     MW_dialog_message(Dialog_DialogBasicSettings, str.join(","));
     QDialog::accept();
-}
-
-// slots
-
-void DialogBasicSettings::refresh_auth() {
-    ui->inbound_auth->setText({});
-    if (NekoGui::dataStore->inbound_auth->NeedAuth()) {
-        ui->inbound_auth->setIcon(QIcon::fromTheme("system-lock-screen"));
-    } else {
-        ui->inbound_auth->setIcon({});
-    }
 }
 
 void DialogBasicSettings::on_set_custom_icon_clicked() {
@@ -349,38 +341,4 @@ void DialogBasicSettings::on_set_custom_icon_clicked() {
         return;
     }
     MW_dialog_message(Dialog_DialogBasicSettings, "UpdateIcon");
-}
-
-void DialogBasicSettings::on_inbound_auth_clicked() {
-    auto w = new QDialog(this);
-    w->setWindowTitle(tr("Inbound Auth"));
-    auto layout = new QGridLayout;
-    w->setLayout(layout);
-    //
-    auto user_l = new QLabel(tr("Username"));
-    auto pass_l = new QLabel(tr("Password"));
-    auto user = new QLineEdit;
-    auto pass = new QLineEdit;
-    user->setText(NekoGui::dataStore->inbound_auth->username);
-    pass->setText(NekoGui::dataStore->inbound_auth->password);
-    //
-    layout->addWidget(user_l, 0, 0);
-    layout->addWidget(user, 0, 1);
-    layout->addWidget(pass_l, 1, 0);
-    layout->addWidget(pass, 1, 1);
-    auto box = new QDialogButtonBox;
-    box->setOrientation(Qt::Horizontal);
-    box->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
-    connect(box, &QDialogButtonBox::accepted, w, [=, this] {
-        NekoGui::dataStore->inbound_auth->username = user->text();
-        NekoGui::dataStore->inbound_auth->password = pass->text();
-        MW_dialog_message(Dialog_DialogBasicSettings, "UpdateDataStore");
-        w->accept();
-    });
-    connect(box, &QDialogButtonBox::rejected, w, &QDialog::reject);
-    layout->addWidget(box, 2, 1);
-    //
-    w->exec();
-    w->deleteLater();
-    refresh_auth();
 }

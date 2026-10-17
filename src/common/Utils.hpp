@@ -203,6 +203,18 @@ inline QString ReadableSize(qint64 bytes) {
     return QString("%1 %2").arg(s, 0, 'f', 2).arg(units[i]);
 }
 
+inline QString UserAgent() {
+    QString version = SubStrBefore(NKR_VERSION, "-");
+    if (version.startsWith("v", Qt::CaseInsensitive)) version = version.mid(1);
+    if (!version.contains(".")) version = "Unknown";
+    return QString("%1/%2 (%3; %4) Qt/%5 ClashMeta/1.18.0")
+        .arg(software_name)
+        .arg(version)
+        .arg(QSysInfo::prettyProductName())
+        .arg(QSysInfo::currentCpuArchitecture())
+        .arg(QT_VERSION_STR);
+}
+
 // UI
 
 inline QWidget *GetMessageBoxParent() {

@@ -199,7 +199,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             ui->menuActive_Server->removeAction(old);
             old->deleteLater();
         }
-        for (const auto &pf: NekoGui::profileManager->CurrentGroup()->ProfilesWithOrder().mid(0, 100)) {
+        for (const auto &pf: NekoGui::profileManager->ProfilesWithOrder(NekoGui::profileManager->CurrentGroup()).mid(0, 100)) {
             auto a = new QAction(pf->bean->DisplayTypeAndName(), this);
             a->setProperty("id", pf->id);
             a->setCheckable(true);
@@ -1182,7 +1182,7 @@ void MainWindow::on_menu_select_all_triggered() {
 }
 
 void MainWindow::on_menu_delete_repeat_triggered() {
-    auto out_del = NekoGui::ProfileFilter::Dup(NekoGui::profileManager->CurrentGroup()->Profiles());
+    auto out_del = NekoGui::ProfileFilter::Dup(NekoGui::profileManager->Profiles(NekoGui::dataStore->current_group));
 
     int remove_display_count = 0;
     QString remove_display;
@@ -1487,16 +1487,10 @@ void MainWindow::CheckUpdate() {
             return;
         }
 
-        auto toVersionTuple = [](QString ver) {
-            if (ver.startsWith('v', Qt::CaseInsensitive)) {
-                ver = ver.mid(1);
-            }
-
+        auto parseVersionTag = [](const QString &tag) {
+            auto ver = tag.startsWith('v', Qt::CaseInsensitive) ? tag.mid(1) : tag;
             QStringList parts = ver.split('-');
-            QString coreStr = parts.value(0);
-            QString suffixStr = parts.value(1);
-
-            QStringList coreParts = coreStr.split('.');
+            QStringList coreParts = parts.value(0).split('.');
             int major = coreParts.value(0).toInt();
             int minor = coreParts.value(1).toInt();
             int patch = coreParts.value(2).toInt();
@@ -1504,6 +1498,7 @@ void MainWindow::CheckUpdate() {
             int stageWeight = 4;
             int buildNum = 0;
 
+            QString suffixStr = parts.value(1);
             if (!suffixStr.isEmpty() && !suffixStr.contains(QRegularExpression("^\\d+$"))) {
                 if (suffixStr.contains("alpha", Qt::CaseInsensitive))
                     stageWeight = 1;
@@ -1512,17 +1507,14 @@ void MainWindow::CheckUpdate() {
                 else if (suffixStr.contains("rc", Qt::CaseInsensitive))
                     stageWeight = 3;
 
-                QRegularExpression re("(\\d+)");
-                QRegularExpressionMatch match = re.match(suffixStr);
-                if (match.hasMatch()) {
-                    buildNum = match.captured(1).toInt();
-                }
+                QRegularExpressionMatch match = QRegularExpression("(\\d+)").match(suffixStr);
+                if (match.hasMatch()) buildNum = match.captured(1).toInt();
             }
 
             return std::make_tuple(major, minor, patch, stageWeight, buildNum);
         };
 
-        if (toVersionTuple(latestVersion) > toVersionTuple(NKR_VERSION)) {
+        if (parseVersionTag(latestVersion) > parseVersionTag(NKR_VERSION)) {
             auto result = QMessageBox::question(
                 this,
                 tr("New Version Available"),

@@ -1,5 +1,4 @@
-#ifndef EDIT_SHADOWSOCKS_H
-#define EDIT_SHADOWSOCKS_H
+#pragma once
 
 #include <QWidget>
 #include "ui/edit/ProfileEditor.hpp"
@@ -24,5 +23,3 @@ private:
     Ui::EditShadowSocks *ui;
     std::shared_ptr<NekoGui::ProxyEntity> ent;
 };
-
-#endif // EDIT_SHADOWSOCKS_H

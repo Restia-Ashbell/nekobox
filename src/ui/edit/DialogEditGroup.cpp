@@ -26,7 +26,7 @@ DialogEditGroup::DialogEditGroup(const std::shared_ptr<NekoGui::Group> &ent, QWi
 
     if (ent->id >= 0) { // already a group
         ui->type->setDisabled(true);
-        if (!ent->Profiles().isEmpty()) {
+        if (!NekoGui::profileManager->Profiles(ent->id).isEmpty()) {
             ui->cat_share->setVisible(true);
         }
     } else { // new group

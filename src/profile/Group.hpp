@@ -1,8 +1,9 @@
 #pragma once
 
-#include "ProxyEntity.hpp"
+#include "ConfigItem.hpp"
 
 namespace NekoGui {
+
     class Group : public JsonStore {
         Q_OBJECT
         Q_PROPERTY(int id MEMBER id)
@@ -27,13 +28,6 @@ namespace NekoGui {
 
         // list ui
         QList<int> order;
-
-        Group() = default;
-
-        // 按 id 顺序
-        [[nodiscard]] QList<std::shared_ptr<ProxyEntity>> Profiles() const;
-
-        // 按 显示 顺序
-        [[nodiscard]] QList<std::shared_ptr<ProxyEntity>> ProfilesWithOrder() const;
     };
+
 } // namespace NekoGui

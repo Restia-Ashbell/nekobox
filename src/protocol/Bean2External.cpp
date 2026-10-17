@@ -5,7 +5,7 @@
 
 namespace NekoGui_fmt {
     ExternalBuildResult NaiveBean::BuildExternal(int mapping_port, int socks_port) {
-        ExternalBuildResult result{NekoGui::dataStore->extraCore->Get("naive")};
+        ExternalBuildResult result{NekoGui::dataStore->extra_core.value("naive").toString()};
 
         auto domain_address = sni.isEmpty() ? serverAddress : sni;
         auto connect_address = mapping_port > 0 ? "127.0.0.1" : serverAddress;
@@ -33,7 +33,7 @@ namespace NekoGui_fmt {
 
     ExternalBuildResult QUICBean::BuildExternal(int mapping_port, int socks_port) {
         if (proxy_type == proxy_TUIC) {
-            ExternalBuildResult result{NekoGui::dataStore->extraCore->Get("tuic")};
+            ExternalBuildResult result{NekoGui::dataStore->extra_core.value("tuic").toString()};
 
             QJsonObject relay;
 
@@ -76,7 +76,7 @@ namespace NekoGui_fmt {
 
             return result;
         } else if (proxy_type == proxy_Hysteria2) {
-            ExternalBuildResult result{NekoGui::dataStore->extraCore->Get("hysteria2")};
+            ExternalBuildResult result{NekoGui::dataStore->extra_core.value("hysteria2").toString()};
 
             QJsonObject config;
 
@@ -143,7 +143,7 @@ namespace NekoGui_fmt {
             return result;
 
         } else { // Hysteria
-            ExternalBuildResult result{NekoGui::dataStore->extraCore->Get("hysteria")};
+            ExternalBuildResult result{NekoGui::dataStore->extra_core.value("hysteria").toString()};
 
             QJsonObject config;
 
@@ -198,7 +198,7 @@ namespace NekoGui_fmt {
     }
 
     ExternalBuildResult CustomBean::BuildExternal(int mapping_port, int socks_port) {
-        ExternalBuildResult result{NekoGui::dataStore->extraCore->Get(core)};
+        ExternalBuildResult result{NekoGui::dataStore->extra_core.value(core).toString()};
 
         result.arguments = command; // TODO split?
 
