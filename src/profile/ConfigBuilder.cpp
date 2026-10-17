@@ -1,7 +1,6 @@
 #include "profile/ConfigBuilder.hpp"
 #include "profile/ProfileManager.hpp"
 #include "protocol/Includes.hpp"
-#include "protocol/Preset.hpp"
 #include "system/AdminHelper.hpp"
 
 namespace NekoGui {
@@ -305,11 +304,11 @@ namespace NekoGui {
                 inboundObj["type"] = "mixed";
                 inboundObj["listen"] = dataStore->inbound_address;
                 inboundObj["listen_port"] = dataStore->inbound_port;
-                if (dataStore->inbound_auth->NeedAuth()) {
+                if (!dataStore->inbound_username.isEmpty() || !dataStore->inbound_password.isEmpty()) {
                     inboundObj["users"] = QJsonArray{
                         QJsonObject{
-                            {"username", dataStore->inbound_auth->username},
-                            {"password", dataStore->inbound_auth->password},
+                            {"username", dataStore->inbound_username},
+                            {"password", dataStore->inbound_password},
                         },
                     };
                 }

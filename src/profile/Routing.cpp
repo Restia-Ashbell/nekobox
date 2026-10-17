@@ -1,25 +1,13 @@
-#include "profile/DataStore.hpp"
+#include "profile/Routing.hpp"
 
+#include <QDir>
+
+#include "common/Utils.hpp"
+#include "profile/DataStore.hpp"
 #include "protocol/Preset.hpp"
 
 namespace NekoGui {
 
-    DataStore *dataStore = new DataStore;
-
-    // datastore
-
-    DataStore::DataStore() : JsonStore() {}
-
-    QString DataStore::GetUserAgent(bool isDefault) const {
-        if (user_agent.isEmpty() || isDefault) {
-            QString version = SubStrBefore(NKR_VERSION, "-");
-            if (!version.contains(".")) version = "Unknown";
-            return "NekoBox/PC/" + version + " (Prefer ClashMeta Format)";
-        }
-        return user_agent;
-    }
-
-    // preset routing
     Routing::Routing(int preset) : JsonStore() {
         if (preset == 1) {
             block_rules =
@@ -62,36 +50,6 @@ namespace NekoGui {
             NekoGui::dataStore->Save();
         }
         return ok;
-    }
-
-    // NO default extra core
-
-    ExtraCore::ExtraCore() : JsonStore() {}
-
-    QString ExtraCore::Get(const QString &id) const {
-        auto obj = QString2QJsonObject(core_map);
-        for (const auto &c: obj.keys()) {
-            if (c == id) return obj[id].toString();
-        }
-        return "";
-    }
-
-    void ExtraCore::Set(const QString &id, const QString &path) {
-        auto obj = QString2QJsonObject(core_map);
-        obj[id] = path;
-        core_map = QJsonObject2QString(obj, true);
-    }
-
-    void ExtraCore::Delete(const QString &id) {
-        auto obj = QString2QJsonObject(core_map);
-        obj.remove(id);
-        core_map = QJsonObject2QString(obj, true);
-    }
-
-    InboundAuthorization::InboundAuthorization() : JsonStore() {}
-
-    bool InboundAuthorization::NeedAuth() const {
-        return !username.trimmed().isEmpty() && !password.trimmed().isEmpty();
     }
 
 } // namespace NekoGui

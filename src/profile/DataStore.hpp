@@ -2,95 +2,15 @@
 
 #include "common/Const.hpp"
 #include "profile/ConfigItem.hpp"
+#include "profile/Routing.hpp"
 
 namespace NekoGui {
 
-    class Routing : public JsonStore {
-        Q_OBJECT
-        Q_PROPERTY(QString block_rules MEMBER block_rules)
-        Q_PROPERTY(QString proxy_rules MEMBER proxy_rules)
-        Q_PROPERTY(QString direct_rules MEMBER direct_rules)
-        Q_PROPERTY(QString def_outbound MEMBER def_outbound)
-        Q_PROPERTY(QString rule_sets_provider MEMBER rule_sets_provider)
-        Q_PROPERTY(QString custom MEMBER custom)
-        Q_PROPERTY(QString remote_dns MEMBER remote_dns)
-        Q_PROPERTY(QString remote_dns_strategy MEMBER remote_dns_strategy)
-        Q_PROPERTY(QString direct_dns MEMBER direct_dns)
-        Q_PROPERTY(QString direct_dns_strategy MEMBER direct_dns_strategy)
-        Q_PROPERTY(QString dns_final_out MEMBER dns_final_out)
-        Q_PROPERTY(bool dns_routing MEMBER dns_routing)
-        Q_PROPERTY(bool fake_dns MEMBER fake_dns)
-        Q_PROPERTY(bool enable_custom MEMBER enable_custom)
-        Q_PROPERTY(QString domain_strategy MEMBER domain_strategy)
-        Q_PROPERTY(QString outbound_domain_strategy MEMBER outbound_domain_strategy)
-        Q_PROPERTY(int sniffing_mode MEMBER sniffing_mode)
-
-    public:
-        QString block_rules;
-        QString proxy_rules;
-        QString direct_rules;
-        QString def_outbound = "proxy";
-        QString rule_sets_provider = "https://raw.githubusercontent.com/SagerNet/sing-%type%/rule-set/%type%-%name%.srs";
-        QString custom = R"({"dns":{},"outbounds":[],"route":{}})";
-
-        // DNS
-        QString remote_dns = "https://dns.google/dns-query";
-        QString remote_dns_strategy = "";
-        QString direct_dns = "local";
-        QString direct_dns_strategy = "";
-        bool dns_routing = true;
-        bool fake_dns = false;
-        bool enable_custom = false;
-        QString dns_final_out = "proxy";
-
-        // Misc
-        QString domain_strategy = "";
-        QString outbound_domain_strategy = "";
-        int sniffing_mode = SniffingMode::FOR_ROUTING;
-
-        explicit Routing(int preset = 0);
-
-        [[nodiscard]] QString DisplayRouting() const;
-
-        static QStringList List();
-
-        static bool SetToActive(const QString &name);
-    };
-
-    class ExtraCore : public JsonStore {
-        Q_OBJECT
-        Q_PROPERTY(QString core_map MEMBER core_map)
-
-    public:
-        QString core_map;
-
-        explicit ExtraCore();
-
-        [[nodiscard]] QString Get(const QString &id) const;
-
-        void Set(const QString &id, const QString &path);
-
-        void Delete(const QString &id);
-    };
-
-    class InboundAuthorization : public JsonStore {
-        Q_OBJECT
-        Q_PROPERTY(QString user MEMBER username)
-        Q_PROPERTY(QString pass MEMBER password)
-
-    public:
-        QString username;
-        QString password;
-
-        InboundAuthorization();
-
-        [[nodiscard]] bool NeedAuth() const;
-    };
-
     class DataStore : public JsonStore {
         Q_OBJECT
-        Q_PROPERTY(ExtraCore *extraCore MEMBER extraCore)
-        Q_PROPERTY(InboundAuthorization *inbound_auth MEMBER inbound_auth)
+        Q_PROPERTY(QVariantMap extra_core MEMBER extra_core)
+        Q_PROPERTY(QString inbound_username MEMBER inbound_username)
+        Q_PROPERTY(QString inbound_password MEMBER inbound_password)
         Q_PROPERTY(QString user_agent MEMBER user_agent)
         Q_PROPERTY(QString test_url MEMBER test_latency_url)
         Q_PROPERTY(QString test_url_dl MEMBER test_download_url)
@@ -193,7 +113,8 @@ namespace NekoGui {
         // Mixed Inbound
         QString inbound_address = "127.0.0.1";
         int inbound_port = 2080;
-        InboundAuthorization *inbound_auth = new InboundAuthorization;
+        QString inbound_username;
+        QString inbound_password;
         QString custom_inbound = R"({"inbounds":[]})";
 
         // Tun Inbound
@@ -234,15 +155,9 @@ namespace NekoGui {
         QString hotkey_system_proxy_menu = "";
 
         // Other Core
-        ExtraCore *extraCore = new ExtraCore;
-
-        // Methods
-
-        DataStore();
-
-        QString GetUserAgent(bool isDefault = false) const;
+        QVariantMap extra_core;
     };
 
-    extern DataStore *dataStore;
+    inline DataStore *dataStore = new DataStore;
 
 } // namespace NekoGui

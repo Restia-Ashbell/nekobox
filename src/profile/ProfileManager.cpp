@@ -76,7 +76,7 @@ namespace NekoGui {
                 for (auto gid: groupsTabOrder) {
                     auto group = GetGroup(gid);
                     gidOld2New[gid] = ii++;
-                    for (auto const &profile: group->ProfilesWithOrder()) {
+                    for (auto const &profile: ProfilesWithOrder(group)) {
                         auto oldId = profile->id;
                         auto newId = i++;
                         profile->id = newId;
@@ -250,6 +250,45 @@ namespace NekoGui {
         return it != profiles.end() ? it->second : nullptr;
     }
 
+    QList<std::shared_ptr<ProxyEntity>> ProfileManager::Profiles(int gid) {
+        QList<std::shared_ptr<ProxyEntity>> ret;
+        for (const auto &[_, profile]: profiles) {
+            if (gid == profile->gid) ret += profile;
+        }
+        return ret;
+    }
+
+    QList<std::shared_ptr<ProxyEntity>> ProfileManager::ProfilesWithOrder(const std::shared_ptr<Group> &group) {
+        if (group == nullptr) return {};
+
+        // 修复 group->order:剔除孤儿 id,补全漏加的节点
+        bool changed = false;
+        group->order.removeIf([this, &changed](int k) {
+            if (!profiles.contains(k)) {
+                changed = true;
+                return true;
+            }
+            return false;
+        });
+        for (const auto &[pid, profile]: profiles) {
+            if (profile->gid == group->id && !group->order.contains(pid)) {
+                group->order.append(pid);
+                changed = true;
+            }
+        }
+        if (changed) group->Save();
+
+        QList<std::shared_ptr<ProxyEntity>> ret;
+        if (group->order.isEmpty()) {
+            ret = Profiles(group->id);
+        } else {
+            for (auto _id: group->order) {
+                if (auto ent = GetProfile(_id)) ret += ent;
+            }
+        }
+        return ret;
+    }
+
     // Group
 
     std::shared_ptr<Group> ProfileManager::LoadGroup(const QString &jsonPath) {
@@ -299,24 +338,5 @@ namespace NekoGui {
         return GetGroup(dataStore->current_group);
     }
 
-    QList<std::shared_ptr<ProxyEntity>> Group::Profiles() const {
-        QList<std::shared_ptr<ProxyEntity>> ret;
-        for (const auto &[_, profile]: profileManager->profiles) {
-            if (id == profile->gid) ret += profile;
-        }
-        return ret;
-    }
-
-    QList<std::shared_ptr<ProxyEntity>> Group::ProfilesWithOrder() const {
-        if (order.isEmpty()) {
-            return Profiles();
-        } else {
-            QList<std::shared_ptr<ProxyEntity>> ret;
-            for (auto _id: order) {
-                if (auto ent = profileManager->GetProfile(_id)) ret += ent;
-            }
-            return ret;
-        }
-    }
 
 } // namespace NekoGui

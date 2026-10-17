@@ -27,8 +27,7 @@ void EditCustom::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     auto bean = this->ent->Bean<NekoGui_fmt::CustomBean>();
 
     // load known core
-    auto core_map = QString2QJsonObject(NekoGui::dataStore->extraCore->core_map);
-    for (const auto &key: core_map.keys()) {
+    for (const auto &key: NekoGui::dataStore->extra_core.keys()) {
         if (key == "naive" || key == "hysteria") continue;
         ui->core->addItem(key);
     }

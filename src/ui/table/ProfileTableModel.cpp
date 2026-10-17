@@ -2,6 +2,7 @@
 
 #include <QApplication>
 
+#include "profile/Group.hpp"
 #include "profile/DataStore.hpp"
 #include "profile/ProfileManager.hpp"
 
@@ -25,18 +26,9 @@ void ProfileTableModel::setGroup(int gid) {
         return;
     }
 
-    // 与旧实现 refresh_group 相同的顺序修复:剔除孤儿 id,兜底补全漏加的节点
-    group->order.removeIf([](int k) { return !NekoGui::profileManager->profiles.contains(k); });
-    for (const auto &[id, profile]: NekoGui::profileManager->profiles) {
-        if (profile->gid == gid && !group->order.contains(id)) {
-            group->order.append(id);
-        }
-    }
-    group->Save();
-
     QList<int> ids;
-    for (const auto &ent: group->ProfilesWithOrder()) {
-        ids << ent->id; // ProfilesWithOrder 已跳过空实体
+    for (const auto &ent: NekoGui::profileManager->ProfilesWithOrder(group)) {
+        ids << ent->id;
     }
 
     beginResetModel();

@@ -39,7 +39,6 @@ int main(int argc, char *argv[]) {
 
     // dirs & clean
     QDir appDir(QApplication::applicationDirPath());
-    QApplication::setApplicationName("nekobox");
 #ifdef NDEBUG
     if (!appDir.exists("config")) appDir.setPath(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
 #endif
