@@ -4,6 +4,7 @@
 #include <QDateTime>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QHostAddress>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -15,7 +16,7 @@
 #include <QRegularExpression>
 #include <QString>
 #include <QTcpServer>
-#include <QTemporaryFile>
+#include <QTemporaryDir>
 #include <QThread>
 #include <QUrlQuery>
 
@@ -144,16 +145,26 @@ inline QJsonArray QString2QJsonArray(const QString &str) {
 // Files
 
 inline QString WriteTempFile(const QString &fileName, const QString &content, QString &error) {
-    QDir tempDir("temp");
-    tempDir.mkpath(".");
-    QTemporaryFile tempFile(tempDir.absoluteFilePath(fileName));
-    tempFile.setAutoRemove(false);
-    if (tempFile.open()) {
-        tempFile.write(content.toUtf8());
-    } else {
-        error = tempFile.errorString();
+    static const QTemporaryDir tempDir;
+    if (!tempDir.isValid()) {
+        error = tempDir.errorString();
+        return {};
     }
-    return tempFile.fileName();
+    const QFileInfo info(fileName);
+    const QString uniqueName = QString("%1-%2%3").arg(
+        info.completeBaseName(),
+        GetRandomHexString().left(16),
+        info.suffix().isEmpty() ? QString() : "." + info.suffix());
+    const QString path = tempDir.filePath(uniqueName);
+    const QByteArray data = content.toUtf8();
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::NewOnly) ||
+        file.write(data) != data.size() ||
+        !file.flush()) {
+        error = file.errorString();
+        return {};
+    }
+    return path;
 }
 
 // Network

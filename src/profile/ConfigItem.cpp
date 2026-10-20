@@ -127,7 +127,6 @@ namespace NekoGui_ConfigItem {
             FromJsonBytes(data);
         }
 
-        file.close();
         return ok;
     }
 

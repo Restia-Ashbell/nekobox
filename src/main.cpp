@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     if (NekoGui::dataStore->argv.contains("-flag_restart_tun_on")) NekoGui::dataStore->flag_restart_tun_on = true;
     if (NekoGui::dataStore->argv.contains("-flag_reorder")) NekoGui::dataStore->flag_reorder = true;
 
-    // dirs & clean
+    // dirs
     QDir appDir(QApplication::applicationDirPath());
 #ifdef NDEBUG
     if (!appDir.exists("config")) appDir.setPath(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
@@ -47,7 +47,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     QDir::setCurrent(appDir.absoluteFilePath("config"));
-    QDir("temp").removeRecursively();
     for (const auto &dir: {"profiles", "groups", "routes"}) {
         QDir().mkdir(dir);
     }
