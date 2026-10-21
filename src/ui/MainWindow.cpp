@@ -959,7 +959,7 @@ void MainWindow::on_menu_move_triggered() {
 
     QStringList items;
     for (auto gid: NekoGui::profileManager->groupsTabOrder) {
-        if (auto group = NekoGui::profileManager->GetGroup(gid)) items << Int2String(gid) + " " + group->name;
+        if (auto group = NekoGui::profileManager->GetGroup(gid)) items << QString::number(gid) + " " + group->name;
     }
 
     bool ok;

@@ -21,10 +21,10 @@ namespace NekoGui_fmt {
         proxy_url.setHost(domain_address);
 
         result.arguments += "--log";
-        result.arguments += "--listen=socks://127.0.0.1:" + Int2String(socks_port);
+        result.arguments += "--listen=socks://127.0.0.1:" + QString::number(socks_port);
         result.arguments += "--proxy=" + proxy_url.toString(QUrl::FullyEncoded);
         if (domain_address != connect_address) result.arguments += "--host-resolver-rules=MAP " + domain_address + " " + connect_address;
-        if (insecure_concurrency > 0) result.arguments += "--insecure-concurrency=" + Int2String(insecure_concurrency);
+        if (insecure_concurrency > 0) result.arguments += "--insecure-concurrency=" + QString::number(insecure_concurrency);
         if (!extra_headers.isEmpty()) result.arguments += "--extra-headers=" + extra_headers;
         if (!certificate.isEmpty()) result.env += "SSL_CERT_FILE=" + WriteTempFile("naive.crt", certificate, result.error);
 
@@ -61,7 +61,7 @@ namespace NekoGui_fmt {
             }
 
             QJsonObject local{
-                {"server", "127.0.0.1:" + Int2String(socks_port)},
+                {"server", "127.0.0.1:" + QString::number(socks_port)},
             };
 
             QJsonObject config{
@@ -84,7 +84,7 @@ namespace NekoGui_fmt {
             if (!hopPort.isEmpty()) {
                 server = WrapIPV6Host(server) + ":" + hopPort;
             } else {
-                server = WrapIPV6Host(server) + ":" + Int2String(serverPort);
+                server = WrapIPV6Host(server) + ":" + QString::number(serverPort);
             }
 
             QJsonObject transport;
@@ -96,14 +96,14 @@ namespace NekoGui_fmt {
 
             config["server"] = server;
             config["socks5"] = QJsonObject{
-                {"listen", "127.0.0.1:" + Int2String(socks_port)},
+                {"listen", "127.0.0.1:" + QString::number(socks_port)},
                 {"disableUDP", false},
             };
             config["auth"] = password;
 
             QJsonObject bandwidth;
-            if (uploadMbps > 0) bandwidth["up"] = Int2String(uploadMbps) + " mbps";
-            if (downloadMbps > 0) bandwidth["down"] = Int2String(downloadMbps) + " mbps";
+            if (uploadMbps > 0) bandwidth["up"] = QString::number(uploadMbps) + " mbps";
+            if (downloadMbps > 0) bandwidth["down"] = QString::number(downloadMbps) + " mbps";
             config["bandwidth"] = bandwidth;
 
             QJsonObject quic;
@@ -155,13 +155,13 @@ namespace NekoGui_fmt {
             if (!hopPort.isEmpty()) {
                 server = WrapIPV6Host(server) + ":" + hopPort;
             } else {
-                server = WrapIPV6Host(server) + ":" + Int2String(serverPort);
+                server = WrapIPV6Host(server) + ":" + QString::number(serverPort);
             }
-            config["server"] = mapping_port > 0 ? "127.0.0.1:" + Int2String(mapping_port) : server;
+            config["server"] = mapping_port > 0 ? "127.0.0.1:" + QString::number(mapping_port) : server;
 
             // listen
             config["socks5"] = QJsonObject{
-                {"listen", "127.0.0.1:" + Int2String(socks_port)},
+                {"listen", "127.0.0.1:" + QString::number(socks_port)},
             };
 
             // misc
@@ -202,9 +202,9 @@ namespace NekoGui_fmt {
 
         result.arguments = command; // TODO split?
 
-        const auto socks_port_str = Int2String(socks_port);
+        const auto socks_port_str = QString::number(socks_port);
         const auto server_addr = mapping_port > 0 ? "127.0.0.1" : serverAddress;
-        const auto server_port_str = Int2String(mapping_port > 0 ? mapping_port : serverPort);
+        const auto server_port_str = QString::number(mapping_port > 0 ? mapping_port : serverPort);
 
         for (int i = 0; i < result.arguments.length(); i++) {
             auto arg = result.arguments[i];

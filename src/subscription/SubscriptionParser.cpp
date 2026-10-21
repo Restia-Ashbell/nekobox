@@ -374,7 +374,7 @@ namespace NekoGui_sub {
                 bean->password = Node2Value<QString>(proxy["password"]);
 
                 if (auto heartbeat = Node2Value<int>(proxy["heartbeat-interval"]); heartbeat > 0) {
-                    bean->heartbeat = Int2String(heartbeat) + "ms";
+                    bean->heartbeat = QString::number(heartbeat) + "ms";
                 }
 
                 bean->udpRelayMode = Node2Value<QString>(proxy["udp-relay-mode"], bean->udpRelayMode);

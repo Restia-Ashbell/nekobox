@@ -131,7 +131,7 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
 
     ui->tun_stack->addItems(Preset::SingBox::TunStack);
     ui->tun_stack->setCurrentText(NekoGui::dataStore->tun_stack);
-    ui->tun_mtu->setCurrentText(Int2String(NekoGui::dataStore->tun_mtu));
+    ui->tun_mtu->setCurrentText(QString::number(NekoGui::dataStore->tun_mtu));
     ui->tun_ipv6->setChecked(NekoGui::dataStore->tun_ipv6);
     ui->tun_strict_route->setChecked(NekoGui::dataStore->tun_strict_route);
 
@@ -184,7 +184,7 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     // NTP
     ui->ntp_enabled->setChecked(NekoGui::dataStore->ntp_enabled);
     ui->ntp_server->setText(NekoGui::dataStore->ntp_server);
-    ui->ntp_server_port->setText(Int2String(NekoGui::dataStore->ntp_server_port));
+    ui->ntp_server_port->setText(QString::number(NekoGui::dataStore->ntp_server_port));
     ui->ntp_interval->setCurrentText(NekoGui::dataStore->ntp_interval);
 
     // Certificate

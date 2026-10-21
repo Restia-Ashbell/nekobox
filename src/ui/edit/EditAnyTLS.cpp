@@ -18,7 +18,7 @@ void EditAnyTLS::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     ui->password->setText(bean->password);
     ui->idleSessionCheckInterval->setText(bean->idleSessionCheckInterval);
     ui->idleSessionTimeout->setText(bean->idleSessionTimeout);
-    ui->minIdleSession->setText(Int2String(bean->minIdleSession));
+    ui->minIdleSession->setText(QString::number(bean->minIdleSession));
 }
 
 bool EditAnyTLS::onEnd() {

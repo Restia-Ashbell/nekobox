@@ -175,7 +175,7 @@ namespace NekoGui {
 
     QString BuildChainInternal(int chainId, const QList<std::shared_ptr<ProxyEntity>> &ents,
                                const std::shared_ptr<BuildConfigStatus> &status) {
-        QString chainTag = "chain-" + Int2String(chainId);
+        QString chainTag = "chain-" + QString::number(chainId);
         QString chainTagOut = "proxy";
 
         QString pastTag;
@@ -187,7 +187,7 @@ namespace NekoGui {
             // profile0 (out)           tag (chainTag)-(id) / single: chainTag=g-(id)
             const auto &ent = ents[index];
             auto *bean = ent->bean;
-            auto tagOut = index == ents.length() - 1 ? chainTagOut : chainTag + "-" + Int2String(ent->id);
+            auto tagOut = index == ents.length() - 1 ? chainTagOut : chainTag + "-" + QString::number(ent->id);
 
             // Outbound
 

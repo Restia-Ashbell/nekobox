@@ -31,8 +31,6 @@ inline std::function<void(const QString &, const QString &)> MW_dialog_message;
 
 // String
 
-#define Int2String(num) (QString::number(num))
-
 inline QString firstOrSecond(const QString &a, const QString &b) {
     return a.isEmpty() ? b : a;
 }

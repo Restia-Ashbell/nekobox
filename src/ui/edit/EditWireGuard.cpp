@@ -20,7 +20,7 @@ void EditWireGuard::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     ui->preshared_key->setText(bean->preSharedKey);
     ui->local_address->setText(bean->localAddress);
     ui->reserved->setText(bean->reserved);
-    ui->mtu->setText(Int2String(bean->MTU));
+    ui->mtu->setText(QString::number(bean->MTU));
     ui->sys_ifc->setChecked(bean->useSystemInterface);
 }
 

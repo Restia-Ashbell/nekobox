@@ -19,7 +19,7 @@ void EditVMess::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     auto bean = this->ent->Bean<NekoGui_fmt::VMessBean>();
 
     ui->uuid->setText(bean->uuid);
-    ui->aid->setText(Int2String(bean->aid));
+    ui->aid->setText(QString::number(bean->aid));
     ui->security->setCurrentText(bean->security);
 }
 

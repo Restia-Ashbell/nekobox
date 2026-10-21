@@ -203,7 +203,7 @@ void DialogEditProfile::typeSelected() {
         ui->ech_enabled->setChecked(stream->ech_enabled);
         ui->disable_sni->setChecked(stream->disable_sni);
         ui->ws_early_data_name->setText(stream->ws_early_data_name);
-        ui->ws_early_data_length->setText(Int2String(stream->ws_early_data_length));
+        ui->ws_early_data_length->setText(QString::number(stream->ws_early_data_length));
         ui->reality_pbk->setText(stream->reality_pbk);
         ui->reality_sid->setText(stream->reality_sid);
         ui->tls_fragment->setChecked(stream->tls_fragment);
@@ -219,9 +219,9 @@ void DialogEditProfile::typeSelected() {
         ui->multiplex->setCurrentIndex(multiplex->enabled ? 1 : 0);
         ui->multiplex_padding->setChecked(multiplex->padding);
         ui->multiplex_protocol->setCurrentText(multiplex->protocol);
-        ui->multiplex_max_streams->setText(Int2String(multiplex->max_streams));
-        ui->brutal_up->setText(Int2String(multiplex->brutal_up));
-        ui->brutal_down->setText(Int2String(multiplex->brutal_down));
+        ui->multiplex_max_streams->setText(QString::number(multiplex->max_streams));
+        ui->brutal_up->setText(QString::number(multiplex->brutal_up));
+        ui->brutal_down->setText(QString::number(multiplex->brutal_down));
     } else {
         ui->multiplex_box->setVisible(false);
     }
@@ -261,7 +261,7 @@ void DialogEditProfile::typeSelected() {
     // 左边 common
     ui->name->setText(ent->bean->name);
     ui->address->setText(ent->bean->serverAddress);
-    ui->port->setText(Int2String(ent->bean->serverPort));
+    ui->port->setText(QString::number(ent->bean->serverPort));
     ui->port->setValidator(QRegExpValidator_Number);
 
     // 星号

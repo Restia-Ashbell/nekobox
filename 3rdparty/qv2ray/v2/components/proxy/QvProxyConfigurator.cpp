@@ -255,8 +255,8 @@ namespace Qv2ray::components::proxy {
         QString str = NekoGui::dataStore->system_proxy_format;
         if (str.isEmpty()) str = Preset::Windows::system_proxy_format[0];
         str = str.replace("{ip}", address)
-                  .replace("{http_port}", Int2String(httpPort))
-                  .replace("{socks_port}", Int2String(socksPort));
+                  .replace("{http_port}", QString::number(httpPort))
+                  .replace("{socks_port}", QString::number(socksPort));
         //
         LOG("Windows proxy string: " + str);
         auto proxyStrW = new WCHAR[str.length() + 1];

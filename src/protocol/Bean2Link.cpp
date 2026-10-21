@@ -122,9 +122,9 @@ namespace NekoGui_fmt {
                 {"v", "2"},
                 {"ps", name},
                 {"add", serverAddress},
-                {"port", Int2String(serverPort)},
+                {"port", QString::number(serverPort)},
                 {"id", uuid},
-                {"aid", Int2String(aid)},
+                {"aid", QString::number(aid)},
                 {"scy", security},
                 {"net", stream->network},
                 {"host", stream->host},
@@ -179,8 +179,8 @@ namespace NekoGui_fmt {
             url.setPort(serverPort);
 
             if (!hopPort.isEmpty()) q.addQueryItem("mport", hopPort);
-            q.addQueryItem("upmbps", Int2String(uploadMbps));
-            q.addQueryItem("downmbps", Int2String(downloadMbps));
+            q.addQueryItem("upmbps", QString::number(uploadMbps));
+            q.addQueryItem("downmbps", QString::number(downloadMbps));
             if (!obfsPassword.isEmpty()) {
                 q.addQueryItem("obfs", "xplus");
                 q.addQueryItem("obfsParam", obfsPassword);
@@ -190,8 +190,8 @@ namespace NekoGui_fmt {
             if (allowInsecure) q.addQueryItem("insecure", "1");
             if (!sni.isEmpty()) q.addQueryItem("peer", sni);
             if (!alpn.isEmpty()) q.addQueryItem("alpn", alpn);
-            if (connectionReceiveWindow > 0) q.addQueryItem("recv_window", Int2String(connectionReceiveWindow));
-            if (streamReceiveWindow > 0) q.addQueryItem("recv_window_conn", Int2String(streamReceiveWindow));
+            if (connectionReceiveWindow > 0) q.addQueryItem("recv_window", QString::number(connectionReceiveWindow));
+            if (streamReceiveWindow > 0) q.addQueryItem("recv_window_conn", QString::number(streamReceiveWindow));
         } else if (proxy_type == proxy_TUIC) {
             url.setScheme("tuic");
             url.setUserName(uuid);
@@ -270,7 +270,7 @@ namespace NekoGui_fmt {
         if (!preSharedKey.isEmpty()) q.addQueryItem("presharedKey", preSharedKey);
         q.addQueryItem("address", localAddress);
         if (!reserved.isEmpty()) q.addQueryItem("reserved", reserved);
-        q.addQueryItem("mtu", Int2String(MTU));
+        q.addQueryItem("mtu", QString::number(MTU));
         url.setQuery(q);
         return url.toString(QUrl::FullyEncoded);
     }
