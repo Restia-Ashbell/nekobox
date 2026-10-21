@@ -6,7 +6,7 @@
 namespace NekoGui_fmt {
     void V2rayStreamSettings::BuildShareLinkQuery(QUrlQuery *query) {
         auto security = this->security;
-        if (security == "tls" && !reality_pbk.trimmed().isEmpty()) security = "reality";
+        if (security == "tls" && !reality_pbk.isEmpty()) security = "reality";
         if (!security.isEmpty()) query->addQueryItem("security", security);
 
         if (!sni.isEmpty()) query->addQueryItem("sni", sni);

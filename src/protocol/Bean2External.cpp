@@ -25,8 +25,8 @@ namespace NekoGui_fmt {
         result.arguments += "--proxy=" + proxy_url.toString(QUrl::FullyEncoded);
         if (domain_address != connect_address) result.arguments += "--host-resolver-rules=MAP " + domain_address + " " + connect_address;
         if (insecure_concurrency > 0) result.arguments += "--insecure-concurrency=" + Int2String(insecure_concurrency);
-        if (!extra_headers.trimmed().isEmpty()) result.arguments += "--extra-headers=" + extra_headers;
-        if (!certificate.trimmed().isEmpty()) result.env += "SSL_CERT_FILE=" + WriteTempFile("naive.crt", certificate, result.error);
+        if (!extra_headers.isEmpty()) result.arguments += "--extra-headers=" + extra_headers;
+        if (!certificate.isEmpty()) result.env += "SSL_CERT_FILE=" + WriteTempFile("naive.crt", certificate, result.error);
 
         return result;
     }
@@ -43,10 +43,10 @@ namespace NekoGui_fmt {
             relay["congestion_control"] = congestionControl;
             relay["zero_rtt_handshake"] = zeroRttHandshake;
             relay["disable_sni"] = disableSni;
-            if (!heartbeat.trimmed().isEmpty()) relay["heartbeat"] = heartbeat;
-            if (!alpn.trimmed().isEmpty()) relay["alpn"] = QJsonArray::fromStringList(alpn.split(","));
+            if (!heartbeat.isEmpty()) relay["heartbeat"] = heartbeat;
+            if (!alpn.isEmpty()) relay["alpn"] = QJsonArray::fromStringList(alpn.split(","));
 
-            if (!caText.trimmed().isEmpty()) {
+            if (!caText.isEmpty()) {
                 QJsonArray certificate;
                 certificate.append(WriteTempFile("tuic.crt", caText, result.error));
                 relay["certificates"] = certificate;
@@ -81,7 +81,7 @@ namespace NekoGui_fmt {
             QJsonObject config;
 
             auto server = serverAddress;
-            if (!hopPort.trimmed().isEmpty()) {
+            if (!hopPort.isEmpty()) {
                 server = WrapIPV6Host(server) + ":" + hopPort;
             } else {
                 server = WrapIPV6Host(server) + ":" + Int2String(serverPort);
@@ -130,7 +130,7 @@ namespace NekoGui_fmt {
             if (sni.isEmpty() && !IsIpAddress(serverAddress)) sniGen = serverAddress;
             tls["sni"] = sniGen;
             if (allowInsecure) tls["insecure"] = true;
-            if (!caText.trimmed().isEmpty()) {
+            if (!caText.isEmpty()) {
                 QJsonArray certificate;
                 certificate.append(WriteTempFile("hysteria2.crt", caText, result.error));
                 tls["certificates"] = certificate;
@@ -152,7 +152,7 @@ namespace NekoGui_fmt {
             if (sni.isEmpty() && !IsIpAddress(serverAddress)) sniGen = serverAddress;
 
             auto server = serverAddress;
-            if (!hopPort.trimmed().isEmpty()) {
+            if (!hopPort.isEmpty()) {
                 server = WrapIPV6Host(server) + ":" + hopPort;
             } else {
                 server = WrapIPV6Host(server) + ":" + Int2String(serverPort);
@@ -178,7 +178,7 @@ namespace NekoGui_fmt {
             if (!sniGen.isEmpty()) config["server_name"] = sniGen;
             if (!alpn.isEmpty()) config["alpn"] = alpn;
 
-            if (!caText.trimmed().isEmpty()) {
+            if (!caText.isEmpty()) {
                 config["ca"] = WriteTempFile("hysteria.crt", caText, result.error);
             }
 
@@ -202,19 +202,23 @@ namespace NekoGui_fmt {
 
         result.arguments = command; // TODO split?
 
+        const auto socks_port_str = Int2String(socks_port);
+        const auto server_addr = mapping_port > 0 ? "127.0.0.1" : serverAddress;
+        const auto server_port_str = Int2String(mapping_port > 0 ? mapping_port : serverPort);
+
         for (int i = 0; i < result.arguments.length(); i++) {
             auto arg = result.arguments[i];
-            arg = arg.replace("%socks_port%", Int2String(socks_port));
-            arg = arg.replace("%server_addr%", mapping_port > 0 ? "127.0.0.1" : serverAddress);
-            arg = arg.replace("%server_port%", Int2String(mapping_port > 0 ? mapping_port : serverPort));
+            arg = arg.replace("%socks_port%", socks_port_str);
+            arg = arg.replace("%server_addr%", server_addr);
+            arg = arg.replace("%server_port%", server_port_str);
             result.arguments[i] = arg;
         }
 
-        if (!config_simple.trimmed().isEmpty()) {
+        if (!config_simple.isEmpty()) {
             auto config = config_simple;
-            config = config.replace("%socks_port%", Int2String(socks_port));
-            config = config.replace("%server_addr%", mapping_port > 0 ? "127.0.0.1" : serverAddress);
-            config = config.replace("%server_port%", Int2String(mapping_port > 0 ? mapping_port : serverPort));
+            config = config.replace("%socks_port%", socks_port_str);
+            config = config.replace("%server_addr%", server_addr);
+            config = config.replace("%server_port%", server_port_str);
 
             // suffix
             QString suffix;

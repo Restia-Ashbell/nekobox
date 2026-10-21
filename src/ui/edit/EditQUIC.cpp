@@ -133,10 +133,10 @@ bool EditQUIC::onEnd() {
     P_SAVE_BOOL(uos);
 
     // TLS
-    P_SAVE_STRING(sni);
-    P_SAVE_STRING(alpn);
+    bean->sni = ui->sni->text().trimmed();
+    bean->alpn = ui->alpn->text().trimmed();
+    bean->caText = CACHE.caText.trimmed();
     P_SAVE_BOOL(allowInsecure);
-    P_C_SAVE_STRING(caText);
     P_SAVE_BOOL(disableSni);
     return true;
 }

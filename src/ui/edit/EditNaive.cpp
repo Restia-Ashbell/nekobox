@@ -32,9 +32,9 @@ bool EditNaive::onEnd() {
     P_SAVE_STRING(username);
     P_SAVE_STRING(password);
     P_SAVE_COMBO_STRING(protocol);
-    P_C_SAVE_STRING(extra_headers);
-    P_SAVE_STRING(sni);
-    P_C_SAVE_STRING(certificate);
+    bean->sni = ui->sni->text().trimmed();
+    bean->extra_headers = CACHE.extra_headers.trimmed();
+    bean->certificate = CACHE.certificate.trimmed();
     P_SAVE_INT(insecure_concurrency);
 
     return true;

@@ -519,8 +519,8 @@ namespace NekoGui {
             if (dataStore->spmode_vpn) {
                 QStringList externalProcessPaths;
                 for (const auto &extR: status->result->extRs) {
-                    auto path = extR->program;
-                    if (!path.trimmed().isEmpty()) {
+                    const auto &path = extR->program;
+                    if (!path.isEmpty()) {
                         externalProcessPaths << QDir::toNativeSeparators(path);
                     }
                 }

@@ -327,20 +327,20 @@ bool DialogEditProfile::onEnd() {
         stream->packet_encoding = ui->packet_encoding->currentText();
         stream->path = ui->path->text();
         stream->host = ui->host->text();
-        stream->sni = ui->sni->text();
-        stream->alpn = ui->alpn->text();
+        stream->sni = ui->sni->text().trimmed();
+        stream->alpn = ui->alpn->text().trimmed();
         stream->utlsFingerprint = ui->utlsFingerprint->currentText();
         stream->allow_insecure = ui->insecure->isChecked();
         stream->ech_enabled = ui->ech_enabled->isChecked();
         stream->disable_sni = ui->disable_sni->isChecked();
         stream->ws_early_data_name = ui->ws_early_data_name->text();
         stream->ws_early_data_length = ui->ws_early_data_length->text().toInt();
-        stream->reality_pbk = ui->reality_pbk->text();
-        stream->reality_sid = ui->reality_sid->text();
+        stream->reality_pbk = ui->reality_pbk->text().trimmed();
+        stream->reality_sid = ui->reality_sid->text().trimmed();
         stream->tls_fragment = ui->tls_fragment->isChecked();
         stream->tls_record_fragment = ui->tls_record_fragment->isChecked();
-        stream->certificate = CACHE.certificate;
-        stream->ech = CACHE.ech;
+        stream->certificate = CACHE.certificate.trimmed();
+        stream->ech = CACHE.ech.trimmed();
     }
 
     if (auto multiplex = ent->bean->_get<NekoGui_fmt::MultiplexSettings>("multiplex")) {

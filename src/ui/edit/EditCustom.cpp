@@ -87,7 +87,7 @@ bool EditCustom::onEnd() {
 
     P_SAVE_COMBO_STRING(core)
     bean->command = ui->command->text().split(" ");
-    P_SAVE_STRING_PLAIN(config_simple)
+    bean->config_simple = ui->config_simple->toPlainText().trimmed();
     P_SAVE_COMBO_STRING(config_suffix)
 
     bean->external = !(preset_core == "internal" || preset_core == "internal-full");

@@ -41,18 +41,18 @@ namespace NekoGui_fmt {
         if (security == "tls") {
             QJsonObject tls{{"enabled", true}};
             if (allow_insecure || NekoGui::dataStore->skip_cert) tls["insecure"] = true;
-            if (!certificate.trimmed().isEmpty()) tls["certificate"] = certificate.trimmed();
+            if (!certificate.isEmpty()) tls["certificate"] = certificate;
             if (ech_enabled) {
                 QJsonObject echObj{{"enabled", true}};
-                if (!ech.trimmed().isEmpty()) echObj["config"] = ech.trimmed();
+                if (!ech.isEmpty()) echObj["config"] = ech;
                 tls["ech"] = echObj;
             }
             if (disable_sni) tls["disable_sni"] = true;
-            if (!sni.trimmed().isEmpty()) tls["server_name"] = sni;
-            if (!alpn.trimmed().isEmpty()) tls["alpn"] = QJsonArray::fromStringList(alpn.split(","));
+            if (!sni.isEmpty()) tls["server_name"] = sni;
+            if (!alpn.isEmpty()) tls["alpn"] = QJsonArray::fromStringList(alpn.split(","));
             QString fp = utlsFingerprint;
             if (fp.isEmpty()) fp = NekoGui::dataStore->utlsFingerprint;
-            if (!reality_pbk.trimmed().isEmpty()) {
+            if (!reality_pbk.isEmpty()) {
                 tls["reality"] = QJsonObject{
                     {"enabled", true},
                     {"public_key", reality_pbk},
@@ -135,7 +135,7 @@ namespace NekoGui_fmt {
             outbound["udp_over_tcp"] = false;
         }
 
-        if (!plugin.trimmed().isEmpty()) {
+        if (!plugin.isEmpty()) {
             outbound["plugin"] = SubStrBefore(plugin, ";");
             outbound["plugin_opts"] = SubStrAfter(plugin, ";");
         }
@@ -170,7 +170,7 @@ namespace NekoGui_fmt {
             {"type", "vmess"},
             {"server", serverAddress},
             {"server_port", serverPort},
-            {"uuid", uuid.trimmed()},
+            {"uuid", uuid},
             {"alter_id", aid},
             {"security", security},
         };
@@ -198,7 +198,7 @@ namespace NekoGui_fmt {
                 // 不使用 flow
                 flow = "";
             }
-            outbound["uuid"] = password.trimmed();
+            outbound["uuid"] = password;
             outbound["flow"] = flow;
         } else {
             outbound["password"] = password;
@@ -217,10 +217,10 @@ namespace NekoGui_fmt {
             {"enabled", true},
             {"disable_sni", disableSni},
             {"insecure", allowInsecure},
-            {"certificate", caText.trimmed()},
+            {"certificate", caText},
             {"server_name", sni},
         };
-        if (!alpn.trimmed().isEmpty()) coreTlsObj["alpn"] = QJsonArray::fromStringList(alpn.split(","));
+        if (!alpn.isEmpty()) coreTlsObj["alpn"] = QJsonArray::fromStringList(alpn.split(","));
         if (proxy_type == proxy_Hysteria2) coreTlsObj["alpn"] = "h3";
 
         QJsonObject outbound{
@@ -271,7 +271,7 @@ namespace NekoGui_fmt {
                 outbound["udp_relay_mode"] = udpRelayMode;
             }
             outbound["zero_rtt_handshake"] = zeroRttHandshake;
-            if (!heartbeat.trimmed().isEmpty()) outbound["heartbeat"] = heartbeat;
+            if (!heartbeat.isEmpty()) outbound["heartbeat"] = heartbeat;
         }
 
         result.outbound = outbound;
