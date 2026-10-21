@@ -20,8 +20,8 @@
 #include <QThread>
 #include <QUrlQuery>
 
-inline const QString software_name = "NekoBox";
-inline const QString software_core_name = "sing-box";
+inline const QString software_name = QStringLiteral("NekoBox");
+inline const QString software_core_name = QStringLiteral("sing-box");
 
 // MainWindow functions
 inline QWidget *mainwindow;
@@ -30,8 +30,6 @@ inline std::function<void(const QString &, const QString &)> MW_show_log_ext;
 inline std::function<void(const QString &, const QString &)> MW_dialog_message;
 
 // String
-
-inline const QString UNICODE_LRO = QStringLiteral("\u202A");
 
 #define Int2String(num) (QString::number(num))
 
@@ -63,6 +61,10 @@ inline QStringList SplitLinesSkipSharp(const QString &str, int maxLine = 0) {
 inline QString cleanVT100String(QString str) {
     static const QRegularExpression vt100("\x1B\\[[0-9;]*m");
     return str.remove(vt100);
+}
+
+inline QString WrapLtr(const QString &text) {
+    return QGuiApplication::layoutDirection() == Qt::RightToLeft ? QChar(0x202A) + text + QChar(0x202C) : text;
 }
 
 // Base64

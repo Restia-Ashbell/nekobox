@@ -17,8 +17,7 @@ void EditTrojanVLESS::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     auto bean = this->ent->Bean<NekoGui_fmt::TrojanVLESSBean>();
     if (bean->proxy_type == NekoGui_fmt::TrojanVLESSBean::proxy_VLESS) {
         ui->label->setText("UUID");
-    }
-    if (bean->proxy_type != NekoGui_fmt::TrojanVLESSBean::proxy_VLESS) {
+    } else {
         ui->flow->hide();
         ui->flow_l->hide();
     }

@@ -11,7 +11,7 @@ namespace NekoGui_sys {
         connect(this, &QProcess::readyRead, this, [this] {
             MW_show_log(cleanVT100String(readAll()));
         });
-        connect(this, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
+        connect(this, &QProcess::errorOccurred, this, [this](QProcess::ProcessError) {
             if (!killed) {
                 MW_show_log_ext(tag, "errorOccurred:" + errorString());
                 if (QThread::currentThread() == qApp->thread()) {
@@ -46,12 +46,13 @@ namespace NekoGui_sys {
 
     std::list<std::shared_ptr<ExternalProcess>> CreateExtCFromExtR(const std::list<std::shared_ptr<NekoGui_fmt::ExternalBuildResult>> &extRs) {
         std::list<std::shared_ptr<ExternalProcess>> processes;
+        const auto systemEnv = QProcess::systemEnvironment();
         for (const auto &extR: extRs) {
             auto extC = std::make_shared<ExternalProcess>();
             extC->tag = extR->tag;
             extC->setProgram(extR->program);
             extC->setArguments(extR->arguments);
-            extC->setEnvironment(QProcess::systemEnvironment() + extR->env);
+            extC->setEnvironment(systemEnv + extR->env);
             processes.emplace_back(extC);
         }
         return processes;

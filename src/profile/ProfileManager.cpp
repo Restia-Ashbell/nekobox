@@ -75,12 +75,12 @@ namespace NekoGui {
                 std::map<int, std::shared_ptr<ProxyEntity>> newProfiles;
                 for (auto gid: groupsTabOrder) {
                     auto group = GetGroup(gid);
-                    gidOld2New[gid] = ii++;
+                    const auto newGid = ii++;
+                    gidOld2New[gid] = newGid;
                     for (auto const &profile: ProfilesWithOrder(group)) {
-                        auto oldId = profile->id;
                         auto newId = i++;
                         profile->id = newId;
-                        profile->gid = gidOld2New[gid];
+                        profile->gid = newGid;
                         profile->fn = QString("profiles/%1.json").arg(newId);
                         profile->Save();
                         newProfiles[newId] = profile;
@@ -262,14 +262,7 @@ namespace NekoGui {
         if (group == nullptr) return {};
 
         // 修复 group->order:剔除孤儿 id,补全漏加的节点
-        bool changed = false;
-        group->order.removeIf([this, &changed](int k) {
-            if (!profiles.contains(k)) {
-                changed = true;
-                return true;
-            }
-            return false;
-        });
+        bool changed = group->order.removeIf([this](int id) { return !profiles.contains(id); });
         for (const auto &[pid, profile]: profiles) {
             if (profile->gid == group->id && !group->order.contains(pid)) {
                 group->order.append(pid);
@@ -337,6 +330,5 @@ namespace NekoGui {
     std::shared_ptr<Group> ProfileManager::CurrentGroup() {
         return GetGroup(dataStore->current_group);
     }
-
 
 } // namespace NekoGui

@@ -71,7 +71,8 @@ namespace NekoGui_fmt {
             outbound->insert("tls", tls);
         }
 
-        if (outbound->value("type").toString() == "vmess" || outbound->value("type").toString() == "vless") {
+        const auto outboundType = outbound->value("type").toString();
+        if (outboundType == "vmess" || outboundType == "vless") {
             outbound->insert("packet_encoding", packet_encoding);
         }
     }

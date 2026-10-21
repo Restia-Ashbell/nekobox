@@ -816,7 +816,10 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="certificate">
+           <widget class="QPushButton" name="certificate">
+            <property name="text">
+             <string notr="true">Not set</string>
+            </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>

@@ -20,8 +20,8 @@ bool ProfileSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIn
     const auto *source = sourceModel();
     if (source == nullptr) return true;
     for (int col = 0; col < ProfileTableModel::ColumnCount; ++col) {
-        const auto text = source->data(source->index(sourceRow, col), Qt::DisplayRole).toString().toLower();
-        if (text.contains(m_filter)) return true;
+        const auto text = source->data(source->index(sourceRow, col), Qt::DisplayRole).toString();
+        if (text.contains(m_filter, Qt::CaseInsensitive)) return true;
     }
     return false;
 }

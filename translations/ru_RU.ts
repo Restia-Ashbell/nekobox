@@ -52,10 +52,6 @@
         <translation>Порт прослушивания</translation>
     </message>
     <message>
-        <source>Auth</source>
-        <translation>Аутентификация</translation>
-    </message>
-    <message>
         <source>Custom Inbound</source>
         <translation>Кастомный inbound</translation>
     </message>
@@ -224,16 +220,20 @@
         <translation>Выберите имя ядра.</translation>
     </message>
     <message>
+        <source>Not set</source>
+        <translation>Не задано</translation>
+    </message>
+    <message>
+        <source>Already set</source>
+        <translation>Уже задано</translation>
+    </message>
+    <message>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
         <source>Please select a valid square image.</source>
         <translation>Пожалуйста, выберите корректное квадратное изображение.</translation>
-    </message>
-    <message>
-        <source>Inbound Auth</source>
-        <translation>Аутентификация inbound</translation>
     </message>
     <message>
         <source>Username</source>
@@ -1556,10 +1556,6 @@ Do you want to download it now?</source>
     <message>
         <source>Chain Proxy</source>
         <translation>Цепочка прокси</translation>
-    </message>
-    <message>
-        <source>Request with proxy but no profile started.</source>
-        <translation>Запрос через прокси, но профиль не запущен.</translation>
     </message>
     <message>
         <source>The subscription is already being updated.</source>

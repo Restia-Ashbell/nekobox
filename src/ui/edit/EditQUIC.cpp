@@ -69,8 +69,6 @@ void EditQUIC::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
         } else { // hy2
             ui->hyProtocol->hide();
             ui->hyProtocol_l->hide();
-            ui->hyProtocol->hide();
-            ui->hyProtocol_l->hide();
             ui->authPayload->hide();
             ui->authPayload_l->hide();
             ui->alpn->hide();

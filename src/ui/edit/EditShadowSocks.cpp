@@ -21,11 +21,8 @@ void EditShadowSocks::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
     ui->method->setCurrentText(bean->method);
     ui->uot->setCurrentIndex(bean->uot);
     ui->password->setText(bean->password);
-    auto ssPlugin = bean->plugin.split(";");
-    if (!ssPlugin.empty()) {
-        ui->plugin->setCurrentText(ssPlugin[0]);
-        ui->plugin_opts->setText(SubStrAfter(bean->plugin, ";"));
-    }
+    ui->plugin->setCurrentText(SubStrBefore(bean->plugin, ";"));
+    ui->plugin_opts->setText(SubStrAfter(bean->plugin, ";"));
 }
 
 bool EditShadowSocks::onEnd() {

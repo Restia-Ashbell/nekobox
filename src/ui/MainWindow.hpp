@@ -7,7 +7,6 @@
 #include <QTextCursor>
 
 #include "common/GuiUtils.hpp"
-#include "profile/DataStore.hpp"
 #include "profile/ProxyEntity.hpp"
 #include "system/ExternalProcess.hpp"
 #include "ui/table/ProfileTableView.hpp"

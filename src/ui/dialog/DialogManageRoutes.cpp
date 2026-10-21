@@ -7,8 +7,8 @@
 #include <QMessageBox>
 
 #include "3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp"
-#include "protocol/Preset.hpp"
 #include "common/GuiUtils.hpp"
+#include "protocol/Preset.hpp"
 
 #define REFRESH_ACTIVE_ROUTING(name, obj)           \
     this->active_routing = name;                    \
@@ -51,12 +51,12 @@ DialogManageRoutes::~DialogManageRoutes() {
 }
 
 void DialogManageRoutes::accept() {
-    bool routeChanged = false;
-    if (NekoGui::dataStore->active_routing != active_routing) routeChanged = true;
-    SaveDisplayRouting(NekoGui::dataStore->routing.get());
+    auto *routing = NekoGui::dataStore->routing.get();
+    bool routeChanged = NekoGui::dataStore->active_routing != active_routing;
+    SaveDisplayRouting(routing);
     NekoGui::dataStore->active_routing = active_routing;
-    NekoGui::dataStore->routing->fn = "routes/" + NekoGui::dataStore->active_routing;
-    if (NekoGui::dataStore->routing->Save()) routeChanged = true;
+    routing->fn = "routes/" + NekoGui::dataStore->active_routing;
+    if (routing->Save()) routeChanged = true;
     //
     QString info = "UpdateDataStore";
     if (routeChanged) info += "RouteChanged";
@@ -67,10 +67,10 @@ void DialogManageRoutes::accept() {
 // built in settings
 
 QList<QAction *> DialogManageRoutes::getBuiltInSchemes() {
-    QList<QAction *> list;
-    list.append(this->schemeToAction(tr("Bypass LAN and China"), routing_cn_lan));
-    list.append(this->schemeToAction(tr("Global"), routing_global));
-    return list;
+    return {
+        this->schemeToAction(tr("Bypass LAN and China"), routing_cn_lan),
+        this->schemeToAction(tr("Global"), routing_global),
+    };
 }
 
 QAction *DialogManageRoutes::schemeToAction(const QString &name, const NekoGui::Routing &scheme) {
@@ -138,17 +138,13 @@ void DialogManageRoutes::on_load_save_clicked() {
     connect(list, &QListWidget::currentTextChanged, lineEdit, &QLineEdit::setText);
     auto bottom = new QHBoxLayout;
     layout->addLayout(bottom);
-    auto load = new QPushButton;
-    load->setText(tr("Load"));
+    auto load = new QPushButton(tr("Load"));
     bottom->addWidget(load);
-    auto save = new QPushButton;
-    save->setText(tr("Save"));
+    auto save = new QPushButton(tr("Save"));
     bottom->addWidget(save);
-    auto remove = new QPushButton;
-    remove->setText(tr("Remove"));
+    auto remove = new QPushButton(tr("Remove"));
     bottom->addWidget(remove);
-    auto cancel = new QPushButton;
-    cancel->setText(tr("Cancel"));
+    auto cancel = new QPushButton(tr("Cancel"));
     bottom->addWidget(cancel);
     connect(load, &QPushButton::clicked, w, [=, this] {
         auto fn = lineEdit->text();

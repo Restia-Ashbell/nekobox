@@ -36,8 +36,9 @@ namespace NekoGui {
         for (const auto &ent: list2) {
             QString key = Key(ent, false);
             map2.insert(key, ent);
-            if (map1.contains(key)) {
-                common1.append(map1[key]);
+            const auto it = map1.constFind(key);
+            if (it != map1.constEnd()) {
+                common1.append(*it);
                 common2.append(ent);
             } else {
                 only2.append(ent);

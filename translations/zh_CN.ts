@@ -104,10 +104,6 @@
         <translation>监听端口</translation>
     </message>
     <message>
-        <source>Auth</source>
-        <translation>认证</translation>
-    </message>
-    <message>
         <source>Log</source>
         <translation>日志</translation>
     </message>
@@ -184,6 +180,14 @@
         <translation>请选择核心名.</translation>
     </message>
     <message>
+        <source>Not set</source>
+        <translation>未设置</translation>
+    </message>
+    <message>
+        <source>Already set</source>
+        <translation>已设置</translation>
+    </message>
+    <message>
         <source>Include Pre-release when checking update</source>
         <translation>检查更新时包括 Pre-release 版本</translation>
     </message>
@@ -222,10 +226,6 @@
     <message>
         <source>Max log lines</source>
         <translation>日志最大行数限制</translation>
-    </message>
-    <message>
-        <source>Inbound Auth</source>
-        <translation>入站认证设置</translation>
     </message>
     <message>
         <source>Username</source>
@@ -1562,10 +1562,6 @@ Do you want to download it now?</source>
     <message>
         <source>Unavailable</source>
         <translation>不可用</translation>
-    </message>
-    <message>
-        <source>Request with proxy but no profile started.</source>
-        <translation>即将使用代理请求，但是代理未启动。</translation>
     </message>
     <message>
         <source>Chain Proxy</source>

@@ -138,10 +138,9 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     // Core
 
     CACHE.extraCore = NekoGui::dataStore->extra_core;
-    if (!CACHE.extraCore.contains("naive")) CACHE.extraCore.insert("naive", "");
-    if (!CACHE.extraCore.contains("hysteria")) CACHE.extraCore.insert("hysteria", "");
-    if (!CACHE.extraCore.contains("hysteria2")) CACHE.extraCore.insert("hysteria2", "");
-    if (!CACHE.extraCore.contains("tuic")) CACHE.extraCore.insert("tuic", "");
+    for (const auto &core: {"naive", "hysteria", "hysteria2", "tuic"}) {
+        if (!CACHE.extraCore.contains(core)) CACHE.extraCore.insert(core, "");
+    }
     //
     auto extra_core_layout = ui->extra_core_box_scrollAreaWidgetContents->layout();
     for (const auto &s: CACHE.extraCore.keys()) {
@@ -191,7 +190,15 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     // Certificate
     ui->certificate_store->addItems(Preset::SingBox::CertificateStore);
     ui->certificate_store->setCurrentText(NekoGui::dataStore->certificate_store);
-    ui->certificate->setText(NekoGui::dataStore->certificate);
+    CACHE.certificate = NekoGui::dataStore->certificate;
+    ui->certificate->setText(CACHE.certificate.isEmpty() ? tr("Not set") : tr("Already set"));
+    connect(ui->certificate, &QPushButton::clicked, this, [this] {
+        bool ok;
+        const auto text = QInputDialog::getMultiLineText(this, tr("Certificate"), "", CACHE.certificate, &ok);
+        if (!ok) return;
+        CACHE.certificate = text;
+        ui->certificate->setText(CACHE.certificate.isEmpty() ? tr("Not set") : tr("Already set"));
+    });
     ui->certificate_path->setText(NekoGui::dataStore->certificate_path);
     ui->certificate_directory_path->setText(NekoGui::dataStore->certificate_directory_path);
 
@@ -273,7 +280,7 @@ void DialogBasicSettings::accept() {
 
     // Certificate
     NekoGui::dataStore->certificate_store = ui->certificate_store->currentText();
-    NekoGui::dataStore->certificate = ui->certificate->text();
+    NekoGui::dataStore->certificate = CACHE.certificate.trimmed();
     NekoGui::dataStore->certificate_path = ui->certificate_path->text();
     NekoGui::dataStore->certificate_directory_path = ui->certificate_directory_path->text();
 

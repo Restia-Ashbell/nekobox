@@ -113,10 +113,6 @@
         <translation>پورت شنود</translation>
     </message>
     <message>
-        <source>Auth</source>
-        <translation>احراز هویت</translation>
-    </message>
-    <message>
         <source>Log</source>
         <translation>ثبت رویدادها</translation>
     </message>
@@ -194,6 +190,14 @@
         <translation>لطفا نام هسته را انتخاب کنید</translation>
     </message>
     <message>
+        <source>Not set</source>
+        <translation>تنظیم نشده</translation>
+    </message>
+    <message>
+        <source>Already set</source>
+        <translation>تنظیم شده</translation>
+    </message>
+    <message>
         <source>Include Pre-release when checking update</source>
         <translation>هنگام بررسی به‌روزرسانی، نسخه پیش‌انتشار را نیز لحاظ شود</translation>
     </message>
@@ -216,10 +220,6 @@
     <message>
         <source>Max log lines</source>
         <translation>حداکثر خطوط فایل لاگ</translation>
-    </message>
-    <message>
-        <source>Inbound Auth</source>
-        <translation>احراز هویت ورودی</translation>
     </message>
     <message>
         <source>Username</source>
@@ -1630,10 +1630,6 @@ Deleted %3 profiles:
     <message>
         <source>Unavailable</source>
         <translation>غیرقابل دسترس</translation>
-    </message>
-    <message>
-        <source>Request with proxy but no profile started.</source>
-        <translation>درخواست با پروکسی اما هیچ پروفایلی اجرا نشده است.</translation>
     </message>
     <message>
         <source>Default</source>

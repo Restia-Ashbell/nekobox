@@ -67,7 +67,8 @@ namespace NekoGui_sub {
         if (content.isEmpty()) return;
 
         QUrl url(content);
-        if (url.isValid() && (url.scheme() == "http" || url.scheme() == "https") && url.userInfo().isEmpty()) {
+        const auto scheme = url.scheme();
+        if (url.isValid() && (scheme == "http" || scheme == "https") && url.userInfo().isEmpty()) {
             emit importUrlDetected(content);
             return;
         }

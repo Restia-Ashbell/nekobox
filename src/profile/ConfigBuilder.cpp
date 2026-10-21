@@ -9,8 +9,8 @@ namespace NekoGui {
         // 合并
         if (custom.isEmpty()) return;
         for (const auto &key: custom.keys()) {
+            const auto v = custom[key];
             if (outbound.contains(key)) {
-                auto v = custom[key];
                 auto v_orig = outbound[key];
                 if (v.isObject() && v_orig.isObject()) { // isObject 则合并？
                     QJsonObject vo = v.toObject();
@@ -21,7 +21,7 @@ namespace NekoGui {
                     outbound[key] = v;
                 }
             } else {
-                outbound[key] = custom[key];
+                outbound[key] = v;
             }
         }
     }
@@ -126,14 +126,15 @@ namespace NekoGui {
         auto resolveChain = [=](const std::shared_ptr<ProxyEntity> &ent) {
             QList<std::shared_ptr<ProxyEntity>> resolved;
             if (ent->type == "chain") {
-                auto list = ent->Bean<NekoGui_fmt::ChainBean>()->list;
+                const auto &list = ent->Bean<NekoGui_fmt::ChainBean>()->list;
                 for (auto id: list) {
-                    resolved += profileManager->GetProfile(id);
-                    if (resolved.last() == nullptr) {
+                    const auto profile = profileManager->GetProfile(id);
+                    resolved += profile;
+                    if (profile == nullptr) {
                         status->result->error = QString("chain missing ent: %1").arg(id);
                         break;
                     }
-                    if (resolved.last()->type == "chain") {
+                    if (profile->type == "chain") {
                         status->result->error = QString("chain in chain is not allowed: %1").arg(id);
                         break;
                     }
@@ -184,14 +185,15 @@ namespace NekoGui {
             // profile2 (in) (global)   tag g-(id)
             // profile1                 tag (chainTag)-(id)
             // profile0 (out)           tag (chainTag)-(id) / single: chainTag=g-(id)
-            auto ent = ents[index];
+            const auto &ent = ents[index];
+            auto *bean = ent->bean;
             auto tagOut = index == ents.length() - 1 ? chainTagOut : chainTag + "-" + Int2String(ent->id);
 
             // Outbound
 
             QJsonObject outbound;
 
-            if (ent->bean->external) {
+            if (bean->external) {
                 auto ext_mapping_port = 0;
                 auto ext_socks_port = MkPort();
                 if (index > 0) {
@@ -202,24 +204,24 @@ namespace NekoGui {
                         {"tag", tagOut + "-mapping"},
                         {"listen", "127.0.0.1"},
                         {"listen_port", ext_mapping_port},
-                        {"override_address", ent->bean->serverAddress},
-                        {"override_port", ent->bean->serverPort},
+                        {"override_address", bean->serverAddress},
+                        {"override_port", bean->serverPort},
                     };
                     status->routingRules += QJsonObject{
                         {"inbound", tagOut + "-mapping"},
                         {"outbound", pastTag},
                     };
                 }
-                auto extR = ent->bean->BuildExternal(ext_mapping_port, ext_socks_port);
+                auto extR = bean->BuildExternal(ext_mapping_port, ext_socks_port);
                 if (extR.program.isEmpty()) {
-                    status->result->error = QObject::tr("Core not found: %1").arg(ent->bean->DisplayCoreType());
+                    status->result->error = QObject::tr("Core not found: %1").arg(bean->DisplayCoreType());
                     return {};
                 }
                 if (!extR.error.isEmpty()) { // rejected
                     status->result->error = extR.error;
                     return {};
                 }
-                extR.tag = ent->bean->DisplayType();
+                extR.tag = bean->DisplayType();
                 status->result->extRs.emplace_back(std::make_shared<NekoGui_fmt::ExternalBuildResult>(extR));
 
                 // SOCKS OUTBOUND
@@ -227,7 +229,7 @@ namespace NekoGui {
                 outbound["server"] = "127.0.0.1";
                 outbound["server_port"] = ext_socks_port;
             } else {
-                const auto coreR = ent->bean->BuildCoreObjSingBox();
+                const auto coreR = bean->BuildCoreObjSingBox();
                 if (coreR.outbound.isEmpty()) {
                     status->result->error = "unsupported outbound";
                     return {};
@@ -258,7 +260,7 @@ namespace NekoGui {
 
             status->outbounds.prepend(outbound);
             if (!status->forTest) {
-                QJsonObject customOutboundObj = QString2QJsonObject(ent->bean->custom_outbound);
+                QJsonObject customOutboundObj = QString2QJsonObject(bean->custom_outbound);
                 if (!customOutboundObj.isEmpty()) {
                     status->outbounds += customOutboundObj;
                 }

@@ -25,6 +25,7 @@ private:
     struct {
         QVariantMap extraCore;
         QString custom_inbound;
+        QString certificate;
         bool needRestart = false;
     } CACHE;
 
