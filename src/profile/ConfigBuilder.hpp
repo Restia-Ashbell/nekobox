@@ -11,7 +11,7 @@ namespace NekoGui {
         QList<NekoGui_traffic::TrafficData *> outboundStats; // all, but not including "bypass" "block"
         NekoGui_traffic::TrafficData *outboundStat = nullptr; // main
 
-        std::list<std::shared_ptr<NekoGui_fmt::ExternalBuildResult>> extRs;
+        QList<std::shared_ptr<NekoGui_fmt::ExternalBuildResult>> extRs;
     };
 
     class BuildConfigStatus {

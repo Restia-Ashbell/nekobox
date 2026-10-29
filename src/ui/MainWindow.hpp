@@ -3,12 +3,11 @@
 #include <QFuture>
 #include <QMainWindow>
 #include <QMutex>
+#include <QProcess>
 #include <QSystemTrayIcon>
 #include <QTextCursor>
 
-#include "common/GuiUtils.hpp"
 #include "profile/ProxyEntity.hpp"
-#include "system/ExternalProcess.hpp"
 #include "ui/table/ProfileTableView.hpp"
 
 QT_BEGIN_NAMESPACE
@@ -136,7 +135,7 @@ private:
     QList<QTextCursor> logSearchMatches;
     //
     std::shared_ptr<NekoGui::ProxyEntity> running;
-    std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> running_ext;
+    QList<std::shared_ptr<QProcess>> running_ext;
     //
     bool select_mode = false;
     QMutex mu_state;

@@ -120,7 +120,7 @@ namespace NekoGui_fmt {
 
         ExternalBuildResult BuildExternal(int mapping_port, int socks_port) override;
 
-        CoreObjOutboundBuildResult BuildCoreObjSingBox() override;
+        QJsonObject BuildCoreObjSingBox() override;
 
         bool TryParseLink(const QString &link) override;
 

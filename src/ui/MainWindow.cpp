@@ -36,7 +36,6 @@
 #include "protocol/Preset.hpp"
 #include "subscription/SubscriptionService.hpp"
 #include "system/AdminHelper.hpp"
-#include "system/ExternalProcess.hpp"
 #include "ui/dialog/DialogBasicSettings.hpp"
 #include "ui/dialog/DialogHotkey.hpp"
 #include "ui/dialog/DialogManageGroups.hpp"
@@ -577,7 +576,7 @@ void MainWindow::neko_start(int _id) {
             NekoGui::dataStore->started_id = ent->id;
             running = ent;
 
-            running_ext = NekoGui_sys::CreateExtCFromExtR(result->extRs);
+            running_ext = NekoGui_fmt::CreateExtCFromExtR(result->extRs);
             for (const auto &extC: running_ext) extC->start();
 
             NekoGui_traffic::trafficLooper->start(result->outboundStats, result->outboundStat);
@@ -670,7 +669,7 @@ void MainWindow::speedtest_current_group(int mode) {
 
     QThreadPool::globalInstance()->setMaxThreadCount(NekoGui::dataStore->test_concurrent);
     speedtestFuture = QtConcurrent::map(speedtestProfiles, [=, this](std::shared_ptr<NekoGui::ProxyEntity> &profile) {
-        std::list<std::shared_ptr<NekoGui_sys::ExternalProcess>> extCs;
+        QList<std::shared_ptr<QProcess>> extCs;
 
         auto Address = profile->bean->DisplayAddress().toUtf8();
         auto Url = NekoGui::dataStore->test_latency_url.toUtf8();
@@ -690,8 +689,8 @@ void MainWindow::speedtest_current_group(int mode) {
                 return;
             }
             //
-            if (!c->extRs.empty()) {
-                extCs = NekoGui_sys::CreateExtCFromExtR(c->extRs);
+            if (!c->extRs.isEmpty()) {
+                extCs = NekoGui_fmt::CreateExtCFromExtR(c->extRs);
                 for (const auto &extC: extCs) {
                     extC->start();
                     extC->waitForReadyRead();

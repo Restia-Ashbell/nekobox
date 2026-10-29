@@ -1,17 +1,11 @@
 #pragma once
 
 #include <QHostInfo>
+#include <QProcess>
 
 #include "protocol/V2RayStreamSettings.hpp"
-#include "profile/DataStore.hpp"
 
 namespace NekoGui_fmt {
-    struct CoreObjOutboundBuildResult {
-    public:
-        QJsonObject outbound;
-        QString error;
-    };
-
     struct ExternalBuildResult {
     public:
         QString program;
@@ -23,6 +17,9 @@ namespace NekoGui_fmt {
         QString error;
         QString config_export;
     };
+
+    // Note: run and start in the same thread.
+    QList<std::shared_ptr<QProcess>> CreateExtCFromExtR(const QList<std::shared_ptr<ExternalBuildResult>> &extRs);
 
     class AbstractBean : public JsonStore {
         Q_OBJECT
@@ -105,7 +102,7 @@ namespace NekoGui_fmt {
 
         //
 
-        virtual CoreObjOutboundBuildResult BuildCoreObjSingBox() { return {}; }
+        virtual QJsonObject BuildCoreObjSingBox() { return {}; }
 
         virtual ExternalBuildResult BuildExternal(int mapping_port, int socks_port) { return {}; }
 

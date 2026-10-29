@@ -229,16 +229,11 @@ namespace NekoGui {
                 outbound["server"] = "127.0.0.1";
                 outbound["server_port"] = ext_socks_port;
             } else {
-                const auto coreR = bean->BuildCoreObjSingBox();
-                if (coreR.outbound.isEmpty()) {
+                outbound = bean->BuildCoreObjSingBox();
+                if (outbound.isEmpty()) {
                     status->result->error = "unsupported outbound";
                     return {};
                 }
-                if (!coreR.error.isEmpty()) { // rejected
-                    status->result->error = coreR.error;
-                    return {};
-                }
-                outbound = coreR.outbound;
                 if (index > 0) {
                     outbound["detour"] = pastTag;
                 }
@@ -319,21 +314,17 @@ namespace NekoGui {
 
             // tun-in
             if (dataStore->spmode_vpn) {
-#ifdef Q_OS_MACOS
-                auto tun_name = "";
-#else
-                auto tun_name = "nekobox-tun";
-#endif
                 QJsonObject inboundObj;
                 inboundObj["tag"] = "tun-in";
                 inboundObj["type"] = "tun";
-                inboundObj["interface_name"] = tun_name;
                 inboundObj["auto_route"] = true;
-                // inboundObj["endpoint_independent_nat"] = true;
                 inboundObj["mtu"] = dataStore->tun_mtu;
                 inboundObj["stack"] = dataStore->tun_stack;
                 inboundObj["strict_route"] = dataStore->tun_strict_route;
                 inboundObj["address"] = dataStore->tun_ipv6 ? QJsonArray{"172.18.0.1/30", "fdfe:dcba:9876::1/126"} : QJsonArray{"172.18.0.1/30"};
+#ifndef Q_OS_MACOS
+                inboundObj["interface_name"] = "nekobox-tun";
+#endif
                 status->inbounds += inboundObj;
             }
 

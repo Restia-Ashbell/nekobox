@@ -30,7 +30,7 @@ namespace NekoGui_fmt {
 
         QString DisplayType() override { return "SSH"; };
 
-        CoreObjOutboundBuildResult BuildCoreObjSingBox() override;
+        QJsonObject BuildCoreObjSingBox() override;
 
         bool TryParseLink(const QString &link) override;
 

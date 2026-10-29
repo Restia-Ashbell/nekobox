@@ -23,7 +23,7 @@ namespace NekoGui_fmt {
 
         QString DisplayType() override { return "Shadowsocks"; };
 
-        CoreObjOutboundBuildResult BuildCoreObjSingBox() override;
+        QJsonObject BuildCoreObjSingBox() override;
 
         bool TryParseLink(const QString &link) override;
 

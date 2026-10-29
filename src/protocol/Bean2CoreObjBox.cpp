@@ -97,9 +97,7 @@ namespace NekoGui_fmt {
         }
     }
 
-    CoreObjOutboundBuildResult SocksHttpBean::BuildCoreObjSingBox() {
-        CoreObjOutboundBuildResult result;
-
+    QJsonObject SocksHttpBean::BuildCoreObjSingBox() {
         QJsonObject outbound;
         outbound["type"] = socks_http_type == type_HTTP ? "http" : "socks";
         if (socks_http_type == type_Socks4) outbound["version"] = "4";
@@ -112,13 +110,10 @@ namespace NekoGui_fmt {
         }
 
         stream->BuildStreamSettingsSingBox(&outbound);
-        result.outbound = outbound;
-        return result;
+        return outbound;
     }
 
-    CoreObjOutboundBuildResult ShadowSocksBean::BuildCoreObjSingBox() {
-        CoreObjOutboundBuildResult result;
-
+    QJsonObject ShadowSocksBean::BuildCoreObjSingBox() {
         QJsonObject outbound{
             {"type", "shadowsocks"},
             {"server", serverAddress},
@@ -142,13 +137,10 @@ namespace NekoGui_fmt {
         }
 
         multiplex->BuildMultiplexSettingsSingBox(&outbound);
-        result.outbound = outbound;
-        return result;
+        return outbound;
     }
 
-    CoreObjOutboundBuildResult ShadowSocksRBean::BuildCoreObjSingBox() {
-        CoreObjOutboundBuildResult result;
-
+    QJsonObject ShadowSocksRBean::BuildCoreObjSingBox() {
         QJsonObject outbound{
             {"type", "shadowsocksr"},
             {"server", serverAddress},
@@ -160,13 +152,10 @@ namespace NekoGui_fmt {
             {"protocol", protocol},
             {"protocol_param", protocolParam}};
 
-        result.outbound = outbound;
-        return result;
+        return outbound;
     }
 
-    CoreObjOutboundBuildResult VMessBean::BuildCoreObjSingBox() {
-        CoreObjOutboundBuildResult result;
-
+    QJsonObject VMessBean::BuildCoreObjSingBox() {
         QJsonObject outbound{
             {"type", "vmess"},
             {"server", serverAddress},
@@ -178,13 +167,10 @@ namespace NekoGui_fmt {
 
         stream->BuildStreamSettingsSingBox(&outbound);
         multiplex->BuildMultiplexSettingsSingBox(&outbound);
-        result.outbound = outbound;
-        return result;
+        return outbound;
     }
 
-    CoreObjOutboundBuildResult TrojanVLESSBean::BuildCoreObjSingBox() {
-        CoreObjOutboundBuildResult result;
-
+    QJsonObject TrojanVLESSBean::BuildCoreObjSingBox() {
         QJsonObject outbound{
             {"type", proxy_type == proxy_VLESS ? "vless" : "trojan"},
             {"server", serverAddress},
@@ -207,13 +193,10 @@ namespace NekoGui_fmt {
 
         stream->BuildStreamSettingsSingBox(&outbound);
         multiplex->BuildMultiplexSettingsSingBox(&outbound);
-        result.outbound = outbound;
-        return result;
+        return outbound;
     }
 
-    CoreObjOutboundBuildResult QUICBean::BuildCoreObjSingBox() {
-        CoreObjOutboundBuildResult result;
-
+    QJsonObject QUICBean::BuildCoreObjSingBox() {
         QJsonObject coreTlsObj{
             {"enabled", true},
             {"disable_sni", disableSni},
@@ -275,13 +258,10 @@ namespace NekoGui_fmt {
             if (!heartbeat.isEmpty()) outbound["heartbeat"] = heartbeat;
         }
 
-        result.outbound = outbound;
-        return result;
+        return outbound;
     }
 
-    CoreObjOutboundBuildResult AnyTLSBean::BuildCoreObjSingBox() {
-        CoreObjOutboundBuildResult result;
-
+    QJsonObject AnyTLSBean::BuildCoreObjSingBox() {
         QJsonObject outbound{
             {"type", "anytls"},
             {"server", serverAddress},
@@ -293,13 +273,10 @@ namespace NekoGui_fmt {
         };
 
         stream->BuildStreamSettingsSingBox(&outbound);
-        result.outbound = outbound;
-        return result;
+        return outbound;
     }
 
-    CoreObjOutboundBuildResult SSHBean::BuildCoreObjSingBox() {
-        CoreObjOutboundBuildResult result;
-
+    QJsonObject SSHBean::BuildCoreObjSingBox() {
         QJsonObject outbound{
             {"type", "ssh"},
             {"server", serverAddress},
@@ -314,24 +291,14 @@ namespace NekoGui_fmt {
             {"client_version", clientVersion},
         };
 
-        result.outbound = outbound;
-        return result;
+        return outbound;
     }
 
-    CoreObjOutboundBuildResult WireGuardBean::BuildCoreObjSingBox() {
-        CoreObjOutboundBuildResult result;
-
-#ifdef Q_OS_MACOS
-        auto tun_name = "";
-#else
-        auto tun_name = "nekobox-wg";
-#endif
-
+    QJsonObject WireGuardBean::BuildCoreObjSingBox() {
         QJsonObject outbound{
             {"type", "wireguard"},
             {"server", serverAddress},
             {"server_port", serverPort},
-            {"interface_name", tun_name},
             {"private_key", privateKey},
             {"peer_public_key", publicKey},
             {"pre_shared_key", preSharedKey},
@@ -340,18 +307,14 @@ namespace NekoGui_fmt {
             {"mtu", MTU},
             {"system_interface", useSystemInterface},
         };
+#ifndef Q_OS_MACOS
+        outbound["interface_name"] = "nekobox-wg";
+#endif
 
-        result.outbound = outbound;
-        return result;
+        return outbound;
     }
 
-    CoreObjOutboundBuildResult CustomBean::BuildCoreObjSingBox() {
-        CoreObjOutboundBuildResult result;
-
-        if (core == "internal") {
-            result.outbound = QString2QJsonObject(config_simple);
-        }
-
-        return result;
+    QJsonObject CustomBean::BuildCoreObjSingBox() {
+        return core == "internal" ? QString2QJsonObject(config_simple) : QJsonObject();
     }
 } // namespace NekoGui_fmt

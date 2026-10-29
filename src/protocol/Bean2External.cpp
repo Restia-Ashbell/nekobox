@@ -1,6 +1,8 @@
 #include "profile/ProxyEntity.hpp"
 #include "protocol/Includes.hpp"
 
+#include <QProcess>
+#include <QThread>
 #include <QUrl>
 
 namespace NekoGui_fmt {
@@ -13,7 +15,7 @@ namespace NekoGui_fmt {
         domain_address = WrapIPV6Host(domain_address);
         connect_address = WrapIPV6Host(connect_address);
 
-        auto proxy_url = QUrl();
+        QUrl proxy_url;
         proxy_url.setScheme(protocol);
         proxy_url.setUserName(username);
         proxy_url.setPassword(password);
@@ -239,6 +241,36 @@ namespace NekoGui_fmt {
         }
 
         return result;
+    }
+
+    QList<std::shared_ptr<QProcess>> CreateExtCFromExtR(const QList<std::shared_ptr<ExternalBuildResult>> &extRs) {
+        QList<std::shared_ptr<QProcess>> processes;
+        const auto systemEnv = QProcess::systemEnvironment();
+        for (const auto &extR: extRs) {
+            const auto tag = extR->tag;
+            auto extC = std::make_shared<QProcess>();
+            extC->setProcessChannelMode(QProcess::MergedChannels);
+            extC->setProgram(extR->program);
+            extC->setArguments(extR->arguments);
+            extC->setEnvironment(systemEnv + extR->env);
+
+            const auto proc = extC.get();
+            QObject::connect(proc, &QProcess::readyRead, proc, [proc] {
+                MW_show_log(cleanVT100String(proc->readAll()));
+            });
+            QObject::connect(proc, &QProcess::stateChanged, proc, [proc, tag](QProcess::ProcessState state) {
+                if (state == QProcess::Starting) {
+                    MW_show_log_ext(tag, QString("External core starting: %1 %2").arg(proc->program(), proc->arguments().join(" ")));
+                } else if (state == QProcess::NotRunning) {
+                    MW_show_log_ext(tag, QString("External core stopped: %1").arg(proc->errorString()));
+                    if (QThread::currentThread() == qApp->thread()) {
+                        MW_dialog_message("ExternalProcess", "Crashed");
+                    }
+                }
+            });
+            processes.emplace_back(extC);
+        }
+        return processes;
     }
 
 } // namespace NekoGui_fmt
