@@ -39,13 +39,6 @@ set(ZXING_EXAMPLES OFF)
 include(FetchContent)
 
 FetchContent_Declare(
-    QJsonModel
-    GIT_REPOSITORY https://github.com/dridk/QJsonModel.git
-    GIT_TAG master
-    GIT_SHALLOW TRUE
-    EXCLUDE_FROM_ALL
-)
-FetchContent_Declare(
     QHotkey
     GIT_REPOSITORY https://github.com/Skycoder42/QHotkey.git
     GIT_TAG master
@@ -76,7 +69,7 @@ FetchContent_Declare(
 if(EXISTS ${CMAKE_SOURCE_DIR}/../sing-box)
     set(FETCHCONTENT_SOURCE_DIR_SING-BOX ${CMAKE_SOURCE_DIR}/../sing-box)
 endif()
-FetchContent_MakeAvailable(QJsonModel QHotkey yaml-cpp zxing-cpp sing-box)
+FetchContent_MakeAvailable(QHotkey yaml-cpp zxing-cpp sing-box)
 
 # internal compiler error
 if(MINGW)
@@ -117,7 +110,7 @@ add_custom_command(
 add_custom_target(libbox DEPENDS ${LIBBOX_OUTPUTS})
 
 # Sources
-file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS src/* 3rdparty/*)
+file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS src/*)
 
 qt_add_executable(nekobox
     WIN32 MACOSX_BUNDLE
@@ -179,7 +172,6 @@ target_link_libraries(nekobox
         Qt::Widgets
         Qt::Network
         Qt::Concurrent
-        QJsonModel
         QHotkey::QHotkey
         yaml-cpp::yaml-cpp
         ZXing::ZXing

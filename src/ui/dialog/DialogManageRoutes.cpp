@@ -6,9 +6,9 @@
 #include <QListWidget>
 #include <QMessageBox>
 
-#include "3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp"
 #include "common/GuiUtils.hpp"
 #include "protocol/Preset.hpp"
+#include "ui/JsonEditor.hpp"
 
 #define REFRESH_ACTIVE_ROUTING(name, obj)           \
     this->active_routing = name;                    \

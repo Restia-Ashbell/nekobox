@@ -43,6 +43,5 @@ Gui:
 - [Qt](https://www.qt.io/)
 - [Qv2ray](https://github.com/Qv2ray/Qv2ray)
 - [QHotkey](https://github.com/Skycoder42/QHotkey)
-- [QJsonModel](https://github.com/dridk/QJsonModel)
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 - [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp)

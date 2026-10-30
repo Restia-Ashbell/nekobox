@@ -3,10 +3,10 @@
 
 #include <QInputDialog>
 
-#include "3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp"
 #include "common/GuiUtils.hpp"
 #include "protocol/Includes.hpp"
 #include "protocol/Preset.hpp"
+#include "ui/JsonEditor.hpp"
 #include "ui/edit/EditAnyTLS.hpp"
 #include "ui/edit/EditChain.hpp"
 #include "ui/edit/EditCustom.hpp"

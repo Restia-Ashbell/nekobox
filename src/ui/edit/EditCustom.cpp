@@ -1,11 +1,11 @@
 #include "ui/edit/EditCustom.hpp"
 #include "ui_EditCustom.h"
 
-#include "3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp"
 #include "profile/ConfigBuilder.hpp"
 #include "profile/ProfileManager.hpp"
 #include "protocol/CustomBean.hpp"
 #include "protocol/Preset.hpp"
+#include "ui/JsonEditor.hpp"
 
 EditCustom::EditCustom(QWidget *parent) : QWidget(parent), ui(new Ui::EditCustom) {
     ui->setupUi(this);

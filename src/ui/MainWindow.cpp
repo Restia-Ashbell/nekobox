@@ -27,13 +27,13 @@
 #include "ZXingQt.h"
 #include "libbox.h"
 
-#include "3rdparty/qv2ray/v2/ui/LogHighlighter.hpp"
 #include "profile/ConfigBuilder.hpp"
 #include "profile/DataStore.hpp"
 #include "profile/ProfileFilter.hpp"
 #include "profile/traffic/TrafficLooper.hpp"
 #include "subscription/SubscriptionService.hpp"
 #include "system/AdminHelper.hpp"
+#include "ui/LogHighlighter.hpp"
 #include "ui/dialog/DialogBasicSettings.hpp"
 #include "ui/dialog/DialogHotkey.hpp"
 #include "ui/dialog/DialogManageGroups.hpp"
@@ -103,7 +103,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(shortcut_next, &QShortcut::activated, this, [this] { findLogMatch(true); });
     auto *shortcut_prev = new QShortcut(QKeySequence("Shift+F3"), ui->logSearchBar);
     connect(shortcut_prev, &QShortcut::activated, this, [this] { findLogMatch(false); });
-    auto *logHighlighter = new SyntaxHighlighter(QApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark, ui->masterLogBrowser->document());
+    auto *logHighlighter = new LogHighlighter(QApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark, ui->masterLogBrowser->document());
     connect(QApplication::styleHints(), &QStyleHints::colorSchemeChanged, this, [logHighlighter](Qt::ColorScheme scheme) {
         logHighlighter->setDarkMode(scheme == Qt::ColorScheme::Dark);
     });

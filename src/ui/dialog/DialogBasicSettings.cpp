@@ -7,11 +7,11 @@
 #include <QMessageBox>
 #include <QStyleFactory>
 
-#include "3rdparty/qv2ray/v2/ui/widgets/editors/w_JsonEditor.hpp"
 #include "common/GuiUtils.hpp"
 #include "profile/DataStore.hpp"
 #include "protocol/Preset.hpp"
 #include "system/AutoRun.hpp"
+#include "ui/JsonEditor.hpp"
 
 class ExtraCoreWidget : public QWidget {
 public:
