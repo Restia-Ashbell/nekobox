@@ -362,14 +362,6 @@
         <translation>Имя</translation>
     </message>
     <message>
-        <source>Custom Outbound Settings</source>
-        <translation>Доп. настройки outbound</translation>
-    </message>
-    <message>
-        <source>Custom Config Settings</source>
-        <translation>Доп. настройки конфига</translation>
-    </message>
-    <message>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>

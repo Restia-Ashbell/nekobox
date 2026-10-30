@@ -33,7 +33,7 @@ namespace NekoGui_ConfigItem {
             return nullptr;
         }
 
-        QJsonObject ToJson(const QStringList &without = {});
+        QJsonObject ToJson();
 
         QByteArray ToJsonBytes();
 

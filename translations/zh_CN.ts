@@ -462,14 +462,6 @@
         <translation>自定义 (%1 完整配置)</translation>
     </message>
     <message>
-        <source>Custom Outbound Settings</source>
-        <translation>自定义出站 JSON 设置</translation>
-    </message>
-    <message>
-        <source>Custom Config Settings</source>
-        <translation>自定义配置 JSON 设置</translation>
-    </message>
-    <message>
         <source>Multiplex</source>
         <translation>多路复用</translation>
     </message>

@@ -4,7 +4,7 @@
 
 namespace NekoGui_ConfigItem {
 
-    QJsonObject JsonStore::ToJson(const QStringList &without) {
+    QJsonObject JsonStore::ToJson() {
         QJsonObject object;
         const auto *metaobject = metaObject();
         for (int i = 0; i < metaobject->propertyCount(); ++i) {
@@ -12,7 +12,6 @@ namespace NekoGui_ConfigItem {
             // 跳过 QObject 自带的 objectName 等内置属性
             if (property.enclosingMetaObject() == &QObject::staticMetaObject) continue;
             const auto name = QString::fromLatin1(property.name());
-            if (without.contains(name)) continue;
             const auto variant = property.read(this);
             const int typeId = variant.typeId();
 

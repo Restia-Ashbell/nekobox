@@ -23,10 +23,6 @@ public slots:
 
 private slots:
 
-    void on_custom_outbound_edit_clicked();
-
-    void on_custom_config_edit_clicked();
-
     void on_certificate_edit_clicked();
 
     void on_ech_edit_clicked();
@@ -42,8 +38,6 @@ private:
     std::shared_ptr<NekoGui::ProxyEntity> ent;
 
     struct {
-        QString custom_outbound;
-        QString custom_config;
         QString certificate;
         QString ech;
     } CACHE;

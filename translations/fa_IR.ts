@@ -472,14 +472,6 @@
         <translation>سفارشی (%1 پیکربندی)</translation>
     </message>
     <message>
-        <source>Custom Outbound Settings</source>
-        <translation>تنظیمات خروجی سفارشی</translation>
-    </message>
-    <message>
-        <source>Custom Config Settings</source>
-        <translation>تنظیمات پیکربندی سفارشی</translation>
-    </message>
-    <message>
         <source>Multiplex</source>
         <translation>مالتی‌پلکس</translation>
     </message>

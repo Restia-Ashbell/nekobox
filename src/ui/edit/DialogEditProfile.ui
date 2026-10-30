@@ -225,48 +225,6 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QGroupBox" name="custom_box">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="title">
-           <string>Custom Outbound Settings</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_5">
-           <item>
-            <widget class="QPushButton" name="custom_outbound_edit">
-             <property name="text">
-              <string notr="true">Edit</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="custom_global_box">
-          <property name="title">
-           <string>Custom Config Settings</string>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <item>
-            <widget class="QPushButton" name="custom_config_edit">
-             <property name="text">
-              <string notr="true">Edit</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
          <widget class="QDialogButtonBox" name="buttonBox">
@@ -598,8 +556,6 @@
   <tabstop>name</tabstop>
   <tabstop>address</tabstop>
   <tabstop>port</tabstop>
-  <tabstop>custom_outbound_edit</tabstop>
-  <tabstop>custom_config_edit</tabstop>
   <tabstop>network</tabstop>
   <tabstop>security</tabstop>
   <tabstop>packet_encoding</tabstop>

@@ -6,7 +6,6 @@
 #include "common/GuiUtils.hpp"
 #include "protocol/Includes.hpp"
 #include "protocol/Preset.hpp"
-#include "ui/JsonEditor.hpp"
 #include "ui/edit/EditAnyTLS.hpp"
 #include "ui/edit/EditChain.hpp"
 #include "ui/edit/EditCustom.hpp"
@@ -226,24 +225,6 @@ void DialogEditProfile::typeSelected() {
         ui->multiplex_box->setVisible(false);
     }
 
-    // left: custom
-    CACHE.custom_config = ent->bean->custom_config;
-    CACHE.custom_outbound = ent->bean->custom_outbound;
-    bool show_custom_config = true;
-    bool show_custom_outbound = true;
-    if (type == "chain") {
-        show_custom_outbound = false;
-    } else if (type == "custom") {
-        if (customType == "internal") {
-            show_custom_outbound = false;
-        } else if (customType == "internal-full") {
-            show_custom_outbound = false;
-            show_custom_config = false;
-        }
-    }
-    ui->custom_box->setVisible(show_custom_outbound);
-    ui->custom_global_box->setVisible(show_custom_config);
-
     // 左边 bean
     if (auto old = ui->bean->layout()->takeAt(0)) {
         delete old->widget();
@@ -352,10 +333,6 @@ bool DialogEditProfile::onEnd() {
         multiplex->brutal_down = ui->brutal_down->text().toInt();
     }
 
-    // cached custom
-    ent->bean->custom_outbound = CACHE.custom_outbound;
-    ent->bean->custom_config = CACHE.custom_config;
-
     return true;
 }
 
@@ -395,16 +372,6 @@ void DialogEditProfile::editor_cache_updated_impl() {
     } else {
         ui->ech_edit->setText(tr("Already set"));
     }
-    if (CACHE.custom_outbound.isEmpty()) {
-        ui->custom_outbound_edit->setText(tr("Not set"));
-    } else {
-        ui->custom_outbound_edit->setText(tr("Already set"));
-    }
-    if (CACHE.custom_config.isEmpty()) {
-        ui->custom_config_edit->setText(tr("Not set"));
-    } else {
-        ui->custom_config_edit->setText(tr("Already set"));
-    }
 
     // CACHE macro
     for (auto a: innerEditor->get_editor_cached()) {
@@ -414,16 +381,6 @@ void DialogEditProfile::editor_cache_updated_impl() {
             a.first->setText(tr("Already set"));
         }
     }
-}
-
-void DialogEditProfile::on_custom_outbound_edit_clicked() {
-    C_EDIT_JSON_ALLOW_EMPTY(custom_outbound)
-    editor_cache_updated_impl();
-}
-
-void DialogEditProfile::on_custom_config_edit_clicked() {
-    C_EDIT_JSON_ALLOW_EMPTY(custom_config)
-    editor_cache_updated_impl();
 }
 
 void DialogEditProfile::on_certificate_edit_clicked() {

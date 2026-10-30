@@ -27,8 +27,6 @@ namespace NekoGui_fmt {
         Q_PROPERTY(QString name MEMBER name)
         Q_PROPERTY(QString addr MEMBER serverAddress)
         Q_PROPERTY(int port MEMBER serverPort)
-        Q_PROPERTY(QString c_cfg MEMBER custom_config)
-        Q_PROPERTY(QString c_out MEMBER custom_outbound)
         Q_PROPERTY(bool external MEMBER external)
 
     public:
@@ -37,9 +35,6 @@ namespace NekoGui_fmt {
         QString name = "";
         QString serverAddress = "127.0.0.1";
         int serverPort = 1080;
-
-        QString custom_config = "";
-        QString custom_outbound = "";
 
         bool external = false;
 

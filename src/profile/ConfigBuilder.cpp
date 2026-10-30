@@ -5,27 +5,6 @@
 
 namespace NekoGui {
 
-    void MergeJson(const QJsonObject &custom, QJsonObject &outbound) {
-        // 合并
-        if (custom.isEmpty()) return;
-        for (const auto &key: custom.keys()) {
-            const auto v = custom[key];
-            if (outbound.contains(key)) {
-                auto v_orig = outbound[key];
-                if (v.isObject() && v_orig.isObject()) { // isObject 则合并？
-                    QJsonObject vo = v.toObject();
-                    QJsonObject vo_orig = v_orig.toObject();
-                    MergeJson(vo, vo_orig);
-                    outbound[key] = vo_orig;
-                } else {
-                    outbound[key] = v;
-                }
-            } else {
-                outbound[key] = v;
-            }
-        }
-    }
-
     QJsonObject parseLinesToJson(const QString &text) {
         QJsonObject result;
 
@@ -109,9 +88,6 @@ namespace NekoGui {
         } else {
             BuildConfigSingBox(status);
         }
-
-        // apply custom config
-        MergeJson(QString2QJsonObject(ent->bean->custom_config), result->coreConfig);
 
         return result;
     }
@@ -250,16 +226,7 @@ namespace NekoGui {
             if (!dataStore->routing->outbound_domain_strategy.isEmpty())
                 outbound["domain_strategy"] = dataStore->routing->outbound_domain_strategy;
 
-            // apply custom outbound settings
-            // MergeJson(QString2QJsonObject(ent->bean->custom_outbound), outbound);
-
             status->outbounds.prepend(outbound);
-            if (!status->forTest) {
-                QJsonObject customOutboundObj = QString2QJsonObject(bean->custom_outbound);
-                if (!customOutboundObj.isEmpty()) {
-                    status->outbounds += customOutboundObj;
-                }
-            }
             pastTag = tagOut;
         }
 
