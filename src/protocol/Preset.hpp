@@ -83,13 +83,4 @@ namespace Preset {
         inline QStringList shadownone = {"none"};
         inline QStringList Flows = {"xtls-rprx-vision"};
     } // namespace SingBox
-
-    namespace Windows {
-        inline QStringList system_proxy_format{
-            "{ip}:{http_port}",
-            "socks={ip}:{socks_port}",
-            "http={ip}:{http_port};https={ip}:{http_port};ftp={ip}:{http_port};socks={ip}:{socks_port}",
-            "http=http://{ip}:{http_port};https=http://{ip}:{http_port}",
-        };
-    } // namespace Windows
 } // namespace Preset

@@ -21,10 +21,8 @@ add_compile_definitions(NKR_VERSION="${GIT_VERSION}")
 # Find Qt
 find_package(Qt6 REQUIRED COMPONENTS Widgets Network LinguistTools Concurrent)
 
-# Platform-specific sources, libraries and options
 if(WIN32)
     set(PLATFORM_SOURCES res/neko.rc)
-    set(PLATFORM_LIBRARIES wininet rasapi32)
     add_compile_definitions(UNICODE _UNICODE NOMINMAX)
     if(MSVC)
         add_compile_options(/utf-8)
@@ -181,7 +179,6 @@ target_link_libraries(nekobox
         Qt::Widgets
         Qt::Network
         Qt::Concurrent
-        ${PLATFORM_LIBRARIES}
         QJsonModel
         QHotkey::QHotkey
         yaml-cpp::yaml-cpp

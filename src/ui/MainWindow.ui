@@ -355,14 +355,6 @@
     <property name="title">
      <string>Program</string>
     </property>
-    <widget class="QMenu" name="menu_spmode">
-     <property name="title">
-      <string>System Proxy</string>
-     </property>
-     <addaction name="menu_spmode_system_proxy"/>
-     <addaction name="menu_spmode_vpn"/>
-     <addaction name="menu_spmode_disabled"/>
-    </widget>
     <widget class="QMenu" name="menu_program_preference">
      <property name="title">
       <string>Preferences</string>
@@ -385,8 +377,10 @@
     <addaction name="separator"/>
     <addaction name="menuActive_Server"/>
     <addaction name="menuActive_Routing"/>
-    <addaction name="menu_spmode"/>
     <addaction name="menu_program_preference"/>
+    <addaction name="separator"/>
+    <addaction name="menu_spmode_system_proxy"/>
+    <addaction name="menu_spmode_vpn"/>
     <addaction name="separator"/>
     <addaction name="actionRestart_Proxy"/>
     <addaction name="actionRestart_Program"/>
@@ -578,15 +572,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Enable System Proxy</string>
-   </property>
-  </action>
-  <action name="menu_spmode_disabled">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Disable</string>
+    <string>System Proxy</string>
    </property>
   </action>
   <action name="menu_delete_repeat">
@@ -655,7 +641,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Enable Tun</string>
+    <string>TUN</string>
    </property>
   </action>
   <action name="menu_clone">

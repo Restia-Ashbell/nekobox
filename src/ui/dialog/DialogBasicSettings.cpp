@@ -68,13 +68,6 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
         C_EDIT_JSON_ALLOW_EMPTY(custom_inbound)
     });
 
-#ifdef Q_OS_WIN
-    ui->system_proxy_format->addItems(Preset::Windows::system_proxy_format);
-    ui->system_proxy_format->setCurrentText(NekoGui::dataStore->system_proxy_format);
-#else
-    ui->systemProxyBox->hide();
-#endif
-
     // Style
     D_LOAD_BOOL(check_include_pre)
     D_LOAD_BOOL(start_minimal)
@@ -222,10 +215,6 @@ void DialogBasicSettings::accept() {
     D_SAVE_STRING(test_latency_url)
     D_SAVE_STRING(test_download_url)
     D_SAVE_BOOL(old_share_link_format)
-
-#ifdef Q_OS_WIN
-    NekoGui::dataStore->system_proxy_format = ui->system_proxy_format->currentText();
-#endif
 
     // Style
 

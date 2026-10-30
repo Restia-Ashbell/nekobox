@@ -41,7 +41,6 @@ namespace NekoGui {
         Q_PROPERTY(bool tun_ipv6 MEMBER tun_ipv6)
         Q_PROPERTY(bool tun_strict_route MEMBER tun_strict_route)
         Q_PROPERTY(bool check_include_pre MEMBER check_include_pre)
-        Q_PROPERTY(QString sp_format MEMBER system_proxy_format)
         Q_PROPERTY(bool sub_insecure MEMBER sub_insecure)
         Q_PROPERTY(int sub_auto_update MEMBER sub_auto_update)
         Q_PROPERTY(bool start_minimal MEMBER start_minimal)
@@ -94,7 +93,6 @@ namespace NekoGui {
         QString font = "";
         QString icon_path = "";
         bool check_include_pre = false;
-        QString system_proxy_format = "";
         bool start_minimal = false;
         int max_log_line = 1000;
         QString splitter_state = "";

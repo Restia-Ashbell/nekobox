@@ -27,13 +27,11 @@
 #include "ZXingQt.h"
 #include "libbox.h"
 
-#include "3rdparty/qv2ray/v2/components/proxy/QvProxyConfigurator.hpp"
 #include "3rdparty/qv2ray/v2/ui/LogHighlighter.hpp"
 #include "profile/ConfigBuilder.hpp"
 #include "profile/DataStore.hpp"
 #include "profile/ProfileFilter.hpp"
 #include "profile/traffic/TrafficLooper.hpp"
-#include "protocol/Preset.hpp"
 #include "subscription/SubscriptionService.hpp"
 #include "system/AdminHelper.hpp"
 #include "ui/dialog/DialogBasicSettings.hpp"
@@ -249,17 +247,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //
     connect(ui->checkBox_VPN, &QCheckBox::clicked, this, [this](bool checked) { neko_set_spmode_vpn(checked); });
     connect(ui->checkBox_SystemProxy, &QCheckBox::clicked, this, [this](bool checked) { neko_set_spmode_system_proxy(checked); });
-    connect(ui->menu_spmode, &QMenu::aboutToShow, this, [this] {
-        ui->menu_spmode_disabled->setChecked(!(NekoGui::dataStore->spmode_system_proxy || NekoGui::dataStore->spmode_vpn));
+    connect(ui->menu_program, &QMenu::aboutToShow, this, [this] {
         ui->menu_spmode_system_proxy->setChecked(NekoGui::dataStore->spmode_system_proxy);
         ui->menu_spmode_vpn->setChecked(NekoGui::dataStore->spmode_vpn);
     });
     connect(ui->menu_spmode_system_proxy, &QAction::triggered, this, [this](bool checked) { neko_set_spmode_system_proxy(checked); });
     connect(ui->menu_spmode_vpn, &QAction::triggered, this, [this](bool checked) { neko_set_spmode_vpn(checked); });
-    connect(ui->menu_spmode_disabled, &QAction::triggered, this, [this] {
-        neko_set_spmode_system_proxy(false);
-        neko_set_spmode_vpn(false);
-    });
     connect(ui->menu_qr, &QAction::triggered, this, [this] { display_qr_link(false); });
     connect(ui->menu_tcp_ping, &QAction::triggered, this, [this] { speedtest_current_group(TcpPing); });
     connect(ui->menu_url_test, &QAction::triggered, this, [this] { speedtest_current_group(UrlTest); });
@@ -288,7 +281,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     // Remember
     QTimer::singleShot(0, [this] { // 事件循环启动后立即执行
         neko_set_spmode_vpn(NekoGui::dataStore->spmode_vpn || NekoGui::dataStore->flag_restart_tun_on);
-        neko_set_spmode_system_proxy(NekoGui::dataStore->spmode_system_proxy);
         neko_start(NekoGui::dataStore->started_id);
     });
 
@@ -462,8 +454,6 @@ void MainWindow::cleanup_on_exit() {
     on_commitDataRequest();
     NekoGui::dataStore->save_control_no_save = true; // don't change datastore after this line
     //
-    neko_set_spmode_system_proxy(false);
-    //
     neko_stop(true);
 }
 
@@ -491,25 +481,16 @@ void MainWindow::on_menu_exit_triggered() {
 }
 
 void MainWindow::neko_set_spmode_vpn(bool enable) {
-    if (enable) {
-        if (!get_elevated_permissions()) {
-            refresh_status();
-            return;
-        }
+    if (!enable || get_elevated_permissions()) {
+        NekoGui::dataStore->spmode_vpn = enable;
+        if (running) neko_start(running->id);
     }
-    NekoGui::dataStore->spmode_vpn = enable;
-    if (running) neko_start(running->id);
     refresh_status();
 }
 
 void MainWindow::neko_set_spmode_system_proxy(bool enable) {
-    if (enable) {
-        auto socks_port = NekoGui::dataStore->inbound_port;
-        SetSystemProxy(socks_port, socks_port);
-    } else {
-        ClearSystemProxy();
-    }
     NekoGui::dataStore->spmode_system_proxy = enable;
+    if (running) neko_start(running->id);
     refresh_status();
 }
 
@@ -1402,7 +1383,7 @@ void MainWindow::RegisterHotkey(bool unregister) {
         {NekoGui::dataStore->hotkey_mainwindow, [this] { tray->activated(QSystemTrayIcon::Trigger); }},
         {NekoGui::dataStore->hotkey_group, [this] { on_menu_manage_groups_triggered(); }},
         {NekoGui::dataStore->hotkey_route, [this] { on_menu_routing_settings_triggered(); }},
-        {NekoGui::dataStore->hotkey_system_proxy_menu, [this] { ui->menu_spmode->popup(QCursor::pos()); }},
+        {NekoGui::dataStore->hotkey_system_proxy_menu, [this] { neko_set_spmode_system_proxy(!NekoGui::dataStore->spmode_system_proxy); }},
     };
 
     for (const auto &[key, action]: hotkeyActions) {

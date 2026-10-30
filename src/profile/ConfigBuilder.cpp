@@ -301,6 +301,9 @@ namespace NekoGui {
                 inboundObj["type"] = "mixed";
                 inboundObj["listen"] = dataStore->inbound_address;
                 inboundObj["listen_port"] = dataStore->inbound_port;
+                if (dataStore->spmode_system_proxy && !status->forExport) {
+                    inboundObj["set_system_proxy"] = true;
+                }
                 if (!dataStore->inbound_username.isEmpty() || !dataStore->inbound_password.isEmpty()) {
                     inboundObj["users"] = QJsonArray{
                         QJsonObject{
