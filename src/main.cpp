@@ -11,6 +11,7 @@
 #include <QStyle>
 #include <QTranslator>
 
+#include "system/AdminHelper.hpp"
 #include "ui/MainWindow.hpp"
 
 int main(int argc, char *argv[]) {
@@ -54,6 +55,9 @@ int main(int argc, char *argv[]) {
     // Load dataStore
     NekoGui::dataStore->fn = "nekobox.json";
     if (!NekoGui::dataStore->Load()) NekoGui::dataStore->Save();
+
+    // Privilege state
+    NekoGui::dataStore->is_admin = isRunAsAdmin();
 
     // Datastore & Flags
     if (NekoGui::dataStore->start_minimal) NekoGui::dataStore->flag_tray = true;

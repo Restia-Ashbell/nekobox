@@ -92,11 +92,11 @@ namespace NekoGui {
         return result;
     }
 
-    QString BuildChain(int chainId, const std::shared_ptr<BuildConfigStatus> &status) {
+    void BuildChain(const QString &proxyTag, const std::shared_ptr<BuildConfigStatus> &status) {
         auto group = profileManager->GetGroup(status->ent->gid);
         if (group == nullptr) {
             status->result->error = QString("This profile is not in any group, your data may be corrupted.");
-            return {};
+            return;
         }
 
         auto resolveChain = [=](const std::shared_ptr<ProxyEntity> &ent) {
@@ -123,47 +123,37 @@ namespace NekoGui {
 
         // Make list
         auto ents = resolveChain(status->ent);
-        if (!status->result->error.isEmpty()) return {};
+        if (!status->result->error.isEmpty()) return;
+
+        if (ents.isEmpty()) {
+            status->result->error = QObject::tr("Chain has no outbound profiles.");
+            return;
+        }
 
         if (group->front_proxy_id >= 0) {
             auto fEnt = profileManager->GetProfile(group->front_proxy_id);
             if (fEnt == nullptr) {
                 status->result->error = QString("front proxy ent not found.");
-                return {};
+                return;
             }
             ents += resolveChain(fEnt);
-            if (!status->result->error.isEmpty()) return {};
+            if (!status->result->error.isEmpty()) return;
         }
 
         // BuildChain
-        QString chainTagOut = BuildChainInternal(0, ents, status);
-
-        // Chain ent traffic stat
-        if (ents.length() > 1) {
-            status->ent->traffic_data->id = status->ent->id;
-            status->ent->traffic_data->tag = chainTagOut;
-            status->result->outboundStats += status->ent->traffic_data;
-        }
-        status->result->outboundStat = ents[ents.length() - 1]->traffic_data;
-
-        return chainTagOut;
+        BuildChainInternal(proxyTag, ents, status);
     }
 
-    QString BuildChainInternal(int chainId, const QList<std::shared_ptr<ProxyEntity>> &ents,
-                               const std::shared_ptr<BuildConfigStatus> &status) {
-        QString chainTag = "chain-" + QString::number(chainId);
-        QString chainTagOut = "proxy";
-
+    void BuildChainInternal(
+        const QString &proxyTag,
+        const QList<std::shared_ptr<ProxyEntity>> &ents,
+        const std::shared_ptr<BuildConfigStatus> &status) {
         QString pastTag;
 
         for (int index = 0; index < ents.length(); index++) {
-            // tagOut: v2ray outbound tag for a profile
-            // profile2 (in) (global)   tag g-(id)
-            // profile1                 tag (chainTag)-(id)
-            // profile0 (out)           tag (chainTag)-(id) / single: chainTag=g-(id)
             const auto &ent = ents[index];
             auto *bean = ent->bean;
-            auto tagOut = index == ents.length() - 1 ? chainTagOut : chainTag + "-" + QString::number(ent->id);
+            auto tagOut = index == ents.length() - 1 ? proxyTag : QString("chain-%1-%2").arg(index).arg(ent->id);
 
             // Outbound
 
@@ -191,11 +181,11 @@ namespace NekoGui {
                 auto extR = bean->BuildExternal(ext_mapping_port, ext_socks_port);
                 if (extR.program.isEmpty()) {
                     status->result->error = QObject::tr("Core not found: %1").arg(bean->DisplayCoreType());
-                    return {};
+                    return;
                 }
                 if (!extR.error.isEmpty()) { // rejected
                     status->result->error = extR.error;
-                    return {};
+                    return;
                 }
                 extR.tag = bean->DisplayType();
                 status->result->extRs.emplace_back(std::make_shared<NekoGui_fmt::ExternalBuildResult>(extR));
@@ -208,7 +198,7 @@ namespace NekoGui {
                 outbound = bean->BuildCoreObjSingBox();
                 if (outbound.isEmpty()) {
                     status->result->error = "unsupported outbound";
-                    return {};
+                    return;
                 }
                 if (index > 0) {
                     outbound["detour"] = pastTag;
@@ -217,9 +207,8 @@ namespace NekoGui {
 
             // outbound misc
             outbound["tag"] = tagOut;
-            ent->traffic_data->id = ent->id;
             ent->traffic_data->tag = tagOut;
-            status->result->outboundStats += ent->traffic_data;
+            status->result->outboundStats += ent;
 
             // common
             // apply domain_strategy
@@ -229,8 +218,6 @@ namespace NekoGui {
             status->outbounds.prepend(outbound);
             pastTag = tagOut;
         }
-
-        return chainTagOut;
     }
 
     // SingBox
@@ -303,7 +290,8 @@ namespace NekoGui {
         }
 
         // Outbounds
-        auto tagProxy = BuildChain(0, status);
+        const QString proxyTag = "proxy";
+        BuildChain(proxyTag, status);
         if (!status->result->error.isEmpty()) return;
 
         if (!status->forTest) {
@@ -335,8 +323,8 @@ namespace NekoGui {
                 {"tag", "dns-remote"},
                 {"type", remoteDnsData.first},
                 {"domain_resolver", "dns-local"},
+                {"detour", proxyTag},
             };
-            if (tagProxy != "direct") dnsRemoteServer["detour"] = tagProxy;
             if (!remoteDnsData.second.isEmpty()) dnsRemoteServer["server"] = remoteDnsData.second;
             dnsServers.append(dnsRemoteServer);
         }
@@ -475,7 +463,7 @@ namespace NekoGui {
                 }
             };
             add_rule_route(block_rules, "block");
-            add_rule_route(proxy_rules, tagProxy);
+            add_rule_route(proxy_rules, proxyTag);
             add_rule_route(direct_rules, "direct");
 
             // tun rule

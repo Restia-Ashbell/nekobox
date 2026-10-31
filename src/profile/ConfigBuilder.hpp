@@ -8,8 +8,7 @@ namespace NekoGui {
         QString error;
         QJsonObject coreConfig;
 
-        QList<NekoGui_traffic::TrafficData *> outboundStats; // all, but not including "bypass" "block"
-        NekoGui_traffic::TrafficData *outboundStat = nullptr; // main
+        QList<std::shared_ptr<ProxyEntity>> outboundStats; // all, but not including "bypass" "block"
 
         QList<std::shared_ptr<NekoGui_fmt::ExternalBuildResult>> extRs;
     };
@@ -31,8 +30,7 @@ namespace NekoGui {
 
     void BuildConfigSingBox(const std::shared_ptr<BuildConfigStatus> &status);
 
-    QString BuildChain(int chainId, const std::shared_ptr<BuildConfigStatus> &status);
+    void BuildChain(const QString &proxyTag, const std::shared_ptr<BuildConfigStatus> &status);
 
-    QString BuildChainInternal(int chainId, const QList<std::shared_ptr<ProxyEntity>> &ents,
-                               const std::shared_ptr<BuildConfigStatus> &status);
+    void BuildChainInternal(const QString &proxyTag, const QList<std::shared_ptr<ProxyEntity>> &ents, const std::shared_ptr<BuildConfigStatus> &status);
 } // namespace NekoGui

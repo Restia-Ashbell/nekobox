@@ -12,12 +12,13 @@ namespace NekoGui_traffic {
     TrafficLooper *trafficLooper = nullptr;
 
     TrafficLooper::TrafficLooper(QObject *parent) : QObject(parent) {
+        m_direct = new TrafficData(this);
+        m_direct->tag = "direct";
         connect(&m_timer, &QTimer::timeout, this, &TrafficLooper::onTick);
     }
 
-    void TrafficLooper::start(const QList<TrafficData *> &items, TrafficData *proxy) {
+    void TrafficLooper::start(const QList<std::shared_ptr<NekoGui::ProxyEntity>> &items) {
         m_items = items;
-        m_proxy = proxy;
         if (NekoGui::dataStore->traffic_loop_interval == 0) return; // user disabled
 
         if (!m_elapsedTimer.isValid()) m_elapsedTimer.start();
@@ -28,7 +29,6 @@ namespace NekoGui_traffic {
     void TrafficLooper::stop() {
         m_timer.stop();
         m_items.clear();
-        m_proxy = nullptr;
     }
 
     void TrafficLooper::applyInterval() {
@@ -43,7 +43,9 @@ namespace NekoGui_traffic {
 
         updateAll();
 
-        if (m_proxy) emit speedUpdated(QObject::tr("Proxy: %1 | Direct: %2").arg(m_proxy->DisplaySpeed(), m_direct->DisplaySpeed()));
+        if (!m_items.isEmpty()) {
+            emit speedUpdated(QObject::tr("Proxy: %1 | Direct: %2").arg(m_items.last()->traffic_data->DisplaySpeed(), m_direct->DisplaySpeed()));
+        }
         for (const auto &item: m_items) {
             if (item->id >= 0) emit profileUpdated(item->id);
         }
@@ -75,14 +77,14 @@ namespace NekoGui_traffic {
         free(boxStatsResult);
 
         for (const auto &item: m_items) {
-            updateStats(item, stats);
+            updateStats(item->traffic_data, stats);
         }
         updateStats(m_direct, stats);
     }
 
     void TrafficLooper::saveAll() {
         for (const auto &item: m_items) {
-            if (auto profile = NekoGui::profileManager->GetProfile(item->id)) profile->Save();
+            item->Save();
         }
     }
 

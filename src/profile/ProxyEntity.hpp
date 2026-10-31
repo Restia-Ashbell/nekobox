@@ -31,7 +31,7 @@ namespace NekoGui {
             if (bean_) {
                 bean = bean_;
                 bean->setParent(this);
-                traffic_data = new NekoGui_traffic::TrafficData("", this);
+                traffic_data = new NekoGui_traffic::TrafficData(this);
             }
         }
 

@@ -9,7 +9,6 @@ namespace NekoGui_traffic {
         Q_PROPERTY(qlonglong ul MEMBER uplink)
 
     public:
-        int id = -1; // ent id
         QString tag;
 
         long long downlink = 0;
@@ -19,7 +18,7 @@ namespace NekoGui_traffic {
 
         long long last_update = 0;
 
-        explicit TrafficData(const QString &tag_, QObject *parent = nullptr) : JsonStore(parent), tag(tag_) {}
+        explicit TrafficData(QObject *parent) : JsonStore(parent) {}
 
         void Reset() {
             downlink = 0;

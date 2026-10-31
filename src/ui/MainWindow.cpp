@@ -496,7 +496,7 @@ void MainWindow::neko_set_spmode_system_proxy(bool enable) {
 }
 
 bool MainWindow::get_elevated_permissions() {
-    if (isRunAsAdmin()) return true;
+    if (NekoGui::dataStore->is_admin) return true;
 
     QString title = "Permission Required";
     QString text =
@@ -561,7 +561,7 @@ void MainWindow::neko_start(int _id) {
             running_ext = NekoGui_fmt::CreateExtCFromExtR(result->extRs);
             for (const auto &extC: running_ext) extC->start();
 
-            NekoGui_traffic::trafficLooper->start(result->outboundStats, result->outboundStat);
+            NekoGui_traffic::trafficLooper->start(result->outboundStats);
 
             refresh_status();
             refresh_proxy(ent->id);
@@ -777,7 +777,7 @@ void MainWindow::refresh_status(const QString &traffic_update) {
         status_running->setToolTip({});
     }
     QStringList tt;
-    if (isRunAsAdmin()) tt << "[Admin]";
+    if (NekoGui::dataStore->is_admin) tt << "[Admin]";
     if (NekoGui::dataStore->spmode_vpn && NekoGui::dataStore->spmode_system_proxy) {
         tt << "[Tun+" + tr("System Proxy") + "]";
     } else if (NekoGui::dataStore->spmode_vpn) {
