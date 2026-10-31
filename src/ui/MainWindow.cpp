@@ -7,6 +7,7 @@
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QFileInfo>
+#include <QHostInfo>
 #include <QHotkey>
 #include <QInputDialog>
 #include <QLabel>
@@ -1179,18 +1180,25 @@ void MainWindow::on_menu_update_subscription_triggered() {
 }
 
 void MainWindow::on_menu_resolve_domain_triggered() {
-    const auto profiles = get_now_selected_list();
-    if (profiles.isEmpty()) return;
+    for (const auto &profile: get_now_selected_list()) {
+        const auto domain = profile->bean->serverAddress;
+        if (!IsIpAddress(domain)) {
+            QHostInfo::lookupHost(domain, [this, profile, domain](const QHostInfo &host) {
+                const auto addresses = host.addresses();
+                // drop stale results: address edited or profile deleted while resolving
+                if (addresses.isEmpty() || profile->bean->serverAddress != domain) return;
+                if (NekoGui::profileManager->GetProfile(profile->id) != profile) return;
 
-    auto remaining_tasks = std::make_shared<int>(profiles.count());
-
-    for (const auto &profile: profiles) {
-        profile->bean->ResolveDomainToIP([this, profile, remaining_tasks] {
-            profile->Save();
-            if (--*remaining_tasks == 0) {
-                refresh_group(profile->gid);
-            }
-        });
+                // keep the domain for tls/ws before replacing the address
+                if (auto *stream = profile->bean->_get<NekoGui_fmt::V2rayStreamSettings>("stream")) {
+                    if (stream->security == "tls" && stream->sni.isEmpty()) stream->sni = domain;
+                    if (stream->network == "ws" && stream->host.isEmpty()) stream->host = domain;
+                }
+                profile->bean->serverAddress = addresses.first().toString();
+                profile->Save();
+                refresh_proxy(profile->id);
+            });
+        }
     }
 }
 

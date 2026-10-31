@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QHostInfo>
 #include <QProcess>
 
 #include "protocol/V2RayStreamSettings.hpp"
@@ -45,34 +44,11 @@ namespace NekoGui_fmt {
         //
 
         QString ToNekorayShareLink(const QString &type) {
-            auto b = ToJson();
             QUrl url;
             url.setScheme("nekobox");
             url.setHost(type);
-            url.setFragment(QJsonObject2QString(b, true).toUtf8().toBase64(QByteArray::Base64UrlEncoding));
+            url.setFragment(QJsonObject2QString(ToJson(), true).toUtf8().toBase64(QByteArray::Base64UrlEncoding));
             return url.toString();
-        }
-
-        void ResolveDomainToIP(const std::function<void()> &onFinished) {
-            QHostInfo::lookupHost(serverAddress, [=, this](const QHostInfo &host) {
-                if (!IsIpAddress(serverAddress)) {
-                    auto addr = host.addresses();
-                    if (!addr.isEmpty()) {
-                        // replace ws tls
-                        if (auto *stream = _get<V2rayStreamSettings>("stream")) {
-                            if (stream->security == "tls" && stream->sni.isEmpty()) {
-                                stream->sni = serverAddress;
-                            }
-                            if (stream->network == "ws" && stream->host.isEmpty()) {
-                                stream->host = serverAddress;
-                            }
-                        }
-                        // replace serverAddress
-                        serverAddress = addr.first().toString();
-                    }
-                }
-                onFinished();
-            });
         }
 
         //
