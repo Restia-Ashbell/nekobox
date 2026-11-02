@@ -73,8 +73,8 @@ QVariant ProfileTableModel::data(const QModelIndex &index, int role) const {
                 case ColumnName:
                     return bean->name;
                 case ColumnTest:
-                    // 完整测速报告优先,否则是普通延时
-                    return !ent->full_test_report.isEmpty() ? ent->full_test_report : ent->DisplayLatency();
+                    // 测试报告优先,否则是普通延时
+                    return !ent->test_report.isEmpty() ? ent->test_report : ent->DisplayLatency();
                 case ColumnTraffic:
                     return ent->traffic_data->DisplayTraffic();
             }
@@ -88,14 +88,14 @@ QVariant ProfileTableModel::data(const QModelIndex &index, int role) const {
                 case ColumnName:
                     return bean->name;
                 case ColumnTest: {
-                    return !ent->full_test_report.isEmpty() ? ent->full_test_report : ent->DisplayLatency();
+                    return !ent->test_report.isEmpty() ? ent->test_report : ent->DisplayLatency();
                 }
                 case ColumnTraffic:
                     return ent->traffic_data->downlink + ent->traffic_data->uplink;
             }
             break;
         case Qt::ForegroundRole:
-            if (index.column() == ColumnTest && ent->full_test_report.isEmpty()) {
+            if (index.column() == ColumnTest && ent->test_report.isEmpty()) {
                 if (const auto color = ent->DisplayLatencyColor(); color.isValid()) {
                     return color;
                 }

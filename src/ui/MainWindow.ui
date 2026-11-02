@@ -423,8 +423,10 @@
     <addaction name="menu_share_item"/>
     <addaction name="separator"/>
     <addaction name="menu_tcp_ping"/>
-    <addaction name="menu_url_test"/>
-    <addaction name="menu_full_test"/>
+    <addaction name="menu_http_latency"/>
+    <addaction name="menu_dns_latency"/>
+    <addaction name="menu_download_speed"/>
+    <addaction name="menu_ip_lookup"/>
     <addaction name="menu_stop_testing"/>
     <addaction name="menu_clear_test_result"/>
     <addaction name="menu_reset_traffic"/>
@@ -524,18 +526,42 @@
   </action>
   <action name="menu_tcp_ping">
    <property name="text">
-    <string notr="true">Tcp Ping</string>
+    <string notr="true">TCP Ping</string>
    </property>
    <property name="shortcut">
     <string notr="true">Ctrl+Shift+P</string>
    </property>
   </action>
-  <action name="menu_url_test">
+  <action name="menu_http_latency">
    <property name="text">
-    <string notr="true">Url Test</string>
+    <string>HTTP Latency</string>
    </property>
    <property name="shortcut">
     <string notr="true">Ctrl+Shift+U</string>
+   </property>
+  </action>
+  <action name="menu_dns_latency">
+   <property name="text">
+    <string>DNS Latency</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true">Ctrl+Shift+N</string>
+   </property>
+  </action>
+  <action name="menu_download_speed">
+   <property name="text">
+    <string>Download Speed</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true">Ctrl+Shift+B</string>
+   </property>
+  </action>
+  <action name="menu_ip_lookup">
+   <property name="text">
+    <string>IP Lookup</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true">Ctrl+Shift+O</string>
    </property>
   </action>
   <action name="menu_clear_test_result">
@@ -597,14 +623,6 @@
    </property>
    <property name="shortcut">
     <string notr="true">Ctrl+Shift+R</string>
-   </property>
-  </action>
-  <action name="menu_full_test">
-   <property name="text">
-    <string>Full Test</string>
-   </property>
-   <property name="shortcut">
-    <string notr="true">Ctrl+Shift+F</string>
    </property>
   </action>
   <action name="menu_hotkey_settings">

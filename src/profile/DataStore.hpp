@@ -12,9 +12,12 @@ namespace NekoGui {
         Q_PROPERTY(QString inbound_username MEMBER inbound_username)
         Q_PROPERTY(QString inbound_password MEMBER inbound_password)
         Q_PROPERTY(QString user_agent MEMBER user_agent)
-        Q_PROPERTY(QString test_url MEMBER test_latency_url)
-        Q_PROPERTY(QString test_url_dl MEMBER test_download_url)
-        Q_PROPERTY(int test_dl_timeout MEMBER test_download_timeout)
+        Q_PROPERTY(QString test_http_url MEMBER test_http_url)
+        Q_PROPERTY(int test_http_timeout MEMBER test_http_timeout)
+        Q_PROPERTY(QString test_download_url MEMBER test_download_url)
+        Q_PROPERTY(int test_download_timeout MEMBER test_download_timeout)
+        Q_PROPERTY(QString test_dns_server MEMBER test_dns_server)
+        Q_PROPERTY(int test_dns_timeout MEMBER test_dns_timeout)
         Q_PROPERTY(int current_group MEMBER current_group)
         Q_PROPERTY(QString inbound_address MEMBER inbound_address)
         Q_PROPERTY(int inbound_port MEMBER inbound_port)
@@ -40,7 +43,6 @@ namespace NekoGui {
         Q_PROPERTY(int tun_mtu MEMBER tun_mtu)
         Q_PROPERTY(bool tun_ipv6 MEMBER tun_ipv6)
         Q_PROPERTY(bool tun_strict_route MEMBER tun_strict_route)
-        Q_PROPERTY(bool check_include_pre MEMBER check_include_pre)
         Q_PROPERTY(bool sub_insecure MEMBER sub_insecure)
         Q_PROPERTY(int sub_auto_update MEMBER sub_auto_update)
         Q_PROPERTY(bool start_minimal MEMBER start_minimal)
@@ -82,18 +84,19 @@ namespace NekoGui {
         // Saved
 
         // Misc
-        QString test_latency_url = "https://www.gstatic.com/generate_204";
+        QString test_http_url = "https://www.gstatic.com/generate_204";
+        int test_http_timeout = 3;
         QString test_download_url = "http://speed.cloudflare.com/__down?bytes=10485760";
         int test_download_timeout = 30;
+        QString test_dns_server = "8.8.8.8:53";
+        int test_dns_timeout = 3;
         int test_concurrent = 5;
-        bool old_share_link_format = true;
         int traffic_loop_interval = 1000;
         int current_group = 0; // group id
         QString theme = "";
         QString language = "";
         QString font = "";
         QString icon_path = "";
-        bool check_include_pre = false;
         bool start_minimal = false;
         int max_log_line = 1000;
         QString splitter_state = "";

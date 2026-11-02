@@ -41,88 +41,6 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="tab_1">
-      <attribute name="title">
-       <string>Common</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QGroupBox" name="groupBox1">
-         <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="0,8,1,1">
-          <item>
-           <widget class="QLabel" name="label_13">
-            <property name="text">
-             <string>Latency Test URL</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="test_latency_url"/>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_14">
-            <property name="text">
-             <string>Concurrent</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="test_concurrent"/>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="horizontalGroupBox">
-         <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="0,8,1,1">
-          <item>
-           <widget class="QLabel" name="label_19">
-            <property name="text">
-             <string>Download Test URL</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="test_download_url"/>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_10">
-            <property name="text">
-             <string>Timeout (s)</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="test_download_timeout"/>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="horizontalGroupBox1">
-         <layout class="QHBoxLayout" name="horizontalLayout_18">
-          <item>
-           <widget class="QCheckBox" name="check_include_pre">
-            <property name="text">
-             <string>Include Pre-release when checking update</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="old_share_link_format">
-            <property name="toolTip">
-             <string>Share VMess Link with v2rayN Format</string>
-            </property>
-            <property name="text">
-             <string>Old Share Link Format</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </widget>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
        <string>Style</string>
@@ -324,6 +242,107 @@
           </widget>
          </item>
         </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_test">
+      <attribute name="title">
+       <string>Test</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_test">
+       <item>
+        <widget class="QGroupBox" name="test_http_box">
+         <layout class="QHBoxLayout" name="test_http_layout" stretch="0,8,1,1">
+          <item>
+           <widget class="QLabel" name="test_http_url_label">
+            <property name="text">
+             <string>HTTP Latency</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="test_http_url"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="test_http_timeout_label">
+            <property name="text">
+             <string>Timeout (s)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="test_http_timeout"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="test_dns_box">
+         <layout class="QHBoxLayout" name="test_dns_layout" stretch="0,8,1,1">
+          <item>
+           <widget class="QLabel" name="test_dns_server_label">
+            <property name="text">
+             <string>DNS Latency</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="test_dns_server"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="test_dns_timeout_label">
+            <property name="text">
+             <string>Timeout (s)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="test_dns_timeout"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="test_download_box">
+         <layout class="QHBoxLayout" name="test_download_layout" stretch="0,8,1,1">
+          <item>
+           <widget class="QLabel" name="test_download_url_label">
+            <property name="text">
+             <string>Download Speed</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="test_download_url"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="test_download_timeout_label">
+            <property name="text">
+             <string>Timeout (s)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="test_download_timeout"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="test_concurrent_box">
+         <layout class="QHBoxLayout" name="test_concurrent_layout" stretch="0,8">
+          <item>
+           <widget class="QLabel" name="test_concurrent_label">
+            <property name="text">
+             <string>Concurrent</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="test_concurrent"/>
+          </item>
+         </layout>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -798,14 +817,14 @@
           </item>
           <item row="1" column="1">
            <widget class="QPushButton" name="certificate">
-            <property name="text">
-             <string notr="true">Not set</string>
-            </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="text">
+             <string notr="true">Not set</string>
             </property>
            </widget>
           </item>

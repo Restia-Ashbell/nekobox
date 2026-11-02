@@ -116,47 +116,29 @@ namespace NekoGui_fmt {
     }
 
     QString VMessBean::ToShareLink() {
-        if (NekoGui::dataStore->old_share_link_format) {
-            // v2rayN format
-            QJsonObject N{
-                {"v", "2"},
-                {"ps", name},
-                {"add", serverAddress},
-                {"port", QString::number(serverPort)},
-                {"id", uuid},
-                {"aid", QString::number(aid)},
-                {"scy", security},
-                {"net", stream->network},
-                {"host", stream->host},
-                {"path", stream->path},
-                {"tls", stream->security},
-                {"sni", stream->sni},
-                {"alpn", stream->alpn},
-                {"fp", stream->utlsFingerprint},
-                {"insecure", stream->allow_insecure ? "1" : "0"},
-            };
-            if (stream->network == "http" && stream->security != "tls") {
-                N["net"] = "tcp";
-                N["type"] = "http";
-            }
-            return "vmess://" + QJsonObject2QString(N, true).toUtf8().toBase64();
-        } else {
-            // ducksoft format
-            QUrl url;
-            QUrlQuery query;
-            url.setScheme("vmess");
-            url.setUserName(uuid);
-            url.setHost(serverAddress);
-            url.setPort(serverPort);
-            if (!name.isEmpty()) url.setFragment(name);
-
-            query.addQueryItem("encryption", security);
-
-            stream->BuildShareLinkQuery(&query);
-
-            url.setQuery(query);
-            return url.toString(QUrl::FullyEncoded);
+        // v2rayN format
+        QJsonObject N{
+            {"v", "2"},
+            {"ps", name},
+            {"add", serverAddress},
+            {"port", QString::number(serverPort)},
+            {"id", uuid},
+            {"aid", QString::number(aid)},
+            {"scy", security},
+            {"net", stream->network},
+            {"host", stream->host},
+            {"path", stream->path},
+            {"tls", stream->security},
+            {"sni", stream->sni},
+            {"alpn", stream->alpn},
+            {"fp", stream->utlsFingerprint},
+            {"insecure", stream->allow_insecure ? "1" : "0"},
+        };
+        if (stream->network == "http" && stream->security != "tls") {
+            N["net"] = "tcp";
+            N["type"] = "http";
         }
+        return "vmess://" + QJsonObject2QString(N, true).toUtf8().toBase64();
     }
 
     QString NaiveBean::ToShareLink() {

@@ -56,20 +56,17 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     ui->setupUi(this);
     ADD_ASTERISK(this);
 
-    // Common
+    // Test
 
     D_LOAD_INT(test_concurrent)
+    D_LOAD_INT(test_http_timeout)
     D_LOAD_INT(test_download_timeout)
-    D_LOAD_STRING(test_latency_url)
+    D_LOAD_INT(test_dns_timeout)
+    D_LOAD_STRING(test_http_url)
     D_LOAD_STRING(test_download_url)
-    D_LOAD_BOOL(old_share_link_format)
-
-    connect(ui->custom_inbound_edit, &QPushButton::clicked, this, [=, this] {
-        C_EDIT_JSON_ALLOW_EMPTY(custom_inbound)
-    });
+    D_LOAD_STRING(test_dns_server)
 
     // Style
-    D_LOAD_BOOL(check_include_pre)
     D_LOAD_BOOL(start_minimal)
     D_LOAD_INT(max_log_line)
 
@@ -127,6 +124,10 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     ui->tun_mtu->setCurrentText(QString::number(NekoGui::dataStore->tun_mtu));
     ui->tun_ipv6->setChecked(NekoGui::dataStore->tun_ipv6);
     ui->tun_strict_route->setChecked(NekoGui::dataStore->tun_strict_route);
+
+    connect(ui->custom_inbound_edit, &QPushButton::clicked, this, [=, this] {
+        C_EDIT_JSON_ALLOW_EMPTY(custom_inbound)
+    });
 
     // Core
 
@@ -208,13 +209,15 @@ DialogBasicSettings::~DialogBasicSettings() {
 }
 
 void DialogBasicSettings::accept() {
-    // Common
+    // Test
 
     D_SAVE_INT(test_concurrent)
+    D_SAVE_INT(test_http_timeout)
     D_SAVE_INT(test_download_timeout)
-    D_SAVE_STRING(test_latency_url)
+    D_SAVE_INT(test_dns_timeout)
+    D_SAVE_STRING(test_http_url)
     D_SAVE_STRING(test_download_url)
-    D_SAVE_BOOL(old_share_link_format)
+    D_SAVE_STRING(test_dns_server)
 
     // Style
 
@@ -223,7 +226,6 @@ void DialogBasicSettings::accept() {
 
     NekoGui::dataStore->font = ui->font->currentText();
     NekoGui::dataStore->theme = ui->theme->currentText();
-    D_SAVE_BOOL(check_include_pre)
     D_SAVE_BOOL(start_minimal)
 
     D_SAVE_INT(max_log_line)

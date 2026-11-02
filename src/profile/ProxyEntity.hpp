@@ -11,7 +11,7 @@ namespace NekoGui {
         Q_PROPERTY(int id MEMBER id)
         Q_PROPERTY(int gid MEMBER gid)
         Q_PROPERTY(int yc MEMBER latency)
-        Q_PROPERTY(QString report MEMBER full_test_report)
+        Q_PROPERTY(QString test_report MEMBER test_report)
         Q_PROPERTY(NekoGui_fmt::AbstractBean *bean MEMBER bean)
         Q_PROPERTY(NekoGui_traffic::TrafficData *traffic MEMBER traffic_data)
 
@@ -24,7 +24,7 @@ namespace NekoGui {
         NekoGui_fmt::AbstractBean *bean = nullptr;
         NekoGui_traffic::TrafficData *traffic_data = nullptr;
 
-        QString full_test_report;
+        QString test_report;
 
         ProxyEntity(NekoGui_fmt::AbstractBean *bean_, const QString &type_) : type(type_) {
             // 可以不关联 bean,只加载 ProxyEntity 的信息
@@ -49,7 +49,7 @@ namespace NekoGui {
             if (latency < 0) {
                 return Qt::red;
             } else if (latency > 0) {
-                auto greenMs = dataStore->test_latency_url.startsWith("https://") ? 200 : 100;
+                auto greenMs = dataStore->test_http_url.startsWith("https://") ? 200 : 100;
                 return latency < greenMs ? Qt::darkGreen : Qt::darkYellow;
             } else {
                 return {};

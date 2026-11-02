@@ -28,6 +28,10 @@
         <translation>样式</translation>
     </message>
     <message>
+        <source>Test</source>
+        <translation>测试</translation>
+    </message>
+    <message>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
@@ -188,10 +192,6 @@
         <translation>已设置</translation>
     </message>
     <message>
-        <source>Include Pre-release when checking update</source>
-        <translation>检查更新时包括 Pre-release 版本</translation>
-    </message>
-    <message>
         <source>Set custom icon</source>
         <translation>自定义图标</translation>
     </message>
@@ -202,14 +202,6 @@
     <message>
         <source>Cancel</source>
         <translation>取消</translation>
-    </message>
-    <message>
-        <source>Old Share Link Format</source>
-        <translation>旧分享链接格式</translation>
-    </message>
-    <message>
-        <source>Share VMess Link with v2rayN Format</source>
-        <translation>用 v2rayN 的格式分享 VMess 链接</translation>
     </message>
     <message>
         <source>Ignore TLS errors when updating subscription</source>
@@ -244,12 +236,16 @@
         <translation>默认 uTLS 指纹</translation>
     </message>
     <message>
-        <source>Latency Test URL</source>
-        <translation>延迟测试 URL</translation>
+        <source>HTTP Latency</source>
+        <translation>HTTP 延迟</translation>
     </message>
     <message>
-        <source>Download Test URL</source>
-        <translation>下载测试 URL</translation>
+        <source>Download Speed</source>
+        <translation>下载速度</translation>
+    </message>
+    <message>
+        <source>DNS Latency</source>
+        <translation>DNS 延迟</translation>
     </message>
     <message>
         <source>Timeout (s)</source>
@@ -1106,6 +1102,22 @@
     <message>
         <source>Test Result</source>
         <translation>测试结果</translation>
+    </message>
+    <message>
+        <source>HTTP Latency</source>
+        <translation>HTTP 延迟</translation>
+    </message>
+    <message>
+        <source>DNS Latency</source>
+        <translation>DNS 延迟</translation>
+    </message>
+    <message>
+        <source>Download Speed</source>
+        <translation>下载速度</translation>
+    </message>
+    <message>
+        <source>IP Lookup</source>
+        <translation>IP 查询</translation>
     </message>
     <message>
         <source>System Proxy</source>
