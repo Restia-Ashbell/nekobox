@@ -144,14 +144,14 @@ private:
     QTimer *autoUpdateSubscriptionTimer;
     //
     enum TestMode {
-        TcpPing = 1 << 0,
-        UrlTest = 1 << 1,
-        UdpTest = 1 << 2,
-        SpeedTest = 1 << 3,
-        IpTest = 1 << 4
+        TcpPing,
+        HttpLatency,
+        DnsLatency,
+        DownloadSpeed,
+        IpLookup
     };
-    QList<std::shared_ptr<NekoGui::ProxyEntity>> speedtestProfiles;
-    QFuture<void> speedtestFuture;
+    QList<std::shared_ptr<NekoGui::ProxyEntity>> testProfiles;
+    QFuture<void> testFuture;
 
     QList<std::shared_ptr<NekoGui::ProxyEntity>> get_now_selected_list();
 
@@ -172,9 +172,9 @@ private:
 
     void display_qr_link(bool nkrFormat = false);
 
-    void speedtest_current_group(int mode);
+    void test_selected_profiles(TestMode mode, const QString &target, int timeout);
 
-    void speedtest_current();
+    void test_running_profile();
 
     void CheckUpdate();
 

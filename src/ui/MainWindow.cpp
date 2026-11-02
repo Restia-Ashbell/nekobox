@@ -4,12 +4,13 @@
 #include <QCheckBox>
 #include <QClipboard>
 #include <QDesktopServices>
-#include <QDialogButtonBox>
 #include <QDir>
 #include <QFileInfo>
 #include <QHostInfo>
 #include <QHotkey>
 #include <QInputDialog>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QLabel>
 #include <QMessageBox>
 #include <QNetworkAccessManager>
@@ -255,10 +256,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->menu_spmode_system_proxy, &QAction::triggered, this, [this](bool checked) { neko_set_spmode_system_proxy(checked); });
     connect(ui->menu_spmode_vpn, &QAction::triggered, this, [this](bool checked) { neko_set_spmode_vpn(checked); });
     connect(ui->menu_qr, &QAction::triggered, this, [this] { display_qr_link(false); });
-    connect(ui->menu_tcp_ping, &QAction::triggered, this, [this] { speedtest_current_group(TcpPing); });
-    connect(ui->menu_url_test, &QAction::triggered, this, [this] { speedtest_current_group(UrlTest); });
-    connect(ui->menu_full_test, &QAction::triggered, this, [this] { speedtest_current_group(0); });
-    connect(ui->menu_stop_testing, &QAction::triggered, this, [this] { speedtestFuture.cancel(); });
+    connect(ui->menu_tcp_ping, &QAction::triggered, this, [this] { test_selected_profiles(TcpPing, "", 3); });
+    connect(ui->menu_http_latency, &QAction::triggered, this, [this] { test_selected_profiles(HttpLatency, NekoGui::dataStore->test_http_url, NekoGui::dataStore->test_http_timeout); });
+    connect(ui->menu_dns_latency, &QAction::triggered, this, [this] { test_selected_profiles(DnsLatency, NekoGui::dataStore->test_dns_server, NekoGui::dataStore->test_dns_timeout); });
+    connect(ui->menu_download_speed, &QAction::triggered, this, [this] { test_selected_profiles(DownloadSpeed, NekoGui::dataStore->test_download_url, NekoGui::dataStore->test_download_timeout); });
+    connect(ui->menu_ip_lookup, &QAction::triggered, this, [this] { test_selected_profiles(IpLookup, "", 0); });
+    connect(ui->menu_stop_testing, &QAction::triggered, this, [this] { testFuture.cancel(); });
     //
     connect(ui->menu_share_item, &QMenu::aboutToShow, this, [this] {
         QString name;
@@ -607,62 +610,28 @@ void MainWindow::neko_stop(bool wait) {
     }
 }
 
-// speed test
+// tests
 
-void MainWindow::speedtest_current_group(int mode) {
-    if (!speedtestFuture.isFinished()) {
-        MessageBoxWarning(software_name, "The last speed test did not exit completely, please wait. If it persists, please restart the program.");
+void MainWindow::test_selected_profiles(TestMode mode, const QString &target, int timeout) {
+    if (!testFuture.isFinished()) {
+        MessageBoxWarning(software_name, "The last test did not exit completely, please wait. If it persists, please restart the program.");
         return;
     }
 
-    speedtestProfiles = get_now_selected_list();
-    if (speedtestProfiles.isEmpty()) return;
+    testProfiles = get_now_selected_list();
+    if (testProfiles.isEmpty()) return;
     auto group = NekoGui::profileManager->CurrentGroup();
     if (group->archive) return;
 
-    if (!mode) {
-        QDialog dialog(this);
-        QVBoxLayout layout(&dialog);
-        dialog.setWindowTitle(tr("Test Options"));
-        //
-        QCheckBox l1(tr("Latency"));
-        QCheckBox l2(tr("UDP latency"));
-        QCheckBox l3(tr("Download speed"));
-        QCheckBox l4(tr("In and Out IP"));
-        //
-        QDialogButtonBox box(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
-        connect(&box, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
-        connect(&box, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-        //
-        layout.addWidget(&l1);
-        layout.addWidget(&l2);
-        layout.addWidget(&l3);
-        layout.addWidget(&l4);
-        layout.addWidget(&box);
-        if (dialog.exec() != QDialog::Accepted) return;
-        //
-        if (l1.isChecked()) mode |= UrlTest;
-        if (l2.isChecked()) mode |= UdpTest;
-        if (l3.isChecked()) mode |= SpeedTest;
-        if (l4.isChecked()) mode |= IpTest;
-        //
-        if (mode == 0) return;
-    }
-
     QThreadPool::globalInstance()->setMaxThreadCount(NekoGui::dataStore->test_concurrent);
-    speedtestFuture = QtConcurrent::map(speedtestProfiles, [=, this](std::shared_ptr<NekoGui::ProxyEntity> &profile) {
+    testFuture = QtConcurrent::map(testProfiles, [=, this](std::shared_ptr<NekoGui::ProxyEntity> &profile) {
         QList<std::shared_ptr<QProcess>> extCs;
 
-        auto Address = profile->bean->DisplayAddress().toUtf8();
-        auto Url = NekoGui::dataStore->test_latency_url.toUtf8();
-        constexpr int Timeout = 3000;
-        auto SpeedUrl = NekoGui::dataStore->test_download_url.toUtf8();
-        const int SpeedTimeout = NekoGui::dataStore->test_download_timeout;
-        QByteArray CoreConfig;
+        QString coreConfig;
         if (mode != TcpPing) {
             auto c = BuildConfig(profile, true, false);
             if (!c->error.isEmpty()) {
-                profile->full_test_report = c->error;
+                profile->test_report = c->error;
                 profile->Save();
                 auto profileId = profile->id;
                 runOnUiThread([this, profileId] {
@@ -679,62 +648,59 @@ void MainWindow::speedtest_current_group(int mode) {
                 }
             }
             //
-            CoreConfig = QJsonObject2QString(c->coreConfig, false).toUtf8();
+            coreConfig = QJsonObject2QString(c->coreConfig, false);
         }
 
-        auto boxTestResult = BoxTest(mode, Address.data(), Url.data(), Timeout, SpeedUrl.data(), SpeedTimeout, CoreConfig.data());
-        QStringList testResultList = QString(boxTestResult).split("\n");
+        auto boxTestResult = BoxTest(mode, profile->bean->DisplayAddress().toUtf8().data(), target.toUtf8().data(), timeout, coreConfig.toUtf8().data());
+        const QString testResult(boxTestResult);
         free(boxTestResult);
         //
-        bool testOK;
-        QStringList full_test_result;
-        if (mode == TcpPing || mode == UrlTest || mode == UdpTest) {
-            auto testResult = testResultList.takeFirst();
-            profile->full_test_report.clear();
+        if (mode == TcpPing || mode == HttpLatency || mode == DnsLatency) {
+            bool testOK;
+            profile->test_report.clear();
             profile->latency = testResult.toInt(&testOK);
             if (profile->latency == 0) profile->latency = 1;
             if (!testOK) {
                 profile->latency = -1;
                 MW_show_log(tr("[%1] test error: %2").arg(profile->bean->DisplayTypeAndName(), testResult));
             }
-        } else {
-            auto report = [&](const QString &label, const QString &unit, bool asFloat) {
-                const auto value = testResultList.takeFirst();
-                if (asFloat) {
-                    value.toFloat(&testOK);
-                } else {
-                    value.toInt(&testOK);
-                }
-                full_test_result << (testOK ? label + ": " + value + " " + unit : label + ": Error");
-            };
-            if (mode & UrlTest) report("Latency", "ms", false);
-            if (mode & UdpTest) report("UDPLatency", "ms", false);
-            if (mode & SpeedTest) report("Speed", "MiB/s", true);
-            if (mode & IpTest) {
-                full_test_result << testResultList.takeFirst();
-                const auto emoji = testResultList.takeFirst();
-                if (!profile->bean->name.startsWith(emoji)) {
-                    profile->bean->name = emoji + (profile->bean->name.isEmpty() ? "" : " " + profile->bean->name);
+        } else if (mode == DownloadSpeed) {
+            profile->test_report = QString("%1 MiB/s").arg(testResult.toFloat(), 0, 'f', 2);
+        } else if (mode == IpLookup) {
+            QString inIP;
+            const auto info = QHostInfo::fromName(profile->bean->serverAddress);
+            if (info.error() != QHostInfo::NoError || info.addresses().isEmpty()) {
+                inIP = info.errorString();
+            } else {
+                inIP = info.addresses().first().toString();
+            }
+
+            const auto doc = QJsonDocument::fromJson(testResult.toUtf8());
+            if (!doc.isObject()) {
+                MW_show_log(tr("[%1] test error: %2").arg(profile->bean->DisplayTypeAndName(), testResult));
+            } else {
+                const auto obj = doc.object();
+                const auto outIP = obj.value("query").toString();
+                profile->test_report = inIP + " → " + outIP;
+                const auto emoji = CountryCodeToFlag(obj.value("countryCode").toString());
+                if (!emoji.isEmpty() && !profile->bean->name.startsWith(emoji)) {
+                    profile->bean->name.prepend(emoji);
                 }
             }
         }
 
-        if (!full_test_result.isEmpty()) profile->full_test_report = full_test_result.join("/"); // higher priority
         profile->Save();
-
-        auto profileId = profile->id;
-        runOnUiThread([this, profileId] {
-            refresh_proxy(profileId);
+        runOnUiThread([this, profile] {
+            refresh_proxy(profile->id);
         });
     });
 }
 
-void MainWindow::speedtest_current() {
+void MainWindow::test_running_profile() {
     ui->statusbar->showMessage(tr("Testing"));
 
     runOnNewThread([this] {
-        auto Url = NekoGui::dataStore->test_latency_url.toUtf8();
-        auto boxTestResult = BoxTest(UrlTest, nullptr, Url.data(), 3000, nullptr, -1, nullptr);
+        auto boxTestResult = BoxTest(HttpLatency, nullptr, NekoGui::dataStore->test_http_url.toUtf8().data(), NekoGui::dataStore->test_http_timeout, nullptr);
         const QString testResult(boxTestResult);
         free(boxTestResult);
 
@@ -745,7 +711,7 @@ void MainWindow::speedtest_current() {
                 ui->statusbar->showMessage(tr("Test Result") + ": " + testResult + " ms", 2000);
             } else {
                 ui->statusbar->showMessage(tr("Test Result") + ": " + tr("Unavailable"), 2000);
-                MW_show_log(QString("UrlTest : %1").arg(testResult));
+                MW_show_log(QString("HttpLatency : %1").arg(testResult));
             }
         });
     });
@@ -1120,7 +1086,7 @@ void MainWindow::on_menu_scan_qr_triggered() {
 void MainWindow::on_menu_clear_test_result_triggered() {
     for (const auto &profile: get_now_selected_list()) {
         profile->latency = 0;
-        profile->full_test_report = "";
+        profile->test_report = "";
         profile->Save();
         refresh_proxy(profile->id);
     }
@@ -1350,7 +1316,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
     if (event->type() == QEvent::MouseButtonPress) {
         auto mouseEvent = dynamic_cast<QMouseEvent *>(event);
         if (obj == status_running && mouseEvent->button() == Qt::LeftButton && NekoGui::dataStore->started_id >= 0) {
-            speedtest_current();
+            test_running_profile();
             return true;
         }
     }

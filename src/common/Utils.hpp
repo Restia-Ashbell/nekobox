@@ -65,6 +65,18 @@ inline QString WrapLtr(const QString &text) {
     return QGuiApplication::layoutDirection() == Qt::RightToLeft ? QChar(0x202A) + text + QChar(0x202C) : text;
 }
 
+inline QString CountryCodeToFlag(const QString &countryCode) {
+    if (countryCode.size() != 2) return {};
+    const auto code = countryCode.toUpper();
+    if (code[0] < 'A' || code[0] > 'Z' || code[1] < 'A' || code[1] > 'Z') return {};
+    const char32_t base = 0x1F1E6;
+    const char32_t chars[2] = {
+        base + (code[0].unicode() - 'A'),
+        base + (code[1].unicode() - 'A'),
+    };
+    return QString::fromUcs4(chars, 2);
+}
+
 // Base64
 
 inline QByteArray DecodeB64IfValid(const QString &input, QByteArray::Base64Options options = QByteArray::Base64Encoding) {
