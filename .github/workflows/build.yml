@@ -6,12 +6,11 @@ on:
       - main
     tags:
       - "v*"
-
-permissions:
-  contents: write
+  workflow_dispatch:
 
 jobs:
   build:
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -29,33 +28,15 @@ jobs:
           - os: macos-26
             target: macos-arm64
 
-    runs-on: ${{ matrix.os }}
-
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: Show Environment
-        shell: bash
-        run: |
-          echo "===== TOOLCHAIN ====="
-          echo CC=$CC
-          echo CXX=$CXX
-
-          which go || true
-          which gcc || true
-          which clang || true
-
-          go version || true
-          gcc -v || true
-          clang --version || true
-
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: "1.25"
-          cache: false
 
       - name: Install Qt
         uses: jdpurcell/install-qt-action@v5
@@ -63,34 +44,23 @@ jobs:
           version: 6.12.0
           use-naqt: true
           setup-python: false
-
-      # The windows-11-arm runner's default gcc is x86_64.
-      # cgo cannot build arm64 shared libraries with that x86_64 gcc,
-      # so we use MSYS2 to install an aarch64-w64-mingw32 cross toolchain.
+          cache: true
 
       - name: Setup MSYS2
-        if: matrix.os == 'windows-11-vs2026-arm'
+        if: matrix.target == 'windows-arm64'
+        id: msys2
         uses: msys2/setup-msys2@v2
         with:
-          update: true
-          path-type: inherit
-          install: >-
-            mingw-w64-cross-mingwarm64-gcc
+          install: mingw-w64-cross-mingwarm64-gcc
 
-      - name: Build (Windows ARM)
-        if: matrix.os == 'windows-11-vs2026-arm'
-        shell: msys2 {0}
-        run: |
-          export PATH=/usr/bin:/opt/bin:$PATH
-          go env -w CC=aarch64-w64-mingw32-gcc
-          go env -w CXX=aarch64-w64-mingw32-g++
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --config Release
-
-      - name: Build (Default)
-        if: matrix.os != 'windows-11-vs2026-arm'
+      - name: Build
         shell: bash
         run: |
+          if [ "${{ matrix.target }}" = "windows-arm64" ]; then
+            msys2="$(cygpath -u "${{ steps.msys2.outputs.msys2-location }}")"
+            export PATH="$msys2/opt/bin:$msys2/usr/bin:$PATH"
+            go env -w CC=aarch64-w64-mingw32-gcc CXX=aarch64-w64-mingw32-g++
+          fi
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
 
@@ -111,6 +81,8 @@ jobs:
     needs: build
     if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/download-artifact@v8
@@ -122,5 +94,6 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
+          fail_on_unmatched_files: true
           prerelease: ${{ contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
           files: ./releases/*
