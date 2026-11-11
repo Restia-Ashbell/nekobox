@@ -72,13 +72,8 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
 
     ui->launch_at_startup->setChecked(AutoRun_IsEnabled());
     //
-    ui->rfsh_r->setItemData(0, 500);
-    ui->rfsh_r->setItemData(1, 1000);
-    ui->rfsh_r->setItemData(2, 2000);
-    ui->rfsh_r->setItemData(3, 3000);
-    ui->rfsh_r->setItemData(4, 5000);
-    ui->rfsh_r->setItemData(5, 0);
-    ui->rfsh_r->setCurrentIndex(ui->rfsh_r->findData(NekoGui::dataStore->traffic_loop_interval));
+    ui->traffic_show_speed->setChecked(NekoGui::dataStore->traffic_show_speed);
+    ui->traffic_count_stats->setChecked(NekoGui::dataStore->traffic_count_stats);
     //
     ui->language->setItemData(0, "en");
     ui->language->setItemData(1, "zh_CN");
@@ -222,7 +217,8 @@ void DialogBasicSettings::accept() {
     // Style
 
     NekoGui::dataStore->language = ui->language->currentData().toString();
-    NekoGui::dataStore->traffic_loop_interval = ui->rfsh_r->currentData().toInt();
+    NekoGui::dataStore->traffic_show_speed = ui->traffic_show_speed->isChecked();
+    NekoGui::dataStore->traffic_count_stats = ui->traffic_count_stats->isChecked();
 
     NekoGui::dataStore->font = ui->font->currentText();
     NekoGui::dataStore->theme = ui->theme->currentText();

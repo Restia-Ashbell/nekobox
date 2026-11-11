@@ -1,85 +1,99 @@
 #include "TrafficLooper.hpp"
 
-#include <QJsonObject>
-
 #include "libbox.h"
 
 #include "profile/DataStore.hpp"
-#include "profile/ProfileManager.hpp"
 
 namespace NekoGui_traffic {
 
     TrafficLooper *trafficLooper = nullptr;
 
+    static QString formatSpeed(qint64 up, qint64 down) {
+        return WrapLtr(QString("%1↑ %2↓").arg(ReadableSize(up), ReadableSize(down)));
+    }
+
     TrafficLooper::TrafficLooper(QObject *parent) : QObject(parent) {
         m_direct = new TrafficData(this);
         m_direct->tag = "direct";
+        m_timer.setInterval(1000);
         connect(&m_timer, &QTimer::timeout, this, &TrafficLooper::onTick);
     }
 
     void TrafficLooper::start(const QList<std::shared_ptr<NekoGui::ProxyEntity>> &items) {
         m_items = items;
-        if (NekoGui::dataStore->traffic_loop_interval == 0) return; // user disabled
-
-        if (!m_elapsedTimer.isValid()) m_elapsedTimer.start();
-        applyInterval();
-        m_timer.start();
+        if (!m_items.isEmpty()) m_timer.start();
     }
 
     void TrafficLooper::stop() {
         m_timer.stop();
         m_items.clear();
-    }
-
-    void TrafficLooper::applyInterval() {
-        auto interval = qBound(500, NekoGui::dataStore->traffic_loop_interval, 5000);
-        if (m_timer.interval() != interval) m_timer.setInterval(interval);
+        m_lastStats = {};
     }
 
     void TrafficLooper::onTick() {
-        if (NekoGui::dataStore->traffic_loop_interval == 0) return; // user disabled
+        if (m_items.isEmpty()) return;
 
-        applyInterval(); // follow runtime interval change
+        auto stats = queryStats();
+        auto speedText = updateAll(stats);
+        m_lastStats = stats;
 
-        updateAll();
-
-        if (!m_items.isEmpty()) {
-            emit speedUpdated(QObject::tr("Proxy: %1 | Direct: %2").arg(m_items.last()->traffic_data->DisplaySpeed(), m_direct->DisplaySpeed()));
+        if (NekoGui::dataStore->traffic_show_speed) {
+            emit speedUpdated(speedText);
         }
-        for (const auto &item: m_items) {
-            if (item->id >= 0) emit profileUpdated(item->id);
+
+        if (NekoGui::dataStore->traffic_count_stats) {
+            for (const auto &item: m_items) {
+                if (item->id >= 0) emit profileUpdated(item->id);
+            }
         }
     }
 
-    void TrafficLooper::updateStats(TrafficData *item, const QJsonObject &stats) {
-        // last update
-        auto now = m_elapsedTimer.elapsed();
-        auto interval = now - item->last_update;
-        item->last_update = now;
-        if (interval <= 0) return;
-
-        // query
-        QJsonObject ups = stats["ups"].toObject();
-        QJsonObject downs = stats["downs"].toObject();
-        auto uplink = ups[item->tag].toInteger();
-        auto downlink = downs[item->tag].toInteger();
-
-        // add diff
-        item->uplink += uplink;
-        item->downlink += downlink;
-        item->uplink_rate = uplink * 1000 / interval;
-        item->downlink_rate = downlink * 1000 / interval;
+    QJsonObject TrafficLooper::queryStats() {
+        auto result = BoxStats();
+        if (result == nullptr) return {};
+        auto stats = QString2QJsonObject(result);
+        free(result);
+        return stats;
     }
 
-    void TrafficLooper::updateAll() {
-        auto boxStatsResult = BoxStats();
-        auto stats = QString2QJsonObject(boxStatsResult);
-        free(boxStatsResult);
+    QPair<qint64, qint64> TrafficLooper::updateStats(TrafficData *item, const QJsonObject &ups, const QJsonObject &downs, const QJsonObject &lastUps, const QJsonObject &lastDowns) {
+        auto current_up = ups.value(item->tag).toInteger();
+        auto current_down = downs.value(item->tag).toInteger();
+        auto last_up = lastUps.value(item->tag).toInteger();
+        auto last_down = lastDowns.value(item->tag).toInteger();
 
-        for (const auto &item: m_items) {
-            updateStats(item->traffic_data, stats);
+        // A decrease means the core restarted its counters.
+        auto delta_up = current_up >= last_up ? current_up - last_up : current_up;
+        auto delta_down = current_down >= last_down ? current_down - last_down : current_down;
+
+        if (NekoGui::dataStore->traffic_count_stats) {
+            item->uplink += delta_up;
+            item->downlink += delta_down;
         }
-        updateStats(m_direct, stats);
+
+        return {delta_up, delta_down};
+    }
+
+    QString TrafficLooper::updateAll(const QJsonObject &stats) {
+        auto ups = stats.value("ups").toObject();
+        auto downs = stats.value("downs").toObject();
+        auto lastUps = m_lastStats.value("ups").toObject();
+        auto lastDowns = m_lastStats.value("downs").toObject();
+
+        qint64 proxyUp = 0, proxyDown = 0, directUp = 0, directDown = 0;
+        for (int i = 0; i <= m_items.size(); ++i) {
+            const auto &traffic = i < m_items.size() ? m_items[i]->traffic_data : m_direct;
+            auto delta = updateStats(traffic, ups, downs, lastUps, lastDowns);
+            if (traffic->tag == "proxy") {
+                proxyUp = delta.first;
+                proxyDown = delta.second;
+            } else if (traffic->tag == "direct") {
+                directUp = delta.first;
+                directDown = delta.second;
+            }
+        }
+
+        return QObject::tr("Proxy: %1 | Direct: %2").arg(formatSpeed(proxyUp, proxyDown), formatSpeed(directUp, directDown));
     }
 
     void TrafficLooper::saveAll() {

@@ -1,7 +1,8 @@
 #pragma once
 
-#include <QElapsedTimer>
+#include <QJsonObject>
 #include <QList>
+#include <QPair>
 #include <QString>
 #include <QTimer>
 
@@ -26,14 +27,14 @@ namespace NekoGui_traffic {
         void onTick();
 
     private:
-        void applyInterval();
-        void updateAll();
-        void updateStats(TrafficData *item, const QJsonObject &stats);
+        QJsonObject queryStats();
+        QString updateAll(const QJsonObject &stats);
+        QPair<qint64, qint64> updateStats(TrafficData *item, const QJsonObject &ups, const QJsonObject &downs, const QJsonObject &lastUps, const QJsonObject &lastDowns);
 
         QTimer m_timer;
-        QElapsedTimer m_elapsedTimer;
         QList<std::shared_ptr<NekoGui::ProxyEntity>> m_items;
         TrafficData *m_direct;
+        QJsonObject m_lastStats;
     };
 
     extern TrafficLooper *trafficLooper;

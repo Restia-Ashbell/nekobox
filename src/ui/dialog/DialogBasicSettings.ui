@@ -145,44 +145,17 @@
           <widget class="QGroupBox" name="traffic_statistics_box">
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
-             <widget class="QLabel" name="label_16">
+             <widget class="QCheckBox" name="traffic_show_speed">
               <property name="text">
-               <string>Statistics refresh rate</string>
+               <string>Show speed</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="rfsh_r">
-              <item>
-               <property name="text">
-                <string notr="true">500ms</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">1s</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">2s</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">3s</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">5s</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Off</string>
-               </property>
-              </item>
+             <widget class="QCheckBox" name="traffic_count_stats">
+              <property name="text">
+               <string>Count traffic</string>
+              </property>
              </widget>
             </item>
            </layout>

@@ -522,8 +522,6 @@ namespace NekoGui {
                     clash_api["external_ui_download_url"] = "https://github.com/Zephyruso/zashboard/archive/gh-pages.zip";
                 }
                 if (!dataStore->clash_api_secret.isEmpty()) clash_api["secret"] = dataStore->clash_api_secret;
-            } else if (dataStore->traffic_loop_interval > 0) {
-                clash_api["default_mode"] = "";
             }
             if (!clash_api.isEmpty()) experimentalObj["clash_api"] = clash_api;
 

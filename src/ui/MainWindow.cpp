@@ -718,7 +718,7 @@ void MainWindow::test_running_profile() {
 }
 
 void MainWindow::refresh_status(const QString &traffic_update) {
-    if (NekoGui::dataStore->traffic_loop_interval == 0) {
+    if (!NekoGui::dataStore->traffic_show_speed) {
         status_speed->clear();
     } else if (!running) {
         status_speed->setText(QObject::tr("Proxy: %1 | Direct: %2").arg("", ""));

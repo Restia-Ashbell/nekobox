@@ -76,8 +76,12 @@
         <translation>安全</translation>
     </message>
     <message>
-        <source>Statistics refresh rate</source>
-        <translation>流量统计刷新率</translation>
+        <source>Show speed</source>
+        <translation>显示速率</translation>
+    </message>
+    <message>
+        <source>Count traffic</source>
+        <translation>统计流量</translation>
     </message>
     <message>
         <source>System Proxy Format</source>

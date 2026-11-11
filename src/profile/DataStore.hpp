@@ -21,7 +21,8 @@ namespace NekoGui {
         Q_PROPERTY(int current_group MEMBER current_group)
         Q_PROPERTY(QString inbound_address MEMBER inbound_address)
         Q_PROPERTY(int inbound_port MEMBER inbound_port)
-        Q_PROPERTY(int traffic_loop_interval MEMBER traffic_loop_interval)
+        Q_PROPERTY(bool traffic_show_speed MEMBER traffic_show_speed)
+        Q_PROPERTY(bool traffic_count_stats MEMBER traffic_count_stats)
         Q_PROPERTY(int test_concurrent MEMBER test_concurrent)
         Q_PROPERTY(QString theme MEMBER theme)
         Q_PROPERTY(QString custom_inbound MEMBER custom_inbound)
@@ -91,7 +92,8 @@ namespace NekoGui {
         QString test_dns_server = "8.8.8.8:53";
         int test_dns_timeout = 3;
         int test_concurrent = 5;
-        int traffic_loop_interval = 1000;
+        bool traffic_show_speed = true;
+        bool traffic_count_stats = true;
         int current_group = 0; // group id
         QString theme = "";
         QString language = "";
