@@ -40,12 +40,6 @@ namespace NekoGui_ConfigItem {
         return object;
     }
 
-    QByteArray JsonStore::ToJsonBytes() {
-        QJsonDocument document;
-        document.setObject(ToJson());
-        return document.toJson(save_control_compact ? QJsonDocument::Compact : QJsonDocument::Indented);
-    }
-
     void JsonStore::FromJson(const QJsonObject &object) {
         const auto *metaobject = metaObject();
         for (int i = 0; i < metaobject->propertyCount(); ++i) {
@@ -79,22 +73,10 @@ namespace NekoGui_ConfigItem {
         }
     }
 
-    void JsonStore::FromJsonBytes(const QByteArray &data) {
-        QJsonParseError error{};
-        auto document = QJsonDocument::fromJson(data, &error);
-
-        if (error.error != QJsonParseError::NoError) {
-            qDebug() << "QJsonParseError" << error.errorString();
-            return;
-        }
-
-        FromJson(document.object());
-    }
-
     bool JsonStore::Save() {
         if (save_control_no_save) return false;
 
-        auto save_content = ToJsonBytes();
+        auto save_content = QJsonDocument(ToJson()).toJson();
         auto new_hash = qHash(save_content);
         bool changed = last_save_hash != new_hash;
         if (!changed && !fn.isEmpty() && QFile::exists(fn)) {
@@ -123,7 +105,10 @@ namespace NekoGui_ConfigItem {
         } else {
             auto data = file.readAll();
             last_save_hash = qHash(data);
-            FromJsonBytes(data);
+            auto doc = QJsonDocument::fromJson(data);
+            if (!doc.isNull() && doc.isObject()) {
+                FromJson(doc.object());
+            }
         }
 
         return ok;

@@ -947,7 +947,7 @@ void MainWindow::on_menu_profile_debug_info_triggered() {
     const auto ents = get_now_selected_list();
     if (ents.size() != 1) return;
     const auto &ent = ents.first();
-    QMessageBox msgBox(QMessageBox::NoIcon, software_name, ent->ToJsonBytes(), QMessageBox::Ok, this);
+    QMessageBox msgBox(QMessageBox::NoIcon, software_name, QJsonDocument(ent->ToJson()).toJson(), QMessageBox::Ok, this);
     auto *button_1 = msgBox.addButton("Edit", QMessageBox::ActionRole);
     auto *button_2 = msgBox.addButton("Reload", QMessageBox::ResetRole);
     msgBox.setDefaultButton(QMessageBox::Ok);

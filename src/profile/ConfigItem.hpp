@@ -17,7 +17,6 @@ namespace NekoGui_ConfigItem {
     public:
         QString fn;
         bool load_control_must = false; // must load from file
-        bool save_control_compact = false;
         bool save_control_no_save = false;
         size_t last_save_hash = 0;
 
@@ -35,11 +34,7 @@ namespace NekoGui_ConfigItem {
 
         QJsonObject ToJson();
 
-        QByteArray ToJsonBytes();
-
         void FromJson(const QJsonObject &object);
-
-        void FromJsonBytes(const QByteArray &data);
 
         bool Save();
 

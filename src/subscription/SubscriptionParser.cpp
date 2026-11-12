@@ -163,7 +163,7 @@ namespace NekoGui_sub {
                 if (!ent->bean) continue;
                 auto j = DecodeB64IfValid(link.fragment(), QByteArray::Base64UrlEncoding);
                 if (j.isEmpty()) continue;
-                ent->bean->FromJsonBytes(j);
+                ent->bean->FromJson(QJsonDocument::fromJson(j).object());
             } else {
                 ent = NekoGui::ProfileManager::NewProxyEntity(scheme);
                 if (!ent->bean || !ent->bean->TryParseLink(link_str)) ent = nullptr;

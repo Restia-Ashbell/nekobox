@@ -26,10 +26,8 @@ namespace NekoGui {
 
         QString test_report;
 
-        ProxyEntity(NekoGui_fmt::AbstractBean *bean_, const QString &type_) : type(type_) {
-            // 可以不关联 bean,只加载 ProxyEntity 的信息
-            if (bean_) {
-                bean = bean_;
+        ProxyEntity(const QString &type, NekoGui_fmt::AbstractBean *bean) : type(type), bean(bean) {
+            if (bean) {
                 bean->setParent(this);
                 traffic_data = new NekoGui_traffic::TrafficData(this);
             }

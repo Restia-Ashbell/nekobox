@@ -51,7 +51,7 @@ namespace NekoGui_traffic {
     QJsonObject TrafficLooper::queryStats() {
         auto result = BoxStats();
         if (result == nullptr) return {};
-        auto stats = QString2QJsonObject(result);
+        auto stats = QJsonDocument::fromJson(result).object();
         free(result);
         return stats;
     }
