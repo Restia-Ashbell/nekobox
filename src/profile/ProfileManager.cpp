@@ -1,6 +1,6 @@
 #include "ProfileManager.hpp"
 
-#include <QDir>
+#include <QDirListing>
 #include <QFile>
 
 #include "protocol/Includes.hpp"
@@ -13,25 +13,15 @@ namespace NekoGui {
         fn = "groups/pm.json";
     }
 
-    QList<int> filterIntJsonFile(const QString &path) {
-        QList<int> result;
-        QDir dir(path);
-        for (auto e: dir.entryList(QDir::Files)) {
-            if (!e.endsWith(".json", Qt::CaseInsensitive)) continue;
-            e = e.remove(".json", Qt::CaseInsensitive);
-            bool ok = false;
-            auto id = e.toInt(&ok);
-            if (ok) result << id;
-        }
-        return result;
-    }
-
     void ProfileManager::LoadManager() {
         JsonStore::Load();
         // Load Groups
         groups.clear();
-        for (auto id: filterIntJsonFile("groups")) {
-            auto ent = LoadGroup(QString("groups/%1.json").arg(id));
+        for (const auto &entry: QDirListing("groups", {"*.json"}, QDirListing::IteratorFlag::FilesOnly)) {
+            bool ok;
+            int id = entry.completeBaseName().toInt(&ok);
+            if (!ok) continue;
+            auto ent = LoadGroup(entry.filePath());
             // Corrupted group?
             if (ent == nullptr) {
                 DeleteGroup(id);
@@ -45,8 +35,11 @@ namespace NekoGui {
         groupsTabOrder.removeIf([this](int k) { return !groups.contains(k); });
         // Load Proxys
         profiles.clear();
-        for (auto id: filterIntJsonFile("profiles")) {
-            auto ent = LoadProxyEntity(QString("profiles/%1.json").arg(id));
+        for (const auto &entry: QDirListing("profiles", {"*.json"}, QDirListing::IteratorFlag::FilesOnly)) {
+            bool ok;
+            int id = entry.completeBaseName().toInt(&ok);
+            if (!ok) continue;
+            auto ent = LoadProxyEntity(entry.filePath());
             // Corrupted profile?
             if (ent == nullptr || ent->bean == nullptr || !groups.contains(ent->gid)) {
                 DeleteProfile(id);
