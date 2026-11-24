@@ -46,6 +46,8 @@ namespace NekoGui_sub {
 
         bool isUpdating(int gid) const;
 
+        QNetworkAccessManager networkManager;
+
     signals:
         void updateStarted(int gid);
 
@@ -56,7 +58,6 @@ namespace NekoGui_sub {
     private:
         QSet<int> m_inflight;
         QTimer m_autoUpdateTimer;
-        QNetworkAccessManager m_nam;
 
         void startUpdate(int gid, const std::shared_ptr<NekoGui::Group> &group);
 

@@ -26,7 +26,6 @@ namespace NekoGui {
         Q_PROPERTY(int test_concurrent MEMBER test_concurrent)
         Q_PROPERTY(QString theme MEMBER theme)
         Q_PROPERTY(QString custom_inbound MEMBER custom_inbound)
-        Q_PROPERTY(bool sub_use_proxy MEMBER sub_use_proxy)
         Q_PROPERTY(int started_id MEMBER started_id)
         Q_PROPERTY(bool spmode_vpn MEMBER spmode_vpn)
         Q_PROPERTY(bool spmode_system_proxy MEMBER spmode_system_proxy)
@@ -105,7 +104,6 @@ namespace NekoGui {
 
         // Subscription
         QString user_agent = "";
-        bool sub_use_proxy = false;
         bool sub_insecure = false;
 
         // Security

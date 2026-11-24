@@ -1,7 +1,6 @@
 #include "SubscriptionService.hpp"
 
 #include <QDateTime>
-#include <QNetworkProxy>
 #include <QNetworkRequest>
 #include <QUrl>
 
@@ -117,18 +116,6 @@ namespace NekoGui_sub {
             return;
         }
 
-        if (NekoGui::dataStore->sub_use_proxy && NekoGui::dataStore->started_id >= 0) {
-            QNetworkProxy proxy;
-            proxy.setType(QNetworkProxy::HttpProxy);
-            proxy.setHostName("127.0.0.1");
-            proxy.setPort(NekoGui::dataStore->inbound_port);
-            proxy.setUser(NekoGui::dataStore->inbound_username);
-            proxy.setPassword(NekoGui::dataStore->inbound_password);
-            m_nam.setProxy(proxy);
-        } else {
-            m_nam.setProxy(QNetworkProxy::NoProxy);
-        }
-
         QNetworkRequest request(QUrl(group->url));
         request.setTransferTimeout(10000);
         request.setHeader(QNetworkRequest::UserAgentHeader, NekoGui::dataStore->user_agent.isEmpty() ? UserAgent() : NekoGui::dataStore->user_agent);
@@ -138,7 +125,7 @@ namespace NekoGui_sub {
             request.setSslConfiguration(ssl);
         }
 
-        QNetworkReply *reply = m_nam.get(request);
+        QNetworkReply *reply = networkManager.get(request);
         QObject::connect(reply, &QNetworkReply::finished, this, [this, gid, reply] {
             reply->deleteLater();
             onUpdateReply(gid, reply);

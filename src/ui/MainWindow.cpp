@@ -13,7 +13,6 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QMessageBox>
-#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QPainter>
@@ -1370,18 +1369,13 @@ void MainWindow::CheckUpdate() {
 
     QNetworkRequest request(url);
     request.setTransferTimeout(10000);
-    auto *manager = new QNetworkAccessManager(this);
-    QNetworkReply *reply = manager->get(request);
+    QNetworkReply *reply = NekoGui_sub::subService->networkManager.get(request);
 
-    connect(reply, &QNetworkReply::finished, this, [this, reply, manager] {
+    connect(reply, &QNetworkReply::finished, this, [this, reply] {
         reply->deleteLater();
-        manager->deleteLater();
 
         if (reply->error() != QNetworkReply::NetworkError::NoError) {
-            QMessageBox::warning(
-                this,
-                tr("Update Check Failed"),
-                tr("Network error: %1").arg(reply->errorString()));
+            QMessageBox::warning(this, tr("Update Check Failed"), tr("Network error: %1").arg(reply->errorString()));
             return;
         }
 
