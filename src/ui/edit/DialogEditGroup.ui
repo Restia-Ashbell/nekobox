@@ -94,13 +94,6 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QCheckBox" name="archive">
-        <property name="text">
-         <string>Archive</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>

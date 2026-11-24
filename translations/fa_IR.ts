@@ -289,10 +289,6 @@
         <translation>اشتراک</translation>
     </message>
     <message>
-        <source>Archive</source>
-        <translation>بایگانی</translation>
-    </message>
-    <message>
         <source>Copy profile share links</source>
         <translation>لینک های اشتراک گذاری نمایه را کپی کنید</translation>
     </message>
@@ -1026,10 +1022,6 @@
     <message>
         <source>Subscription</source>
         <translation>اشتراک</translation>
-    </message>
-    <message>
-        <source>Archive</source>
-        <translation>آرشیو</translation>
     </message>
     <message>
         <source>Updating…</source>

@@ -275,10 +275,6 @@
         <translation>Имя</translation>
     </message>
     <message>
-        <source>Archive</source>
-        <translation>Архив</translation>
-    </message>
-    <message>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
@@ -1025,10 +1021,6 @@
     <message>
         <source>Subscription</source>
         <translation>Подписка</translation>
-    </message>
-    <message>
-        <source>Archive</source>
-        <translation>Архив</translation>
     </message>
     <message>
         <source>Updating…</source>

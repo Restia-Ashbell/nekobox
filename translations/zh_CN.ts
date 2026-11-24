@@ -287,10 +287,6 @@
         <translation>订阅</translation>
     </message>
     <message>
-        <source>Archive</source>
-        <translation>归档</translation>
-    </message>
-    <message>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -1036,10 +1032,6 @@
     <message>
         <source>Remove %1?</source>
         <translation>删除 %1 ?</translation>
-    </message>
-    <message>
-        <source>Archive</source>
-        <translation>归档</translation>
     </message>
     <message>
         <source>Last update: %1</source>

@@ -46,7 +46,6 @@ void GroupItem::refresh_data() {
     ui->name->setText(ent->name);
 
     auto type = ent->url.isEmpty() ? tr("Basic") : tr("Subscription");
-    if (ent->archive) type = tr("Archive") + " " + type;
     type += " (" + QString::number(NekoGui::profileManager->Profiles(ent->id).length()) + ")";
     ui->type->setText(type);
 

@@ -26,7 +26,7 @@ namespace NekoGui_sub {
 
     void SubscriptionService::updateGroup(int gid) {
         auto group = NekoGui::profileManager->GetGroup(gid);
-        if (group == nullptr || group->url.isEmpty() || group->archive) return;
+        if (group == nullptr || group->url.isEmpty()) return;
         if (isUpdating(gid)) {
             MW_show_log(QObject::tr("The subscription is already being updated."));
             return;
@@ -44,7 +44,7 @@ namespace NekoGui_sub {
         int started = 0;
         for (auto gid: NekoGui::profileManager->groupsTabOrder) {
             auto g = NekoGui::profileManager->GetGroup(gid);
-            if (g == nullptr || g->url.isEmpty() || g->archive) continue;
+            if (g == nullptr || g->url.isEmpty()) continue;
             if (autoUpdate && g->skip_auto_update) continue;
             eligible++;
             if (isUpdating(gid)) continue;
@@ -175,7 +175,7 @@ namespace NekoGui_sub {
 
         auto report = UpdateReport{.status = TaskStatus::Succeeded, .total = (int) nodes.count()};
         auto group = NekoGui::profileManager->GetGroup(gid);
-        if (group == nullptr || group->archive) {
+        if (group == nullptr) {
             report.status = TaskStatus::Skipped;
             report.message = QObject::tr("Group was already removed.");
             finish(gid, report);

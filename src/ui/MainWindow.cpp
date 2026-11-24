@@ -530,7 +530,7 @@ void MainWindow::neko_start(int _id) {
     }
 
     auto group = NekoGui::profileManager->GetGroup(ent->gid);
-    if (group == nullptr || group->archive) return;
+    if (group == nullptr) return;
 
     auto result = BuildConfig(ent, false, false);
     if (!result->error.isEmpty()) {
@@ -621,7 +621,7 @@ void MainWindow::test_selected_profiles(TestMode mode, const QString &target, in
     testProfiles = get_now_selected_list();
     if (testProfiles.isEmpty()) return;
     auto group = NekoGui::profileManager->CurrentGroup();
-    if (group == nullptr || group->archive) return;
+    if (group == nullptr) return;
 
     QThreadPool::globalInstance()->setMaxThreadCount(NekoGui::dataStore->test_concurrent);
     testFuture = QtConcurrent::map(testProfiles, [=, this](std::shared_ptr<NekoGui::ProxyEntity> &profile) {
