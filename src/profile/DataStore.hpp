@@ -45,7 +45,6 @@ namespace NekoGui {
         Q_PROPERTY(bool tun_ipv6 MEMBER tun_ipv6)
         Q_PROPERTY(bool tun_strict_route MEMBER tun_strict_route)
         Q_PROPERTY(bool sub_insecure MEMBER sub_insecure)
-        Q_PROPERTY(int sub_auto_update MEMBER sub_auto_update)
         Q_PROPERTY(bool start_minimal MEMBER start_minimal)
         Q_PROPERTY(int max_log_line MEMBER max_log_line)
         Q_PROPERTY(QString splitter_state MEMBER splitter_state)
@@ -108,7 +107,6 @@ namespace NekoGui {
         QString user_agent = "";
         bool sub_use_proxy = false;
         bool sub_insecure = false;
-        int sub_auto_update = -30;
 
         // Security
         bool skip_cert = false;

@@ -13,15 +13,21 @@ namespace NekoGui_sub {
 
     SubscriptionService *subService = new SubscriptionService;
 
-    static QByteArray getHeader(const QList<QPair<QByteArray, QByteArray>> &headers, const QByteArray &name) {
-        for (const auto &[k, v]: headers) {
-            if (k.toLower() == name.toLower()) return v;
-        }
-        return {};
+    SubscriptionService::SubscriptionService() {
+        m_autoUpdateTimer.setInterval(60 * 60 * 1000);
+        connect(&m_autoUpdateTimer, &QTimer::timeout, this, &SubscriptionService::checkAutoUpdate);
     }
 
     bool SubscriptionService::isUpdating(int gid) const {
         return m_inflight.contains(gid);
+    }
+
+    void SubscriptionService::startUpdate(int gid, const std::shared_ptr<NekoGui::Group> &group) {
+        m_inflight.insert(gid);
+        emit updateStarted(gid);
+        MW_show_log(">>>>>>>> " + QObject::tr("Requesting subscription: %1")
+                                      .arg(group->name.isEmpty() ? group->url : group->name));
+        sendUpdateRequest(gid);
     }
 
     void SubscriptionService::updateGroup(int gid) {
@@ -32,33 +38,43 @@ namespace NekoGui_sub {
             return;
         }
 
-        m_inflight.insert(gid);
-        emit taskStarted(gid);
-        MW_show_log(">>>>>>>> " + QObject::tr("Requesting subscription: %1")
-                                      .arg(group->name.isEmpty() ? group->url : group->name));
-        startUpdate(gid);
+        startUpdate(gid, group);
     }
 
-    void SubscriptionService::updateAll(bool autoUpdate) {
+    void SubscriptionService::updateAll() {
         int eligible = 0;
         int started = 0;
         for (auto gid: NekoGui::profileManager->groupsTabOrder) {
             auto g = NekoGui::profileManager->GetGroup(gid);
             if (g == nullptr || g->url.isEmpty()) continue;
-            if (autoUpdate && g->skip_auto_update) continue;
             eligible++;
             if (isUpdating(gid)) continue;
 
-            m_inflight.insert(gid);
-            emit taskStarted(gid);
-            MW_show_log(">>>>>>>> " + QObject::tr("Requesting subscription: %1")
-                                          .arg(g->name.isEmpty() ? g->url : g->name));
-            startUpdate(gid);
+            startUpdate(gid, g);
             started++;
         }
         if (started == 0) {
             // 有符合条件的组但全部已在更新中：无需额外处理
             if (eligible > 0) MW_show_log(QObject::tr("The last subscription update has not exited."));
+        }
+    }
+
+    void SubscriptionService::startAutoUpdate() {
+        m_autoUpdateTimer.start();
+        QTimer::singleShot(5000, this, &SubscriptionService::checkAutoUpdate);
+    }
+
+    void SubscriptionService::checkAutoUpdate() {
+        const auto now = QDateTime::currentSecsSinceEpoch();
+        for (auto gid: NekoGui::profileManager->groupsTabOrder) {
+            auto g = NekoGui::profileManager->GetGroup(gid);
+            if (g == nullptr || g->url.isEmpty()) continue;
+            if (g->auto_update_interval <= 0) continue;
+            if (isUpdating(gid)) continue;
+
+            if (g->sub_last_update != 0 && now - g->sub_last_update < g->auto_update_interval * 3600) continue;
+
+            startUpdate(gid, g);
         }
     }
 
@@ -94,7 +110,7 @@ namespace NekoGui_sub {
         updateGroup(group->id);
     }
 
-    void SubscriptionService::startUpdate(int gid) {
+    void SubscriptionService::sendUpdateRequest(int gid) {
         auto group = NekoGui::profileManager->GetGroup(gid);
         if (group == nullptr) {
             finish(gid, {TaskStatus::Skipped, 0, 0, 0, QObject::tr("Group was already removed.")});
@@ -125,11 +141,11 @@ namespace NekoGui_sub {
         QNetworkReply *reply = m_nam.get(request);
         QObject::connect(reply, &QNetworkReply::finished, this, [this, gid, reply] {
             reply->deleteLater();
-            onNetworkResponse(gid, reply);
+            onUpdateReply(gid, reply);
         });
     }
 
-    void SubscriptionService::onNetworkResponse(int gid, QNetworkReply *reply) {
+    void SubscriptionService::onUpdateReply(int gid, QNetworkReply *reply) {
         if (!isUpdating(gid)) return; // 已被移除（理论上不会发生）
 
         auto group = NekoGui::profileManager->GetGroup(gid);
@@ -151,18 +167,15 @@ namespace NekoGui_sub {
             return;
         }
 
-        auto data = reply->readAll();
-        auto headers = reply->rawHeaderPairs();
-
         // 成功：更新分组元信息（名称来自 Content-Disposition / info 解析自 Subscription-UserInfo）
         MW_show_log("<<<<<<<< " + QObject::tr("Subscription request finished: %1").arg(group->name));
         if (group->name.isEmpty()) {
-            QString parsedName = SubscriptionParser::parseSubName(getHeader(headers, "Content-Disposition"));
+            QString parsedName = SubscriptionParser::parseSubName(reply->rawHeader("Content-Disposition"));
             group->name = parsedName.isEmpty() ? QUrl(group->url).host() : parsedName;
         }
-        group->info = getHeader(headers, "Subscription-UserInfo");
+        group->info = reply->rawHeader("Subscription-UserInfo");
 
-        applySubscription(gid, data.trimmed());
+        applySubscription(gid, reply->readAll().trimmed());
     }
 
     void SubscriptionService::applySubscription(int gid, const QString &content) {
@@ -261,7 +274,7 @@ namespace NekoGui_sub {
 
     void SubscriptionService::finish(int gid, const UpdateReport &report) {
         m_inflight.remove(gid);
-        emit taskFinished(gid, report);
+        emit updateFinished(gid, report);
     }
 
 } // namespace NekoGui_sub

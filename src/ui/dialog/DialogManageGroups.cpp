@@ -77,6 +77,6 @@ void DialogManageGroups::on_add_clicked() {
 
 void DialogManageGroups::on_update_all_clicked() {
     if (QMessageBox::question(this, tr("Confirmation"), tr("Update all subscriptions?")) == QMessageBox::StandardButton::Yes) {
-        NekoGui_sub::subService->updateAll(false);
+        NekoGui_sub::subService->updateAll();
     }
 }

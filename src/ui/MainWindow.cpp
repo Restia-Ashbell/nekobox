@@ -290,8 +290,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     connect(qApp, &QGuiApplication::aboutToQuit, this, &MainWindow::cleanup_on_exit, Qt::DirectConnection);
 
-    autoUpdateSubscriptionTimer = new QTimer(this);
-    connect(autoUpdateSubscriptionTimer, &QTimer::timeout, this, [this] { NekoGui_sub::subService->updateAll(true); });
+    NekoGui_sub::subService->startAutoUpdate();
 
     connect(NekoGui_sub::subService, &NekoGui_sub::SubscriptionService::importUrlDetected, this, [this](const QString &url) {
         auto items = QStringList{
@@ -305,7 +304,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                                        items, 0, false, &ok);
         if (ok) NekoGui_sub::subService->resolveImport(url, items.indexOf(a) == 0);
     });
-    connect(NekoGui_sub::subService, &NekoGui_sub::SubscriptionService::taskFinished, this, [this](int gid, const NekoGui_sub::UpdateReport &) {
+    connect(NekoGui_sub::subService, &NekoGui_sub::SubscriptionService::updateFinished, this, [this](int gid, const NekoGui_sub::UpdateReport &) {
         if (gid < 0) {
             refresh_group();
         } else {
@@ -1443,13 +1442,6 @@ void MainWindow::CheckUpdate() {
 void MainWindow::applyDataStoreSettings() {
     // 日志行数上限
     ui->masterLogBrowser->document()->setMaximumBlockCount(NekoGui::dataStore->max_log_line);
-    // 订阅自动更新
-    auto minutes = NekoGui::dataStore->sub_auto_update;
-    if (minutes >= 30) {
-        autoUpdateSubscriptionTimer->start(minutes * 60 * 1000);
-    } else {
-        autoUpdateSubscriptionTimer->stop();
-    }
 }
 
 MainWindow *MainWindow::instance() {

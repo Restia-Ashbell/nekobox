@@ -104,7 +104,6 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     ui->user_agent->setPlaceholderText(UserAgent());
     D_LOAD_BOOL(sub_use_proxy)
     D_LOAD_BOOL(sub_insecure)
-    D_LOAD_INT_ENABLE(sub_auto_update, sub_auto_update_enable)
 
     // Inbound
 
@@ -232,7 +231,6 @@ void DialogBasicSettings::accept() {
     NekoGui::dataStore->user_agent = ui->user_agent->text();
     D_SAVE_BOOL(sub_use_proxy)
     D_SAVE_BOOL(sub_insecure)
-    D_SAVE_INT_ENABLE(sub_auto_update, sub_auto_update_enable)
 
     // Inbound
     D_SAVE_COMBO_STRING(inbound_address)

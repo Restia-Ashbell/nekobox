@@ -8,20 +8,12 @@
         <translation>基本设置</translation>
     </message>
     <message>
-        <source>Enable</source>
-        <translation>启用</translation>
-    </message>
-    <message>
         <source>Listen Address</source>
         <translation>监听地址</translation>
     </message>
     <message>
         <source>User Agent</source>
         <translation>用户代理</translation>
-    </message>
-    <message>
-        <source>Common</source>
-        <translation>通用</translation>
     </message>
     <message>
         <source>Style</source>
@@ -84,16 +76,8 @@
         <translation>统计流量</translation>
     </message>
     <message>
-        <source>System Proxy Format</source>
-        <translation>系统代理格式</translation>
-    </message>
-    <message>
         <source>Font</source>
         <translation>字体</translation>
-    </message>
-    <message>
-        <source>Off</source>
-        <translation>关闭</translation>
     </message>
     <message>
         <source>Stack</source>
@@ -255,14 +239,6 @@
         <source>Timeout (s)</source>
         <translation>超时（秒）</translation>
     </message>
-    <message>
-        <source>Automatic update</source>
-        <translation>自动更新订阅</translation>
-    </message>
-    <message>
-        <source>Interval (minute, invalid if less than 30)</source>
-        <translation>时间间隔（分钟，少于 30 分钟无效）</translation>
-    </message>
 </context>
 <context>
     <name>DialogEditGroup</name>
@@ -277,6 +253,10 @@
     <message>
         <source>Name</source>
         <translation>名称</translation>
+    </message>
+    <message>
+        <source> h</source>
+        <translation> 小时</translation>
     </message>
     <message>
         <source>Basic</source>
@@ -319,12 +299,12 @@
         <translation>清除</translation>
     </message>
     <message>
-        <source>Skip automatic update</source>
-        <translation>跳过自动更新</translation>
-    </message>
-    <message>
         <source>Common</source>
         <translation>通用</translation>
+    </message>
+    <message>
+        <source>Automatic update</source>
+        <translation>自动更新</translation>
     </message>
     <message>
         <source>Share</source>
@@ -1172,10 +1152,6 @@
         <translation>扫描 QR Code</translation>
     </message>
     <message>
-        <source>Disable</source>
-        <translation>禁用</translation>
-    </message>
-    <message>
         <source>Confirmation</source>
         <translation>确认</translation>
     </message>
@@ -1190,10 +1166,6 @@
     <message>
         <source>Remove %1 item(s) ?</source>
         <translation>删除 %1 个项目？</translation>
-    </message>
-    <message>
-        <source>[%1] test error: %2</source>
-        <translation>[%1] 测试错误: %2</translation>
     </message>
     <message>
         <source>Clear</source>
@@ -1276,10 +1248,6 @@
         <translation>复制了 %1 个项目</translation>
     </message>
     <message>
-        <source>Full Test</source>
-        <translation>完整测试</translation>
-    </message>
-    <message>
         <source>Reset Traffic</source>
         <translation>重置流量统计</translation>
     </message>
@@ -1294,14 +1262,6 @@
     <message>
         <source>Tun Mode</source>
         <translation>Tun 模式</translation>
-    </message>
-    <message>
-        <source>Enable System Proxy</source>
-        <translation>启用系统代理</translation>
-    </message>
-    <message>
-        <source>Enable Tun</source>
-        <translation>启用 Tun</translation>
     </message>
     <message>
         <source>Tun Settings changed</source>
@@ -1322,6 +1282,10 @@
     <message>
         <source>Copy links of selected</source>
         <translation>批量复制选中项目的分享链接</translation>
+    </message>
+    <message>
+        <source>TUN</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Clone</source>
@@ -1388,10 +1352,6 @@
         <translation>选择模式，双击或按回车键选择一个配置文件，按ESC键退出。</translation>
     </message>
     <message>
-        <source>Latency</source>
-        <translation>延迟</translation>
-    </message>
-    <message>
         <source>Unable to Open Dashboard</source>
         <translation>无法打开仪表盘</translation>
     </message>
@@ -1420,18 +1380,6 @@ How to update?</source>
     <message>
         <source>Failed to stop profile %1</source>
         <translation>停止配置 %1 失败</translation>
-    </message>
-    <message>
-        <source>UDP latency</source>
-        <translation>UDP 延迟</translation>
-    </message>
-    <message>
-        <source>Download speed</source>
-        <translation>下载速度</translation>
-    </message>
-    <message>
-        <source>In and Out IP</source>
-        <translation>入口出口IP</translation>
     </message>
     <message>
         <source>Add new Group</source>
@@ -1482,10 +1430,6 @@ Do you want to download it now?</source>
     <message>
         <source>You are already using the latest version (%1).</source>
         <translation>当前已是最新版本 (%1)。</translation>
-    </message>
-    <message>
-        <source>Test Options</source>
-        <translation>测试选项</translation>
     </message>
     <message>
         <source>Stop Testing</source>
@@ -1554,6 +1498,10 @@ Do you want to download it now?</source>
     <message>
         <source>Unsupported proxy type: %1</source>
         <translation>不支持的代理类型：%1</translation>
+    </message>
+    <message>
+        <source>Chain has no outbound profiles.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Core not found: %1</source>

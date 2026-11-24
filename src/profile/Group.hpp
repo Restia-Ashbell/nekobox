@@ -8,7 +8,7 @@ namespace NekoGui {
         Q_OBJECT
         Q_PROPERTY(int id MEMBER id)
         Q_PROPERTY(int front_proxy_id MEMBER front_proxy_id)
-        Q_PROPERTY(bool skip_auto_update MEMBER skip_auto_update)
+        Q_PROPERTY(int auto_update_interval MEMBER auto_update_interval)
         Q_PROPERTY(QString name MEMBER name)
         Q_PROPERTY(QList<int> order MEMBER order)
         Q_PROPERTY(QString url MEMBER url)
@@ -17,7 +17,7 @@ namespace NekoGui {
 
     public:
         int id = -1;
-        bool skip_auto_update = false;
+        int auto_update_interval = -24;
         QString name = "";
         QString url = "";
         QString info = "";

@@ -22,13 +22,13 @@ GroupItem::GroupItem(QWidget *parent, const std::shared_ptr<NekoGui::Group> &ent
         if (gid == this->ent->id) refresh_data();
     });
 
-    connect(NekoGui_sub::subService, &NekoGui_sub::SubscriptionService::taskStarted, this, [this](int gid) {
+    connect(NekoGui_sub::subService, &NekoGui_sub::SubscriptionService::updateStarted, this, [this](int gid) {
         if (gid == this->ent->id) {
             m_updating = true;
             refresh_data();
         }
     });
-    connect(NekoGui_sub::subService, &NekoGui_sub::SubscriptionService::taskFinished, this, [this](int gid, const NekoGui_sub::UpdateReport &) {
+    connect(NekoGui_sub::subService, &NekoGui_sub::SubscriptionService::updateFinished, this, [this](int gid, const NekoGui_sub::UpdateReport &) {
         if (gid == this->ent->id) {
             m_updating = false;
             refresh_data();

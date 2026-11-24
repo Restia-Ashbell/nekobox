@@ -141,8 +141,6 @@ private:
     QMutex mu_state;
     int exit_reason = 0;
     //
-    QTimer *autoUpdateSubscriptionTimer;
-    //
     enum TestMode {
         TcpPing,
         HttpLatency,

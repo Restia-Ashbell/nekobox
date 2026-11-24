@@ -4,7 +4,9 @@
 #include <QNetworkReply>
 #include <QSet>
 #include <QString>
+#include <QTimer>
 
+#include "profile/Group.hpp"
 #include "profile/ProxyEntity.hpp"
 
 namespace NekoGui_sub {
@@ -30,9 +32,13 @@ namespace NekoGui_sub {
         Q_OBJECT
 
     public:
+        SubscriptionService();
+
         void updateGroup(int gid);
 
-        void updateAll(bool autoUpdate);
+        void updateAll();
+
+        void startAutoUpdate();
 
         void importText(const QString &raw);
 
@@ -41,19 +47,24 @@ namespace NekoGui_sub {
         bool isUpdating(int gid) const;
 
     signals:
-        void taskStarted(int gid);
+        void updateStarted(int gid);
 
-        void taskFinished(int gid, const NekoGui_sub::UpdateReport &report);
+        void updateFinished(int gid, const NekoGui_sub::UpdateReport &report);
 
         void importUrlDetected(const QString &url); // 由 UI 弹对话框，再调 resolveImport
 
     private:
         QSet<int> m_inflight;
+        QTimer m_autoUpdateTimer;
         QNetworkAccessManager m_nam;
 
-        void startUpdate(int gid);
+        void startUpdate(int gid, const std::shared_ptr<NekoGui::Group> &group);
 
-        void onNetworkResponse(int gid, QNetworkReply *reply);
+        void checkAutoUpdate();
+
+        void sendUpdateRequest(int gid);
+
+        void onUpdateReply(int gid, QNetworkReply *reply);
 
         void applySubscription(int gid, const QString &content);
 

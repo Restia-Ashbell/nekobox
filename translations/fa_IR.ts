@@ -8,10 +8,6 @@
         <translation>تنظیمات پایه</translation>
     </message>
     <message>
-        <source>Enable</source>
-        <translation>فعال کردن</translation>
-    </message>
-    <message>
         <source>Listen Address</source>
         <translation>آدرس درحال شنود</translation>
     </message>
@@ -20,16 +16,20 @@
         <translation>عامل کاربر</translation>
     </message>
     <message>
-        <source>Common</source>
-        <translation>متداول</translation>
-    </message>
-    <message>
         <source>Style</source>
         <translation>استایل</translation>
     </message>
     <message>
         <source>Theme</source>
         <translation>پوسته</translation>
+    </message>
+    <message>
+        <source>Show speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Count traffic</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Subscription</source>
@@ -65,14 +65,6 @@
         <translation>امنیت</translation>
     </message>
     <message>
-        <source>Statistics refresh rate</source>
-        <translation>نرخ تازه سازی آمار ترافیک</translation>
-    </message>
-    <message>
-        <source>System Proxy Format</source>
-        <translation>قالب پروکسی سیستم</translation>
-    </message>
-    <message>
         <source>Language</source>
         <translation>زبان</translation>
     </message>
@@ -81,16 +73,28 @@
         <translation>فونت</translation>
     </message>
     <message>
-        <source>Off</source>
-        <translation>خاموش</translation>
-    </message>
-    <message>
         <source>Launch at startup</source>
         <translation>اجرا هنگام راه‌اندازی</translation>
     </message>
     <message>
         <source>Start minimized to tray</source>
         <translation>شروع در حالت کوچک‌شده در سینی</translation>
+    </message>
+    <message>
+        <source>Test</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>HTTP Latency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DNS Latency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Download Speed</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Inbound</source>
@@ -198,10 +202,6 @@
         <translation>تنظیم شده</translation>
     </message>
     <message>
-        <source>Include Pre-release when checking update</source>
-        <translation>هنگام بررسی به‌روزرسانی، نسخه پیش‌انتشار را نیز لحاظ شود</translation>
-    </message>
-    <message>
         <source>Set custom icon</source>
         <translation>تنظیم آیکون سفارشی</translation>
     </message>
@@ -238,32 +238,8 @@
         <translation>اثرانگشت پیشفرض uTLS</translation>
     </message>
     <message>
-        <source>Latency Test URL</source>
-        <translation>آدرس تست تاخیر</translation>
-    </message>
-    <message>
-        <source>Download Test URL</source>
-        <translation>آدرس تست دانلود</translation>
-    </message>
-    <message>
         <source>Timeout (s)</source>
         <translation>تایم اوت (به ثانیه)</translation>
-    </message>
-    <message>
-        <source>Automatic update</source>
-        <translation>آپدیت اتوماتیک</translation>
-    </message>
-    <message>
-        <source>Interval (minute, invalid if less than 30)</source>
-        <translation>فاصله (دقیقه، اگر کمتر از ۳۰ باشد نادرست است)</translation>
-    </message>
-    <message>
-        <source>Share VMess Link with v2rayN Format</source>
-        <translation>اشتراک‌گذاری لینک VMess با قالب v2rayN</translation>
-    </message>
-    <message>
-        <source>Old Share Link Format</source>
-        <translation>قالب قدیمی لینک اشتراک</translation>
     </message>
 </context>
 <context>
@@ -287,6 +263,10 @@
     <message>
         <source>Subscription</source>
         <translation>اشتراک</translation>
+    </message>
+    <message>
+        <source>Automatic update</source>
+        <translation>آپدیت اتوماتیک</translation>
     </message>
     <message>
         <source>Copy profile share links</source>
@@ -321,12 +301,12 @@
         <translation>پاک کردن</translation>
     </message>
     <message>
-        <source>Skip automatic update</source>
-        <translation>لغو آپدیت اتوماتیک</translation>
-    </message>
-    <message>
         <source>Common</source>
         <translation>متداول</translation>
+    </message>
+    <message>
+        <source> h</source>
+        <translation> ساعت</translation>
     </message>
     <message>
         <source>Share</source>
@@ -1118,6 +1098,10 @@
         <translation>بستن (Esc)</translation>
     </message>
     <message>
+        <source>TUN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Open Dashboard</source>
         <translation>باز کردن داشبورد</translation>
     </message>
@@ -1202,6 +1186,22 @@
         <translation>کد QR و پیوند</translation>
     </message>
     <message>
+        <source>HTTP Latency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DNS Latency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Download Speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP Lookup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Clear Test Result</source>
         <translation>نتایج تست پاک شود</translation>
     </message>
@@ -1218,14 +1218,6 @@
         <translation>کد QR را اسکن کنید</translation>
     </message>
     <message>
-        <source>Enable System Proxy</source>
-        <translation>پروکسی سیستم را فعال کنید</translation>
-    </message>
-    <message>
-        <source>Disable</source>
-        <translation>غیرفعال کردن</translation>
-    </message>
-    <message>
         <source>Remove Duplicates</source>
         <translation>موارد تکراری را حذف کردن</translation>
     </message>
@@ -1236,10 +1228,6 @@
     <message>
         <source>Remove Unavailable</source>
         <translation>غیرقابل دستیابی پاک شود</translation>
-    </message>
-    <message>
-        <source>Full Test</source>
-        <translation>تست کامل</translation>
     </message>
     <message>
         <source>Hotkey Settings</source>
@@ -1256,10 +1244,6 @@
     <message>
         <source>Copy links of selected</source>
         <translation>لینک های انتخاب شده را کپی کنید</translation>
-    </message>
-    <message>
-        <source>Enable Tun</source>
-        <translation>فعال کردن tun</translation>
     </message>
     <message>
         <source>Clone</source>
@@ -1334,10 +1318,6 @@
         <translation>پاک کردن</translation>
     </message>
     <message>
-        <source>[%1] test error: %2</source>
-        <translation>[%1] خطای تست: %2</translation>
-    </message>
-    <message>
         <source>Testing</source>
         <translation>آزمایش کردن</translation>
     </message>
@@ -1370,10 +1350,6 @@
         <translation>حالت انتخاب: برای انتخاب پروفایل دوبار کلیک یا Enter را بزنید، برای خروج ESC.</translation>
     </message>
     <message>
-        <source>Latency</source>
-        <translation>تاخیر</translation>
-    </message>
-    <message>
         <source>Unable to Open Dashboard</source>
         <translation>باز کردن داشبورد ممکن نیست</translation>
     </message>
@@ -1402,18 +1378,6 @@ How to update?</source>
     <message>
         <source>Failed to stop profile %1</source>
         <translation>توقف پروفایل %1 ناموفق بود</translation>
-    </message>
-    <message>
-        <source>UDP latency</source>
-        <translation>تأخیر UDP</translation>
-    </message>
-    <message>
-        <source>Download speed</source>
-        <translation>سرعت دانلود</translation>
-    </message>
-    <message>
-        <source>In and Out IP</source>
-        <translation>IP ورودی و خروجی</translation>
     </message>
     <message>
         <source>Add new Group</source>
@@ -1464,10 +1428,6 @@ Do you want to download it now?</source>
     <message>
         <source>You are already using the latest version (%1).</source>
         <translation>شما از آخرین نسخه (%1) استفاده می‌کنید.</translation>
-    </message>
-    <message>
-        <source>Test Options</source>
-        <translation>گزینه های تست</translation>
     </message>
     <message>
         <source>Restart the program to take effect.</source>
@@ -1602,6 +1562,10 @@ Deleted %3 profiles:
     <message>
         <source>Chain Proxy</source>
         <translation>پروکسی زنجیره ای</translation>
+    </message>
+    <message>
+        <source>Chain has no outbound profiles.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Core not found: %1</source>

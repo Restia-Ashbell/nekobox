@@ -17,7 +17,8 @@ DialogEditGroup::DialogEditGroup(const std::shared_ptr<NekoGui::Group> &ent, QWi
     });
 
     ui->name->setText(ent->name);
-    ui->skip_auto_update->setChecked(ent->skip_auto_update);
+    ui->auto_update_enable->setChecked(ent->auto_update_interval > 0);
+    ui->auto_update_interval->setValue(qAbs(ent->auto_update_interval));
     ui->url->setText(ent->url);
     ui->type->setCurrentIndex(ent->url.isEmpty() ? 0 : 1);
     ui->type->currentIndexChanged(ui->type->currentIndex());
@@ -76,7 +77,8 @@ void DialogEditGroup::accept() {
     }
     ent->name = ui->name->text();
     ent->url = ui->url->text();
-    ent->skip_auto_update = ui->skip_auto_update->isChecked();
+    const int hours = ui->auto_update_interval->value();
+    ent->auto_update_interval = ui->auto_update_enable->isChecked() ? hours : -hours;
     ent->front_proxy_id = CACHE.front_proxy;
     QDialog::accept();
 }

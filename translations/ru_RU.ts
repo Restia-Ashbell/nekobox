@@ -8,16 +8,16 @@
         <translation>Основные настройки</translation>
     </message>
     <message>
-        <source>Common</source>
-        <translation>Общие</translation>
-    </message>
-    <message>
-        <source>System Proxy Format</source>
-        <translation>Формат системного прокси</translation>
-    </message>
-    <message>
         <source>Font</source>
         <translation>Шрифт</translation>
+    </message>
+    <message>
+        <source>Show speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Count traffic</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Launch at startup</source>
@@ -26,6 +26,22 @@
     <message>
         <source>Start minimized to tray</source>
         <translation>Запускать свёрнутым в трей</translation>
+    </message>
+    <message>
+        <source>Test</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>HTTP Latency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DNS Latency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Download Speed</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Inbound</source>
@@ -116,24 +132,8 @@
         <translation>Путь к каталогу сертификатов</translation>
     </message>
     <message>
-        <source>Enable</source>
-        <translation>Вкл</translation>
-    </message>
-    <message>
-        <source>Latency Test URL</source>
-        <translation>URL теста задержки</translation>
-    </message>
-    <message>
         <source>Concurrent</source>
         <translation>Параллельно</translation>
-    </message>
-    <message>
-        <source>Download Test URL</source>
-        <translation>URL теста загрузки</translation>
-    </message>
-    <message>
-        <source>Include Pre-release when checking update</source>
-        <translation>Проверять пре-релизы при обновлениях</translation>
     </message>
     <message>
         <source>Style</source>
@@ -150,14 +150,6 @@
     <message>
         <source>Language</source>
         <translation>Язык</translation>
-    </message>
-    <message>
-        <source>Statistics refresh rate</source>
-        <translation>Период обновления статистики</translation>
-    </message>
-    <message>
-        <source>Off</source>
-        <translation>Выкл</translation>
     </message>
     <message>
         <source>Max log lines</source>
@@ -247,22 +239,6 @@
         <source>Timeout (s)</source>
         <translation>Таймаут (с)</translation>
     </message>
-    <message>
-        <source>Automatic update</source>
-        <translation>Автоматическое обновление</translation>
-    </message>
-    <message>
-        <source>Interval (minute, invalid if less than 30)</source>
-        <translation>Интервал (в минутах, значение считается неправильным, если меньше 30)</translation>
-    </message>
-    <message>
-        <source>Share VMess Link with v2rayN Format</source>
-        <translation>Поделиться ссылкой VMess в формате v2rayN</translation>
-    </message>
-    <message>
-        <source>Old Share Link Format</source>
-        <translation>Поделиться ссылкой в старом формате</translation>
-    </message>
 </context>
 <context>
     <name>DialogEditGroup</name>
@@ -295,6 +271,10 @@
         <translation>Сбросить</translation>
     </message>
     <message>
+        <source>Automatic update</source>
+        <translation>Автоматическое обновление</translation>
+    </message>
+    <message>
         <source>Copy profile share links</source>
         <translation>Скопировать ссылки на профиль</translation>
     </message>
@@ -319,12 +299,12 @@
         <translation>Нет</translation>
     </message>
     <message>
-        <source>Skip automatic update</source>
-        <translation>Пропустить автоматическое обновление</translation>
-    </message>
-    <message>
         <source>Common</source>
         <translation>Общие</translation>
+    </message>
+    <message>
+        <source> h</source>
+        <translation> ч</translation>
     </message>
     <message>
         <source>Share</source>
@@ -1117,6 +1097,10 @@
         <translation>Закрыть (Esc)</translation>
     </message>
     <message>
+        <source>TUN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Open Dashboard</source>
         <translation>Открыть панель управления</translation>
     </message>
@@ -1201,6 +1185,22 @@
         <translation>QR-код и ссылка</translation>
     </message>
     <message>
+        <source>HTTP Latency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DNS Latency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Download Speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP Lookup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Clear Test Result</source>
         <translation>Очистить результат теста</translation>
     </message>
@@ -1217,14 +1217,6 @@
         <translation>Сканировать QR-код</translation>
     </message>
     <message>
-        <source>Enable System Proxy</source>
-        <translation>Активировать системный прокси</translation>
-    </message>
-    <message>
-        <source>Disable</source>
-        <translation>Отключить</translation>
-    </message>
-    <message>
         <source>Remove Duplicates</source>
         <translation>Удалить дубликаты</translation>
     </message>
@@ -1235,10 +1227,6 @@
     <message>
         <source>Remove Unavailable</source>
         <translation>Удалить недоступные</translation>
-    </message>
-    <message>
-        <source>Full Test</source>
-        <translation>Полный тест</translation>
     </message>
     <message>
         <source>Hotkey Settings</source>
@@ -1255,10 +1243,6 @@
     <message>
         <source>Copy links of selected</source>
         <translation>Скопировать ссылки для выбранных</translation>
-    </message>
-    <message>
-        <source>Enable Tun</source>
-        <translation>Включить TUN-режим</translation>
     </message>
     <message>
         <source>Clone</source>
@@ -1378,30 +1362,6 @@ How to update?</source>
     <message>
         <source>Failed to stop profile %1</source>
         <translation>Не удалось остановить профиль %1</translation>
-    </message>
-    <message>
-        <source>Test Options</source>
-        <translation>Параметры тестирования</translation>
-    </message>
-    <message>
-        <source>Latency</source>
-        <translation>Задержка</translation>
-    </message>
-    <message>
-        <source>UDP latency</source>
-        <translation>Задержка UDP</translation>
-    </message>
-    <message>
-        <source>Download speed</source>
-        <translation>Скорость загрузки</translation>
-    </message>
-    <message>
-        <source>In and Out IP</source>
-        <translation>Входящий и исходящий IP</translation>
-    </message>
-    <message>
-        <source>[%1] test error: %2</source>
-        <translation>[%1] ошибка теста: %2</translation>
     </message>
     <message>
         <source>Testing</source>
@@ -1525,6 +1485,10 @@ Do you want to download it now?</source>
 </context>
 <context>
     <name>QObject</name>
+    <message>
+        <source>Chain has no outbound profiles.</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message>
         <source>Core not found: %1</source>
         <translation>Ядро не найдено: %1</translation>
