@@ -621,7 +621,7 @@ void MainWindow::test_selected_profiles(TestMode mode, const QString &target, in
     testProfiles = get_now_selected_list();
     if (testProfiles.isEmpty()) return;
     auto group = NekoGui::profileManager->CurrentGroup();
-    if (group->archive) return;
+    if (group == nullptr || group->archive) return;
 
     QThreadPool::globalInstance()->setMaxThreadCount(NekoGui::dataStore->test_concurrent);
     testFuture = QtConcurrent::map(testProfiles, [=, this](std::shared_ptr<NekoGui::ProxyEntity> &profile) {
@@ -631,15 +631,9 @@ void MainWindow::test_selected_profiles(TestMode mode, const QString &target, in
         if (mode != TcpPing) {
             auto c = BuildConfig(profile, true, false);
             if (!c->error.isEmpty()) {
-                profile->test_report = c->error;
-                profile->Save();
-                auto profileId = profile->id;
-                runOnUiThread([this, profileId] {
-                    refresh_proxy(profileId);
-                });
+                MW_show_log(QString("[%1]: %2").arg(profile->bean->DisplayTypeAndName(), c->error));
                 return;
             }
-            //
             if (!c->extRs.isEmpty()) {
                 extCs = NekoGui_fmt::CreateExtCFromExtR(c->extRs);
                 for (const auto &extC: extCs) {
@@ -647,50 +641,55 @@ void MainWindow::test_selected_profiles(TestMode mode, const QString &target, in
                     extC->waitForReadyRead();
                 }
             }
-            //
             coreConfig = QJsonObject2QString(c->coreConfig, false);
         }
 
         auto boxTestResult = BoxTest(mode, profile->bean->DisplayAddress().toUtf8().data(), target.toUtf8().data(), timeout, coreConfig.toUtf8().data());
         const QString testResult(boxTestResult);
         free(boxTestResult);
-        //
-        if (mode == TcpPing || mode == HttpLatency || mode == DnsLatency) {
-            bool testOK;
-            profile->test_report.clear();
-            profile->latency = testResult.toInt(&testOK);
-            if (profile->latency == 0) profile->latency = 1;
-            if (!testOK) {
-                profile->latency = -1;
-                MW_show_log(tr("[%1] test error: %2").arg(profile->bean->DisplayTypeAndName(), testResult));
-            }
-        } else if (mode == DownloadSpeed) {
-            profile->test_report = QString("%1 MiB/s").arg(testResult.toFloat(), 0, 'f', 2);
-        } else if (mode == IpLookup) {
-            QString inIP;
+
+        QString inIP;
+        if (mode == IpLookup) {
             const auto info = QHostInfo::fromName(profile->bean->serverAddress);
             if (info.error() != QHostInfo::NoError || info.addresses().isEmpty()) {
                 inIP = info.errorString();
             } else {
                 inIP = info.addresses().first().toString();
             }
-
-            const auto doc = QJsonDocument::fromJson(testResult.toUtf8());
-            if (!doc.isObject()) {
-                MW_show_log(tr("[%1] test error: %2").arg(profile->bean->DisplayTypeAndName(), testResult));
-            } else {
-                const auto obj = doc.object();
-                const auto outIP = obj.value("query").toString();
-                profile->test_report = inIP + " → " + outIP;
-                const auto emoji = CountryCodeToFlag(obj.value("countryCode").toString());
-                if (!emoji.isEmpty() && !profile->bean->name.startsWith(emoji)) {
-                    profile->bean->name.prepend(emoji);
-                }
-            }
         }
 
-        profile->Save();
-        runOnUiThread([this, profile] {
+        runOnUiThread([this, mode, profile, testResult, inIP] {
+            if (profile != NekoGui::profileManager->GetProfile(profile->id)) return;
+
+            if (mode == TcpPing || mode == HttpLatency || mode == DnsLatency) {
+                bool testOK;
+                profile->test_report.clear();
+                profile->latency = testResult.toInt(&testOK);
+                if (profile->latency == 0) profile->latency = 1;
+                if (!testOK) {
+                    profile->latency = -1;
+                    MW_show_log(QString("[%1]: %2").arg(profile->bean->DisplayTypeAndName(), testResult));
+                }
+            } else if (mode == DownloadSpeed) {
+                bool testOK;
+                profile->test_report = QString("%1 MiB/s").arg(testResult.toFloat(&testOK), 0, 'f', 2);
+                MW_show_log(QString("[%1]: %2").arg(profile->bean->DisplayTypeAndName(), testResult));
+            } else if (mode == IpLookup) {
+                const auto doc = QJsonDocument::fromJson(testResult.toUtf8());
+                if (!doc.isObject()) {
+                    MW_show_log(QString("[%1]: %2").arg(profile->bean->DisplayTypeAndName(), testResult));
+                } else {
+                    const auto obj = doc.object();
+                    const auto outIP = obj.value("query").toString();
+                    profile->test_report = inIP + " → " + outIP;
+                    const auto emoji = CountryCodeToFlag(obj.value("countryCode").toString());
+                    if (!emoji.isEmpty() && !profile->bean->name.startsWith(emoji)) {
+                        profile->bean->name.prepend(emoji);
+                    }
+                }
+            }
+
+            profile->Save();
             refresh_proxy(profile->id);
         });
     });
@@ -707,12 +706,7 @@ void MainWindow::test_running_profile() {
         runOnUiThread([this, testResult] {
             bool testOK;
             testResult.toInt(&testOK);
-            if (testOK) {
-                ui->statusbar->showMessage(tr("Test Result") + ": " + testResult + " ms", 2000);
-            } else {
-                ui->statusbar->showMessage(tr("Test Result") + ": " + tr("Unavailable"), 2000);
-                MW_show_log(QString("HttpLatency : %1").arg(testResult));
-            }
+            ui->statusbar->showMessage(tr("Test Result") + ": " + (testOK ? testResult + " ms" : tr("Unavailable")), 2000);
         });
     });
 }

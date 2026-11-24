@@ -15,7 +15,7 @@ namespace NekoGui_traffic {
     public:
         explicit TrafficLooper(QObject *parent = nullptr);
 
-        void start(const QList<std::shared_ptr<NekoGui::ProxyEntity>> &items);
+        void start(const QList<QPair<QString, std::shared_ptr<NekoGui::ProxyEntity>>> &items);
         void stop();
         void saveAll();
 
@@ -29,10 +29,10 @@ namespace NekoGui_traffic {
     private:
         QJsonObject queryStats();
         QString updateAll(const QJsonObject &stats);
-        QPair<qint64, qint64> updateStats(TrafficData *item, const QJsonObject &ups, const QJsonObject &downs, const QJsonObject &lastUps, const QJsonObject &lastDowns);
+        QPair<qint64, qint64> updateStats(TrafficData *item, const QString &tag, const QJsonObject &ups, const QJsonObject &downs, const QJsonObject &lastUps, const QJsonObject &lastDowns);
 
         QTimer m_timer;
-        QList<std::shared_ptr<NekoGui::ProxyEntity>> m_items;
+        QList<QPair<QString, std::shared_ptr<NekoGui::ProxyEntity>>> m_items;
         TrafficData *m_direct;
         QJsonObject m_lastStats;
     };

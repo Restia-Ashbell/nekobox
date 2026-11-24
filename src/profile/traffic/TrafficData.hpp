@@ -9,8 +9,6 @@ namespace NekoGui_traffic {
         Q_PROPERTY(qlonglong ul MEMBER uplink)
 
     public:
-        QString tag;
-
         long long downlink = 0;
         long long uplink = 0;
 

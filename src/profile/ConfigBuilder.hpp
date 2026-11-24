@@ -8,7 +8,7 @@ namespace NekoGui {
         QString error;
         QJsonObject coreConfig;
 
-        QList<std::shared_ptr<ProxyEntity>> outboundStats; // all, but not including "bypass" "block"
+        QList<QPair<QString, std::shared_ptr<ProxyEntity>>> outboundStats;
 
         QList<std::shared_ptr<NekoGui_fmt::ExternalBuildResult>> extRs;
     };

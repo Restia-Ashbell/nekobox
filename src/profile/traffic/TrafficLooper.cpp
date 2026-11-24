@@ -14,12 +14,11 @@ namespace NekoGui_traffic {
 
     TrafficLooper::TrafficLooper(QObject *parent) : QObject(parent) {
         m_direct = new TrafficData(this);
-        m_direct->tag = "direct";
         m_timer.setInterval(1000);
         connect(&m_timer, &QTimer::timeout, this, &TrafficLooper::onTick);
     }
 
-    void TrafficLooper::start(const QList<std::shared_ptr<NekoGui::ProxyEntity>> &items) {
+    void TrafficLooper::start(const QList<QPair<QString, std::shared_ptr<NekoGui::ProxyEntity>>> &items) {
         m_items = items;
         if (!m_items.isEmpty()) m_timer.start();
     }
@@ -42,8 +41,8 @@ namespace NekoGui_traffic {
         }
 
         if (NekoGui::dataStore->traffic_count_stats) {
-            for (const auto &item: m_items) {
-                if (item->id >= 0) emit profileUpdated(item->id);
+            for (const auto &[_, ent]: m_items) {
+                if (ent->id >= 0) emit profileUpdated(ent->id);
             }
         }
     }
@@ -56,11 +55,11 @@ namespace NekoGui_traffic {
         return stats;
     }
 
-    QPair<qint64, qint64> TrafficLooper::updateStats(TrafficData *item, const QJsonObject &ups, const QJsonObject &downs, const QJsonObject &lastUps, const QJsonObject &lastDowns) {
-        auto current_up = ups.value(item->tag).toInteger();
-        auto current_down = downs.value(item->tag).toInteger();
-        auto last_up = lastUps.value(item->tag).toInteger();
-        auto last_down = lastDowns.value(item->tag).toInteger();
+    QPair<qint64, qint64> TrafficLooper::updateStats(TrafficData *item, const QString &tag, const QJsonObject &ups, const QJsonObject &downs, const QJsonObject &lastUps, const QJsonObject &lastDowns) {
+        auto current_up = ups.value(tag).toInteger();
+        auto current_down = downs.value(tag).toInteger();
+        auto last_up = lastUps.value(tag).toInteger();
+        auto last_down = lastDowns.value(tag).toInteger();
 
         // A decrease means the core restarted its counters.
         auto delta_up = current_up >= last_up ? current_up - last_up : current_up;
@@ -81,24 +80,23 @@ namespace NekoGui_traffic {
         auto lastDowns = m_lastStats.value("downs").toObject();
 
         qint64 proxyUp = 0, proxyDown = 0, directUp = 0, directDown = 0;
-        for (int i = 0; i <= m_items.size(); ++i) {
-            const auto &traffic = i < m_items.size() ? m_items[i]->traffic_data : m_direct;
-            auto delta = updateStats(traffic, ups, downs, lastUps, lastDowns);
-            if (traffic->tag == "proxy") {
+        for (const auto &[tag, ent]: m_items) {
+            auto delta = updateStats(ent->traffic_data, tag, ups, downs, lastUps, lastDowns);
+            if (tag == "proxy") {
                 proxyUp = delta.first;
                 proxyDown = delta.second;
-            } else if (traffic->tag == "direct") {
-                directUp = delta.first;
-                directDown = delta.second;
             }
         }
+        auto directDelta = updateStats(m_direct, "direct", ups, downs, lastUps, lastDowns);
+        directUp = directDelta.first;
+        directDown = directDelta.second;
 
         return QObject::tr("Proxy: %1 | Direct: %2").arg(formatSpeed(proxyUp, proxyDown), formatSpeed(directUp, directDown));
     }
 
     void TrafficLooper::saveAll() {
-        for (const auto &item: m_items) {
-            item->Save();
+        for (const auto &[_, ent]: m_items) {
+            ent->Save();
         }
     }
 

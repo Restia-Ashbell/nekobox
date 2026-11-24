@@ -207,8 +207,7 @@ namespace NekoGui {
 
             // outbound misc
             outbound["tag"] = tagOut;
-            ent->traffic_data->tag = tagOut;
-            status->result->outboundStats += ent;
+            status->result->outboundStats.append({tagOut, ent});
 
             // common
             // apply domain_strategy
