@@ -32,7 +32,6 @@ namespace NekoGui {
         Q_PROPERTY(QString language MEMBER language)
         Q_PROPERTY(QString font MEMBER font)
         Q_PROPERTY(QString icon_path MEMBER icon_path)
-        Q_PROPERTY(bool skip_cert MEMBER skip_cert)
         Q_PROPERTY(QString hk_mw MEMBER hotkey_mainwindow)
         Q_PROPERTY(QString hk_group MEMBER hotkey_group)
         Q_PROPERTY(QString hk_route MEMBER hotkey_route)
@@ -47,7 +46,6 @@ namespace NekoGui {
         Q_PROPERTY(bool start_minimal MEMBER start_minimal)
         Q_PROPERTY(int max_log_line MEMBER max_log_line)
         Q_PROPERTY(QString splitter_state MEMBER splitter_state)
-        Q_PROPERTY(QString utlsFingerprint MEMBER utlsFingerprint)
         Q_PROPERTY(bool log_disabled MEMBER log_disabled)
         Q_PROPERTY(bool log_timestamp MEMBER log_timestamp)
         Q_PROPERTY(QString log_level MEMBER log_level)
@@ -105,10 +103,6 @@ namespace NekoGui {
         // Subscription
         QString user_agent = "";
         bool sub_insecure = false;
-
-        // Security
-        bool skip_cert = false;
-        QString utlsFingerprint = "";
 
         // Mixed Inbound
         QString inbound_address = "127.0.0.1";

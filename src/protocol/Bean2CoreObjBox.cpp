@@ -40,7 +40,7 @@ namespace NekoGui_fmt {
         // 对应字段 tls
         if (security == "tls") {
             QJsonObject tls{{"enabled", true}};
-            if (allow_insecure || NekoGui::dataStore->skip_cert) tls["insecure"] = true;
+            if (allow_insecure) tls["insecure"] = true;
             if (!certificate.isEmpty()) tls["certificate"] = certificate;
             if (ech_enabled) {
                 QJsonObject echObj{{"enabled", true}};
@@ -51,7 +51,6 @@ namespace NekoGui_fmt {
             if (!sni.isEmpty()) tls["server_name"] = sni;
             if (!alpn.isEmpty()) tls["alpn"] = QJsonArray::fromStringList(alpn.split(","));
             QString fp = utlsFingerprint;
-            if (fp.isEmpty()) fp = NekoGui::dataStore->utlsFingerprint;
             if (!reality_pbk.isEmpty()) {
                 tls["reality"] = QJsonObject{
                     {"enabled", true},

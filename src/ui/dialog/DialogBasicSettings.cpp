@@ -188,13 +188,6 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     });
     ui->certificate_path->setText(NekoGui::dataStore->certificate_path);
     ui->certificate_directory_path->setText(NekoGui::dataStore->certificate_directory_path);
-
-    // Security
-
-    ui->utlsFingerprint->addItems(Preset::SingBox::UtlsFingerPrint);
-
-    D_LOAD_BOOL(skip_cert)
-    ui->utlsFingerprint->setCurrentText(NekoGui::dataStore->utlsFingerprint);
 }
 
 DialogBasicSettings::~DialogBasicSettings() {
@@ -266,11 +259,6 @@ void DialogBasicSettings::accept() {
     NekoGui::dataStore->certificate = CACHE.certificate.trimmed();
     NekoGui::dataStore->certificate_path = ui->certificate_path->text();
     NekoGui::dataStore->certificate_directory_path = ui->certificate_directory_path->text();
-
-    // Security
-
-    D_SAVE_BOOL(skip_cert)
-    NekoGui::dataStore->utlsFingerprint = ui->utlsFingerprint->currentText();
 
     QStringList str{"UpdateDataStore"};
     if (CACHE.needRestart) str << "NeedRestart";

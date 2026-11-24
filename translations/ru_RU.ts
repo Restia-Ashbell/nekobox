@@ -192,18 +192,6 @@
         <translation>Удалить</translation>
     </message>
     <message>
-        <source>Security</source>
-        <translation>Безопасность</translation>
-    </message>
-    <message>
-        <source>Skip TLS certificate authentication by default (allowInsecure)</source>
-        <translation>Не проверять подлинность TLS сертификатов по умолчанию</translation>
-    </message>
-    <message>
-        <source>Default uTLS Fingerprint</source>
-        <translation>uTLS fingerprint по умолчанию</translation>
-    </message>
-    <message>
         <source>Please input the core name.</source>
         <translation>Введите имя ядра.</translation>
     </message>

@@ -64,10 +64,6 @@
         <translation>更新订阅时使用代理</translation>
     </message>
     <message>
-        <source>Security</source>
-        <translation>安全</translation>
-    </message>
-    <message>
         <source>Show speed</source>
         <translation>显示速率</translation>
     </message>
@@ -214,14 +210,6 @@
     <message>
         <source>Password</source>
         <translation>密码</translation>
-    </message>
-    <message>
-        <source>Skip TLS certificate authentication by default (allowInsecure)</source>
-        <translation>默认跳过 TLS 证书验证 (allowInsecure)</translation>
-    </message>
-    <message>
-        <source>Default uTLS Fingerprint</source>
-        <translation>默认 uTLS 指纹</translation>
     </message>
     <message>
         <source>HTTP Latency</source>

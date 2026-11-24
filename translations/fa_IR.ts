@@ -60,11 +60,6 @@
         <translation>استفاده از پروکسی زمانی که اشتراک را بروزرسانی می کنید</translation>
     </message>
     <message>
-        <source>Security</source>
-        <translatorcomment>امنیت security</translatorcomment>
-        <translation>امنیت</translation>
-    </message>
-    <message>
         <source>Language</source>
         <translation>زبان</translation>
     </message>
@@ -228,14 +223,6 @@
     <message>
         <source>Password</source>
         <translation>رمز عبور</translation>
-    </message>
-    <message>
-        <source>Skip TLS certificate authentication by default (allowInsecure)</source>
-        <translation>رد شدن از احراز هویت گواهی TLS به طور پیش فرض (allowInsecure)</translation>
-    </message>
-    <message>
-        <source>Default uTLS Fingerprint</source>
-        <translation>اثرانگشت پیشفرض uTLS</translation>
     </message>
     <message>
         <source>Timeout (s)</source>

@@ -12,7 +12,6 @@ namespace NekoGui_fmt {
         reality_sid = query.queryItemValue("sid");
         reality_spx = query.queryItemValue("spx");
         utlsFingerprint = query.queryItemValue("fp");
-        if (utlsFingerprint.isEmpty()) utlsFingerprint = NekoGui::dataStore->utlsFingerprint;
 
         network = FirstQueryValue(query, {"type", "obfs"});
         if (query.queryItemValue("headerType") == "http") network = "http";

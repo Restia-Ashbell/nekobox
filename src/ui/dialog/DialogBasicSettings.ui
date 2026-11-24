@@ -142,19 +142,22 @@
           </widget>
          </item>
          <item>
-          <widget class="QGroupBox" name="traffic_statistics_box">
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <widget class="QGroupBox" name="groupBox_2">
+           <layout class="QHBoxLayout" name="horizontalLayout_23">
             <item>
-             <widget class="QCheckBox" name="traffic_show_speed">
+             <widget class="QLabel" name="label_17">
               <property name="text">
-               <string>Show speed</string>
+               <string>Max log lines</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="traffic_count_stats">
-              <property name="text">
-               <string>Count traffic</string>
+             <widget class="QLineEdit" name="max_log_line">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
              </widget>
             </item>
@@ -192,22 +195,19 @@
           </widget>
          </item>
          <item>
-          <widget class="QGroupBox" name="groupBox_2">
-           <layout class="QHBoxLayout" name="horizontalLayout_23">
+          <widget class="QGroupBox" name="traffic_statistics_box">
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
-             <widget class="QLabel" name="label_17">
+             <widget class="QCheckBox" name="traffic_show_speed">
               <property name="text">
-               <string>Max log lines</string>
+               <string>Show speed</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="max_log_line">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
+             <widget class="QCheckBox" name="traffic_count_stats">
+              <property name="text">
+               <string>Count traffic</string>
               </property>
              </widget>
             </item>
@@ -837,46 +837,6 @@
            </item>
           </layout>
          </widget>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab_7">
-      <attribute name="title">
-       <string>Security</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_4">
-       <item>
-        <widget class="QCheckBox" name="skip_cert">
-         <property name="text">
-          <string>Skip TLS certificate authentication by default (allowInsecure)</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="horizontalGroupBox2">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_26">
-          <item>
-           <widget class="QLabel" name="label_18">
-            <property name="text">
-             <string>Default uTLS Fingerprint</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="utlsFingerprint">
-            <property name="editable">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </widget>
        </item>
       </layout>
