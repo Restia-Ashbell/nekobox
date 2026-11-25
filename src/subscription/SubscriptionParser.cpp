@@ -128,7 +128,7 @@ namespace NekoGui_sub {
             }
         }
 
-        const auto decoded = DecodeB64IfValid(str);
+        const auto decoded = QByteArray::fromBase64(str.toLatin1(), QByteArray::AbortOnBase64DecodingErrors);
         return updateLink(decoded.isEmpty() ? str : decoded, diag);
     }
 
@@ -161,9 +161,7 @@ namespace NekoGui_sub {
                 if (!link.isValid()) continue;
                 ent = NekoGui::ProfileManager::NewProxyEntity(link.host());
                 if (!ent->bean) continue;
-                auto j = DecodeB64IfValid(link.fragment(), QByteArray::Base64UrlEncoding);
-                if (j.isEmpty()) continue;
-                ent->bean->FromJson(QJsonDocument::fromJson(j).object());
+                ent->bean->FromJson(QJsonDocument::fromJson(QByteArray::fromBase64(link.fragment().toLatin1(), QByteArray::Base64UrlEncoding)).object());
             } else {
                 ent = NekoGui::ProfileManager::NewProxyEntity(scheme);
                 if (!ent->bean || !ent->bean->TryParseLink(link_str)) ent = nullptr;

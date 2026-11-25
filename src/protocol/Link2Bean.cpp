@@ -38,7 +38,7 @@ namespace NekoGui_fmt {
 
         // v2rayN fmt
         if (password.isEmpty() && !username.isEmpty()) {
-            QString n = DecodeB64IfValid(username);
+            QString n = QByteArray::fromBase64(username.toLatin1(), QByteArray::AbortOnBase64DecodingErrors);
             if (!n.isEmpty()) {
                 username = SubStrBefore(n, ":");
                 password = SubStrAfter(n, ":");
@@ -57,11 +57,11 @@ namespace NekoGui_fmt {
         if (SubStrBefore(link, "#").contains("@")) {
             url = QUrl(link);
         } else if (SubStrBefore(link, "#").contains("?")) {
-            url = QUrl("ss://" + DecodeBase64OrBase64Url(SubStrBefore(SubStrAfter(link, "://"), "?")) + "?" + SubStrAfter(link, "?"));
+            url = QUrl("ss://" + DecodeBase64(SubStrBefore(SubStrAfter(link, "://"), "?")) + "?" + SubStrAfter(link, "?"));
         } else if (link.contains("#")) {
-            url = QUrl("ss://" + DecodeBase64OrBase64Url(SubStrBefore(SubStrAfter(link, "://"), "#")) + "#" + SubStrAfter(link, "#"));
+            url = QUrl("ss://" + DecodeBase64(SubStrBefore(SubStrAfter(link, "://"), "#")) + "#" + SubStrAfter(link, "#"));
         } else {
-            url = QUrl("ss://" + DecodeBase64OrBase64Url(SubStrAfter(link, "://")));
+            url = QUrl("ss://" + DecodeBase64(SubStrAfter(link, "://")));
         }
         if (!url.isValid()) return false;
 
@@ -71,7 +71,7 @@ namespace NekoGui_fmt {
 
         if (url.password().isEmpty()) {
             // traditional format
-            auto method_password = DecodeBase64OrBase64Url(url.userName());
+            auto method_password = DecodeBase64(url.userName());
             if (method_password.isEmpty()) return false;
             method = SubStrBefore(method_password, ":");
             password = SubStrAfter(method_password, ":");
@@ -96,7 +96,7 @@ namespace NekoGui_fmt {
     }
 
     bool ShadowSocksRBean::TryParseLink(const QString &link) {
-        QString decoded = DecodeBase64OrBase64Url(SubStrAfter(link, "://"));
+        QString decoded = DecodeBase64(SubStrAfter(link, "://"));
         QStringList parts = SubStrBefore(decoded, "/?").split(':');
         if (parts.size() != 6) return false;
 
@@ -105,12 +105,12 @@ namespace NekoGui_fmt {
         protocol = parts[2];
         method = parts[3];
         obfs = parts[4];
-        password = DecodeBase64OrBase64Url(parts[5]);
+        password = DecodeBase64(parts[5]);
 
         QUrlQuery query(SubStrAfter(decoded, "/?"));
-        obfsParam = DecodeBase64OrBase64Url(query.queryItemValue("obfsparam"));
-        protocolParam = DecodeBase64OrBase64Url(query.queryItemValue("protoparam"));
-        name = DecodeBase64OrBase64Url(query.queryItemValue("remarks"));
+        obfsParam = DecodeBase64(query.queryItemValue("obfsparam"));
+        protocolParam = DecodeBase64(query.queryItemValue("protoparam"));
+        name = DecodeBase64(query.queryItemValue("remarks"));
 
         return !serverAddress.isEmpty();
     }
@@ -118,7 +118,7 @@ namespace NekoGui_fmt {
     bool VMessBean::TryParseLink(const QString &link) {
         if (!link.contains("?")) {
             // V2RayN Format
-            auto objN = QString2QJsonObject(DecodeBase64OrBase64Url(SubStrAfter(link, "://")));
+            auto objN = QString2QJsonObject(DecodeBase64(SubStrAfter(link, "://")));
             if (objN.isEmpty()) return false;
             // REQUIRED
             uuid = objN["id"].toString();
@@ -140,7 +140,7 @@ namespace NekoGui_fmt {
         } else {
             QUrl url = SubStrBefore(link, "?").contains("@")
                            ? QUrl(link)
-                           : QUrl("vmess://" + DecodeBase64OrBase64Url(SubStrBefore(SubStrAfter(link, "://"), "?")) + "?" + SubStrAfter(link, "?"));
+                           : QUrl("vmess://" + DecodeBase64(SubStrBefore(SubStrAfter(link, "://"), "?")) + "?" + SubStrAfter(link, "?"));
             if (!url.isValid()) return false;
             QUrlQuery query(url);
 
@@ -168,7 +168,7 @@ namespace NekoGui_fmt {
     bool TrojanVLESSBean::TryParseLink(const QString &link) {
         QUrl url = SubStrBefore(link, "?").contains("@")
                        ? QUrl(link)
-                       : QUrl("url://" + DecodeBase64OrBase64Url(SubStrBefore(SubStrAfter(link, "://"), "?")) + "?" + SubStrAfter(link, "?"));
+                       : QUrl("url://" + DecodeBase64(SubStrBefore(SubStrAfter(link, "://"), "?")) + "?" + SubStrAfter(link, "?"));
         if (!url.isValid()) return false;
         QUrlQuery query(url);
 
@@ -283,7 +283,7 @@ namespace NekoGui_fmt {
         serverPort = url.port();
         user = url.userName();
         password = url.password();
-        privateKey = DecodeBase64OrBase64Url(query.queryItemValue("private_key"));
+        privateKey = DecodeBase64(query.queryItemValue("private_key"));
         privateKeyPassphrase = query.queryItemValue("private_key_passphrase");
 
         return !serverAddress.isEmpty();

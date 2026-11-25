@@ -79,11 +79,7 @@ inline QString CountryCodeToFlag(const QString &countryCode) {
 
 // Base64
 
-inline QByteArray DecodeB64IfValid(const QString &input, QByteArray::Base64Options options = QByteArray::Base64Encoding) {
-    return QByteArray::fromBase64(input.toLatin1(), options | QByteArray::AbortOnBase64DecodingErrors);
-}
-
-inline QByteArray DecodeBase64OrBase64Url(const QString &input) {
+inline QByteArray DecodeBase64(const QString &input) {
     return QByteArray::fromBase64(input.toLatin1(), input.contains('-') || input.contains('_') ? QByteArray::Base64UrlEncoding : QByteArray::Base64Encoding);
 }
 

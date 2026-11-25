@@ -79,7 +79,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //
     RegisterHotkey(false);
     //
-    restoreGeometry(DecodeB64IfValid(NekoGui::dataStore->mw_geometry));
+    restoreGeometry(QByteArray::fromBase64(NekoGui::dataStore->mw_geometry.toLatin1()));
 
     // top bar
     ui->toolButton_program->setMenu(ui->menu_program);
@@ -89,7 +89,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->menubar->setVisible(false);
 
     // Setup log UI
-    ui->splitter->restoreState(DecodeB64IfValid(NekoGui::dataStore->splitter_state));
+    ui->splitter->restoreState(QByteArray::fromBase64(NekoGui::dataStore->splitter_state.toLatin1()));
     connect(ui->logSearchEdit, &QLineEdit::textChanged, this, [this] { refreshLogSearchSelection(true); });
     connect(ui->logSearchCase, &QCheckBox::toggled, this, [this] { refreshLogSearchSelection(true); });
     connect(ui->logSearchEdit, &QLineEdit::returnPressed, this, [this] { findLogMatch(true); });
