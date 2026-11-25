@@ -17,7 +17,7 @@ public:
 
     ~JsonEditor() override;
 
-    QJsonObject OpenEditor();
+    std::optional<QJsonDocument> OpenEditor();
 
 private:
     void validate();
@@ -28,7 +28,6 @@ private:
 
     Ui::JsonEditor *ui;
     QStandardItemModel *tree_model;
-    QJsonDocument original;
     QByteArray shown_structure;
     bool error_shown = false;
 };

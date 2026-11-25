@@ -78,11 +78,9 @@ JsonEditor::JsonEditor(const QString &json, QWidget *parent)
     QJsonParseError error;
     const auto document = QJsonDocument::fromJson(json.toUtf8(), &error);
     if (error.error == QJsonParseError::NoError) {
-        original = document;
         ui->jsonEditor->setPlainText(document.toJson(QJsonDocument::Indented));
         showStructure(document);
     } else {
-        MessageBoxWarning(tr("Json Contains Syntax Errors"), tr("Original Json may contain syntax errors. Json tree is disabled."));
         ui->jsonEditor->setPlainText(json);
         setErrorState(true, error.errorString());
     }
@@ -96,16 +94,20 @@ JsonEditor::~JsonEditor() {
     delete ui;
 }
 
-QJsonObject JsonEditor::OpenEditor() {
+std::optional<QJsonDocument> JsonEditor::OpenEditor() {
     while (exec() == QDialog::Accepted) {
         const auto text = ui->jsonEditor->toPlainText();
-        if (text.trimmed().isEmpty()) return {};
+        if (text.trimmed().isEmpty()) return QJsonDocument();
+
         QJsonParseError error;
         const auto document = QJsonDocument::fromJson(text.toUtf8(), &error);
-        if (error.error == QJsonParseError::NoError) return document.object();
-        MessageBoxWarning(tr("Json Contains Syntax Errors"), tr("You must correct these errors before continuing."));
+        if (error.error != QJsonParseError::NoError) {
+            MessageBoxWarning(tr("Json Contains Syntax Errors"), tr("You must correct these errors before continuing."));
+            continue;
+        }
+        return document;
     }
-    return original.object();
+    return std::nullopt;
 }
 
 void JsonEditor::validate() {

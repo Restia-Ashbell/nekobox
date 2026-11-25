@@ -118,8 +118,10 @@ DialogBasicSettings::DialogBasicSettings(QWidget *parent)
     ui->tun_ipv6->setChecked(NekoGui::dataStore->tun_ipv6);
     ui->tun_strict_route->setChecked(NekoGui::dataStore->tun_strict_route);
 
-    connect(ui->custom_inbound_edit, &QPushButton::clicked, this, [=, this] {
-        C_EDIT_JSON_ALLOW_EMPTY(custom_inbound)
+    connect(ui->custom_inbound_edit, &QPushButton::clicked, this, [this] {
+        JsonEditor editor(CACHE.custom_inbound, this);
+        const auto doc = editor.OpenEditor();
+        if (doc) CACHE.custom_inbound = doc->toJson(QJsonDocument::Compact);
     });
 
     // Core

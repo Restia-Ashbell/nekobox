@@ -53,15 +53,6 @@
 #define P_LOAD_BOOL(a) ui->a->setChecked(bean->a);
 #define P_SAVE_BOOL(a) bean->a = ui->a->isChecked();
 
-#define C_EDIT_JSON_ALLOW_EMPTY(a)               \
-    auto editor = new JsonEditor(CACHE.a, this); \
-    auto result = editor->OpenEditor();          \
-    CACHE.a = QJsonObject2QString(result, true); \
-    if (result.isEmpty()) CACHE.a = "";          \
-    editor->deleteLater();
-
-//
-
 #define ADD_ASTERISK(parent)                                         \
     for (auto label: parent->findChildren<QLabel *>()) {             \
         auto text = label->text();                                   \

@@ -109,7 +109,7 @@ namespace NekoGui {
         int inbound_port = 2080;
         QString inbound_username;
         QString inbound_password;
-        QString custom_inbound = R"({"inbounds":[]})";
+        QString custom_inbound;
 
         // Tun Inbound
         QString tun_stack;

@@ -285,7 +285,7 @@ namespace NekoGui {
             }
 
             // custom inbound
-            for (const auto &inbound: QString2QJsonObject(dataStore->custom_inbound)["inbounds"].toArray()) status->inbounds.append(inbound);
+            for (const auto &inbound: QJsonDocument::fromJson(dataStore->custom_inbound.toUtf8()).array()) status->inbounds.append(inbound);
         }
 
         // Outbounds

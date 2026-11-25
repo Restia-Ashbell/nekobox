@@ -33,8 +33,10 @@ DialogManageRoutes::DialogManageRoutes(QWidget *parent) : QDialog(parent), ui(ne
     });
     emit ui->enable_custom->checkStateChanged(Qt::Unchecked);
     //
-    connect(ui->custom_edit, &QPushButton::clicked, this, [=, this] {
-        C_EDIT_JSON_ALLOW_EMPTY(custom)
+    connect(ui->custom_edit, &QPushButton::clicked, this, [this] {
+        JsonEditor editor(CACHE.custom, this);
+        const auto doc = editor.OpenEditor();
+        if (doc) CACHE.custom = doc->toJson(QJsonDocument::Compact);
     });
     //
     builtInSchemesMenu = new QMenu(this);

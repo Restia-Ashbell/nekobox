@@ -96,10 +96,7 @@ bool EditCustom::onEnd() {
 }
 
 void EditCustom::on_as_json_clicked() {
-    auto editor = new JsonEditor(ui->config_simple->toPlainText(), this);
-    auto result = editor->OpenEditor();
-    editor->deleteLater();
-    if (!result.isEmpty()) {
-        ui->config_simple->setPlainText(QJsonObject2QString(result, false));
-    }
+    JsonEditor editor(ui->config_simple->toPlainText(), this);
+    const auto doc = editor.OpenEditor();
+    if (doc) ui->config_simple->setPlainText(doc->toJson(QJsonDocument::Indented));
 }
