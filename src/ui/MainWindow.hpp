@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QFuture>
+#include <QLabel>
 #include <QMainWindow>
 #include <QMutex>
 #include <QProcess>

@@ -234,7 +234,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             r.load_control_must = true;
             r.fn = "routes/" + fn;
             if (r.Load()) {
-                if (QMessageBox::question(GetMessageBoxParent(), software_name, tr("Load routing and apply: %1").arg(fn) + "\n" + r.DisplayRouting()) == QMessageBox::Yes) {
+                if (QMessageBox::question(this, software_name, tr("Load and apply routing: %1").arg(fn) + "\n" + r.DisplayRouting()) == QMessageBox::Yes) {
                     NekoGui::Routing::SetToActive(fn);
                     if (NekoGui::dataStore->started_id >= 0) {
                         neko_start(NekoGui::dataStore->started_id);
@@ -347,19 +347,15 @@ void MainWindow::dialog_message_impl(const QString &sender, const QString &info)
         if (info.contains("NeedRestart")) {
             suggestRestartProxy = false;
         }
-        if (info.contains("VPNChanged") && NekoGui::dataStore->spmode_vpn) {
-            MessageBoxWarning(tr("Tun Settings changed"), tr("Restart Tun to take effect."));
-        }
         if (suggestRestartProxy && NekoGui::dataStore->started_id >= 0 &&
-            QMessageBox::question(GetMessageBoxParent(), tr("Confirmation"), tr("Settings changed, restart proxy?")) == QMessageBox::StandardButton::Yes) {
+            QMessageBox::question(this, tr("Confirmation"), tr("Settings changed, restart proxy?")) == QMessageBox::Yes) {
             neko_start(NekoGui::dataStore->started_id);
         }
         applyDataStoreSettings();
         refresh_status();
     }
     if (info.contains("NeedRestart")) {
-        auto n = QMessageBox::warning(GetMessageBoxParent(), tr("Settings changed"), tr("Restart the program to take effect."), QMessageBox::Yes | QMessageBox::No);
-        if (n == QMessageBox::Yes) {
+        if (QMessageBox::question(this, tr("Settings changed"), tr("Restart the program to take effect.")) == QMessageBox::Yes) {
             this->exit_reason = 2;
             on_menu_exit_triggered();
         }
@@ -377,7 +373,7 @@ void MainWindow::dialog_message_impl(const QString &sender, const QString &info)
         if (msg.contains("accept")) {
             refresh_group();
             if (msg.contains("restart")) {
-                if (QMessageBox::question(GetMessageBoxParent(), tr("Confirmation"), tr("Settings changed, restart proxy?")) == QMessageBox::StandardButton::Yes) {
+                if (QMessageBox::question(this, tr("Confirmation"), tr("Settings changed, restart proxy?")) == QMessageBox::Yes) {
                     neko_start(NekoGui::dataStore->started_id);
                 }
             }
@@ -505,7 +501,7 @@ bool MainWindow::get_elevated_permissions() {
         "On Windows/macOS, the application will prompt to restart as administrator.\n"
         "On Linux, it will attempt to grant CAP_NET_ADMIN capability.";
 
-    if (QMessageBox::warning(GetMessageBoxParent(), title, text, QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
+    if (QMessageBox::question(this, title, text) == QMessageBox::Yes) {
         this->exit_reason = 3;
         on_menu_exit_triggered();
     }
@@ -532,7 +528,7 @@ void MainWindow::neko_start(int _id) {
 
     auto result = BuildConfig(ent, false, false);
     if (!result->error.isEmpty()) {
-        MessageBoxWarning("BuildConfig return error", result->error);
+        QMessageBox::warning(this, tr("Failed to build config"), result->error);
         return;
     }
 
@@ -550,7 +546,7 @@ void MainWindow::neko_start(int _id) {
         if (auto BoxStartError = BoxStart(CoreConfig.data())) {
             QString boxStartError(BoxStartError);
             free(BoxStartError);
-            runOnUiThread([=, this] { MessageBoxWarning("Start failed", boxStartError); });
+            runOnUiThread([this, boxStartError] { QMessageBox::warning(this, tr("Failed to start profile"), boxStartError); });
             MW_show_log("<<<<<<<< " + tr("Failed to start profile %1").arg(displayName));
             return;
         }
@@ -585,7 +581,7 @@ void MainWindow::neko_stop(bool wait) {
         if (auto BoxStopError = BoxStop()) {
             QString boxStopError(BoxStopError);
             free(BoxStopError);
-            runOnUiThread([this, boxStopError] { MessageBoxWarning("Stop failed", boxStopError); });
+            runOnUiThread([this, boxStopError] { QMessageBox::warning(this, tr("Failed to stop profile"), boxStopError); });
             MW_show_log("<<<<<<<< " + tr("Failed to stop profile %1").arg(displayName));
             return;
         }
@@ -612,7 +608,7 @@ void MainWindow::neko_stop(bool wait) {
 
 void MainWindow::test_selected_profiles(TestMode mode, const QString &target, int timeout) {
     if (!testFuture.isFinished()) {
-        MessageBoxWarning(software_name, "The last test did not exit completely, please wait. If it persists, please restart the program.");
+        QMessageBox::warning(this, software_name, tr("The previous test has not finished yet. Please wait; if the problem persists, restart the program."));
         return;
     }
 
@@ -918,8 +914,7 @@ void MainWindow::on_menu_move_triggered() {
 void MainWindow::on_menu_delete_triggered() {
     auto ents = get_now_selected_list();
     if (ents.count() == 0) return;
-    if (QMessageBox::question(this, tr("Confirmation"), QString(tr("Remove %1 item(s) ?")).arg(ents.count())) ==
-        QMessageBox::StandardButton::Yes) {
+    if (QMessageBox::question(this, tr("Confirmation"), QString(tr("Remove %1 item(s) ?")).arg(ents.count())) == QMessageBox::Yes) {
         for (const auto &ent: ents) {
             NekoGui::profileManager->DeleteProfile(ent->id);
         }
@@ -1101,8 +1096,7 @@ void MainWindow::on_menu_delete_repeat_triggered() {
     auto remove_display = names.mid(0, 20).join("\n");
     if (names.size() > 20) remove_display += "\n...";
 
-    if (QMessageBox::question(this, tr("Confirmation"), tr("Remove %1 item(s) ?").arg(out_del.size()) + "\n" + remove_display) ==
-        QMessageBox::StandardButton::Yes) {
+    if (QMessageBox::question(this, tr("Confirmation"), tr("Remove %1 item(s) ?").arg(out_del.size()) + "\n" + remove_display) == QMessageBox::Yes) {
         for (const auto &ent: out_del) {
             NekoGui::profileManager->DeleteProfile(ent->id);
         }
@@ -1122,8 +1116,7 @@ void MainWindow::on_menu_remove_unavailable_triggered() {
     auto remove_display = names.mid(0, 20).join("\n");
     if (names.size() > 20) remove_display += "\n...";
 
-    if (QMessageBox::question(this, tr("Confirmation"), tr("Remove %1 item(s) ?").arg(out_del.size()) + "\n" + remove_display) ==
-        QMessageBox::StandardButton::Yes) {
+    if (QMessageBox::question(this, tr("Confirmation"), tr("Remove %1 item(s) ?").arg(out_del.size()) + "\n" + remove_display) == QMessageBox::Yes) {
         for (const auto &ent: out_del) {
             NekoGui::profileManager->DeleteProfile(ent->id);
         }
@@ -1290,8 +1283,7 @@ void MainWindow::onTabBarContextMenuRequested(const QPoint &pos) {
         QAction *deleteAction = menu.addAction(tr("Delete selected Group"));
         connect(deleteAction, &QAction::triggered, this, [=, this] {
             auto id = NekoGui::profileManager->groupsTabOrder[clickedIndex];
-            if (QMessageBox::question(this, tr("Confirmation"), tr("Remove %1?").arg(NekoGui::profileManager->groups[id]->name)) ==
-                QMessageBox::StandardButton::Yes) {
+            if (QMessageBox::question(this, tr("Confirmation"), tr("Remove %1?").arg(NekoGui::profileManager->groups[id]->name)) == QMessageBox::Yes) {
                 NekoGui::profileManager->DeleteGroup(id);
                 refresh_groups();
                 emit groupUpdated(id);
@@ -1420,15 +1412,13 @@ void MainWindow::CheckUpdate() {
                 this,
                 tr("New Version Available"),
                 tr("A new version (%1) is available.\nYour current version is %2.\n\nDo you want to download it now?")
-                    .arg(latestVersion, NKR_VERSION),
-                QMessageBox::Yes | QMessageBox::No);
+                    .arg(latestVersion, NKR_VERSION));
 
             if (result == QMessageBox::Yes) {
                 QDesktopServices::openUrl(QUrl(releaseUrl));
             }
         } else {
-            QMessageBox::information(this, tr("Check Update"),
-                                     tr("You are already using the latest version (%1).").arg(NKR_VERSION));
+            QMessageBox::information(this, tr("Check Update"), tr("You are already using the latest version (%1).").arg(NKR_VERSION));
         }
     });
 }

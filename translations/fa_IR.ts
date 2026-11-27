@@ -268,7 +268,7 @@
         <translation>هشدار</translation>
     </message>
     <message>
-        <source>Please input URL</source>
+        <source>Please enter a URL.</source>
         <translation>لطفا URL را وارد کنید</translation>
     </message>
     <message>
@@ -705,7 +705,7 @@
         <translation>JSON خروجی، لطفاً مستندات را بخوانید.</translation>
     </message>
     <message>
-        <source>Please pick a core.</source>
+        <source>Please select a core.</source>
         <translation>لطفا یک هسته انتخاب کنید.</translation>
     </message>
     <message>
@@ -1030,7 +1030,7 @@
         <translation>پیش نمایش ساختار</translation>
     </message>
     <message>
-        <source>Json Contains Syntax Errors</source>
+        <source>JSON Contains Syntax Errors</source>
         <translation>JSON حاوی خطای نحوی است</translation>
     </message>
     <message>
@@ -1046,7 +1046,7 @@
         <translation>خطاهای نحوی</translation>
     </message>
     <message>
-        <source>Please fix the JSON errors or remove the comments before continue</source>
+        <source>Please fix the JSON errors or remove the comments before continuing.</source>
         <translation>لطفا قبل از ادامه دادن ایرادات JSON را اصلاح کنید یا کامنت ها را حذف کنید</translation>
     </message>
 </context>
@@ -1253,16 +1253,8 @@
         <translation>پوشه Config باز شود</translation>
     </message>
     <message>
-        <source>Load routing and apply: %1</source>
+        <source>Load and apply routing: %1</source>
         <translation>بارگذاری مسیر و اعمال: %1</translation>
-    </message>
-    <message>
-        <source>Tun Settings changed</source>
-        <translation>تنظیمات Tun تغییر کرد</translation>
-    </message>
-    <message>
-        <source>Restart Tun to take effect.</source>
-        <translation>Tun را مجدداً راه اندازی کنید تا اعمال شود.</translation>
     </message>
     <message>
         <source>Confirmation</source>

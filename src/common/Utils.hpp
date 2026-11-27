@@ -10,7 +10,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLocale>
-#include <QMessageBox>
 #include <QObject>
 #include <QRandomGenerator>
 #include <QRegularExpression>
@@ -19,6 +18,7 @@
 #include <QTemporaryDir>
 #include <QThread>
 #include <QUrlQuery>
+#include <QWidget>
 
 inline const QString software_name = QStringLiteral("NekoBox");
 inline const QString software_core_name = QStringLiteral("sing-box");
@@ -235,19 +235,6 @@ inline QString UserAgent() {
 }
 
 // UI
-
-inline QWidget *GetMessageBoxParent() {
-    if (QWidget *w = QApplication::activeWindow()) return w;
-    return mainwindow != nullptr && mainwindow->isVisible() ? mainwindow : nullptr;
-}
-
-inline int MessageBoxWarning(const QString &title, const QString &text) {
-    return QMessageBox::warning(GetMessageBoxParent(), title, text);
-}
-
-inline int MessageBoxInfo(const QString &title, const QString &text) {
-    return QMessageBox::information(GetMessageBoxParent(), title, text);
-}
 
 inline void ActivateWindow(QWidget *w) {
     w->showNormal();

@@ -1,10 +1,11 @@
 #include "ui/edit/EditCustom.hpp"
 #include "ui_EditCustom.h"
 
+#include <QMessageBox>
+
 #include "profile/ConfigBuilder.hpp"
 #include "profile/ProfileManager.hpp"
 #include "protocol/CustomBean.hpp"
-#include "protocol/Preset.hpp"
 #include "ui/JsonEditor.hpp"
 
 EditCustom::EditCustom(QWidget *parent) : QWidget(parent), ui(new Ui::EditCustom) {
@@ -79,7 +80,7 @@ void EditCustom::onStart(std::shared_ptr<NekoGui::ProxyEntity> _ent) {
 
 bool EditCustom::onEnd() {
     if (ui->core->currentText().isEmpty()) {
-        MessageBoxWarning(software_name, tr("Please pick a core."));
+        QMessageBox::warning(this, software_name, tr("Please select a core."));
         return false;
     }
 

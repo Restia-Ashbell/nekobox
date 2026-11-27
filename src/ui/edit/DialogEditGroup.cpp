@@ -2,6 +2,7 @@
 #include "ui_DialogEditGroup.h"
 
 #include <QClipboard>
+#include <QMessageBox>
 
 #include "common/GuiUtils.hpp"
 #include "profile/ProfileManager.hpp"
@@ -49,7 +50,7 @@ DialogEditGroup::DialogEditGroup(const std::shared_ptr<NekoGui::Group> &ent, QWi
             links += profile->bean->ToShareLink();
         }
         QApplication::clipboard()->setText(links.join("\n"));
-        MessageBoxInfo(software_name, tr("Copied"));
+        QMessageBox::information(this, software_name, tr("Copied"));
     });
     connect(ui->copy_links_nkr, &QPushButton::clicked, this, [=, this] {
         QStringList links;
@@ -58,7 +59,7 @@ DialogEditGroup::DialogEditGroup(const std::shared_ptr<NekoGui::Group> &ent, QWi
             links += profile->bean->ToNekorayShareLink(profile->type);
         }
         QApplication::clipboard()->setText(links.join("\n"));
-        MessageBoxInfo(software_name, tr("Copied"));
+        QMessageBox::information(this, software_name, tr("Copied"));
     });
 
     ADJUST_SIZE
@@ -71,7 +72,7 @@ DialogEditGroup::~DialogEditGroup() {
 void DialogEditGroup::accept() {
     if (ent->id >= 0) { // already a group
         if (!ent->url.isEmpty() && ui->url->text().isEmpty()) {
-            MessageBoxWarning(tr("Warning"), tr("Please input URL"));
+            QMessageBox::warning(this, tr("Warning"), tr("Please enter a URL."));
             return;
         }
     }

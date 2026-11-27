@@ -259,7 +259,7 @@
         <translation>警告</translation>
     </message>
     <message>
-        <source>Please input URL</source>
+        <source>Please enter a URL.</source>
         <translation>请输入 URL</translation>
     </message>
     <message>
@@ -452,6 +452,18 @@
     <message>
         <source>Reality short id. Accept only one value.</source>
         <translation>Reality 短 ID。只接受一个值。</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <source>Unsupported profile type: %1</source>
+        <translation>不支持的配置类型: %1</translation>
+    </message>
+    <message>
+        <source>A profile with ID %1 already exists.</source>
+        <translation>ID 为 %1 的配置已存在。</translation>
     </message>
 </context>
 <context>
@@ -696,7 +708,7 @@
         <translation>JSON 编辑器</translation>
     </message>
     <message>
-        <source>Please pick a core.</source>
+        <source>Please select a core.</source>
         <translation>请选择一个核心。</translation>
     </message>
     <message>
@@ -1029,7 +1041,7 @@
         <translation>结构预览</translation>
     </message>
     <message>
-        <source>Json Contains Syntax Errors</source>
+        <source>JSON Contains Syntax Errors</source>
         <translation>JSON 存在语法错误</translation>
     </message>
     <message>
@@ -1045,7 +1057,7 @@
         <translation>语法错误</translation>
     </message>
     <message>
-        <source>Please fix the JSON errors or remove the comments before continue</source>
+        <source>Please fix the JSON errors or remove the comments before continuing.</source>
         <translation>请先修复 JSON 错误或删除注释再继续</translation>
     </message>
 </context>
@@ -1228,8 +1240,24 @@
         <translation>当前服务器</translation>
     </message>
     <message>
-        <source>Load routing and apply: %1</source>
+        <source>Load and apply routing: %1</source>
         <translation>加载路由规则并应用: %1</translation>
+    </message>
+    <message>
+        <source>Failed to build config</source>
+        <translation>生成配置失败</translation>
+    </message>
+    <message>
+        <source>Failed to start profile</source>
+        <translation>启动配置失败</translation>
+    </message>
+    <message>
+        <source>Failed to stop profile</source>
+        <translation>停止配置失败</translation>
+    </message>
+    <message>
+        <source>The previous test has not finished yet. Please wait; if the problem persists, restart the program.</source>
+        <translation>上一次测试尚未结束，请稍候；若问题持续，请重启程序。</translation>
     </message>
     <message>
         <source>Copied %1 item(s)</source>
@@ -1250,14 +1278,6 @@
     <message>
         <source>Tun Mode</source>
         <translation>Tun 模式</translation>
-    </message>
-    <message>
-        <source>Tun Settings changed</source>
-        <translation>Tun 设置改变</translation>
-    </message>
-    <message>
-        <source>Restart Tun to take effect.</source>
-        <translation>重启 Tun 生效。</translation>
     </message>
     <message>
         <source>Start</source>
@@ -1568,6 +1588,32 @@ Deleted %3 profiles:
     <message>
         <source>Default</source>
         <translation>默认</translation>
+    </message>
+</context>
+<context>
+    <name>NekoGui_ConfigItem::JsonStore</name>
+    <message>
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <source>Failed to write config file %1:
+%2</source>
+        <translation>写入配置文件 %1 失败:
+%2</translation>
+    </message>
+    <message>
+        <source>Failed to open config file %1:
+%2</source>
+        <translation>打开配置文件 %1 失败:
+%2</translation>
+    </message>
+</context>
+<context>
+    <name>NekoGui::ProfileManager</name>
+    <message>
+        <source>Profiles and groups reordered.</source>
+        <translation>配置与分组已重新排序。</translation>
     </message>
 </context>
 </TS>

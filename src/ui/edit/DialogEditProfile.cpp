@@ -2,6 +2,7 @@
 #include "ui_DialogEditProfile.h"
 
 #include <QInputDialog>
+#include <QMessageBox>
 
 #include "common/GuiUtils.hpp"
 #include "protocol/Includes.hpp"
@@ -168,7 +169,7 @@ void DialogEditProfile::typeSelected() {
         if (customType != "custom") _innerWidget->preset_core = customType;
         type = "custom";
     } else {
-        MessageBoxWarning(type, "Wrong type");
+        QMessageBox::warning(this, tr("Error"), tr("Unsupported profile type: %1").arg(type));
         return;
     }
 
@@ -344,7 +345,7 @@ void DialogEditProfile::accept() {
     if (newEnt) {
         auto ok = NekoGui::profileManager->AddProfile(ent);
         if (!ok) {
-            MessageBoxWarning("???", "id exists");
+            QMessageBox::warning(this, tr("Error"), tr("A profile with ID %1 already exists.").arg(ent->id));
         }
     } else {
         auto changed = ent->Save();

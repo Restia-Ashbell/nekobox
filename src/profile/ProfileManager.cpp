@@ -2,6 +2,7 @@
 
 #include <QDirListing>
 #include <QFile>
+#include <QMessageBox>
 
 #include "protocol/Includes.hpp"
 
@@ -99,7 +100,7 @@ namespace NekoGui {
                 groups = newGroups;
                 groupsTabOrder = newGroupsIdOrder;
             }
-            MessageBoxInfo(software_name, "Profiles and groups reorder complete.");
+            QMessageBox::information(nullptr, software_name, tr("Profiles and groups reordered."));
         }
     }
 

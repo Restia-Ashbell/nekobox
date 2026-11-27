@@ -1,5 +1,6 @@
 #include "profile/ConfigItem.hpp"
 
+#include <QMessageBox>
 #include <QSaveFile>
 
 namespace NekoGui_ConfigItem {
@@ -85,7 +86,7 @@ namespace NekoGui_ConfigItem {
 
         QSaveFile file(fn);
         if (!file.open(QIODevice::WriteOnly) || file.write(save_content) != save_content.size() || !file.commit()) {
-            MessageBoxWarning("error", "can not write config " + fn + "\n" + file.errorString());
+            QMessageBox::warning(nullptr, tr("Error"), tr("Failed to write config file %1:\n%2").arg(fn, file.errorString()));
             return false;
         }
         last_save_hash = new_hash;
@@ -101,7 +102,7 @@ namespace NekoGui_ConfigItem {
 
         bool ok = file.open(QIODevice::ReadOnly);
         if (!ok) {
-            MessageBoxWarning("error", "can not open config " + fn + "\n" + file.errorString());
+            QMessageBox::warning(nullptr, tr("Error"), tr("Failed to open config file %1:\n%2").arg(fn, file.errorString()));
         } else {
             auto data = file.readAll();
             last_save_hash = qHash(data);

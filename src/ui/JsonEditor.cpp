@@ -3,6 +3,7 @@
 
 #include <QJsonArray>
 #include <QJsonParseError>
+#include <QMessageBox>
 
 #include "common/Utils.hpp"
 
@@ -102,7 +103,7 @@ std::optional<QJsonDocument> JsonEditor::OpenEditor() {
         QJsonParseError error;
         const auto document = QJsonDocument::fromJson(text.toUtf8(), &error);
         if (error.error != QJsonParseError::NoError) {
-            MessageBoxWarning(tr("Json Contains Syntax Errors"), tr("You must correct these errors before continuing."));
+            QMessageBox::warning(this, tr("JSON Contains Syntax Errors"), tr("You must correct these errors before continuing."));
             continue;
         }
         return document;
@@ -125,7 +126,7 @@ void JsonEditor::formatJson() {
     QJsonParseError error;
     const auto document = QJsonDocument::fromJson(ui->jsonEditor->toPlainText().toUtf8(), &error);
     if (error.error != QJsonParseError::NoError) {
-        MessageBoxWarning(tr("Syntax Errors"), tr("Please fix the JSON errors or remove the comments before continue"));
+        QMessageBox::warning(this, tr("Syntax Errors"), tr("Please fix the JSON errors or remove the comments before continuing."));
         return;
     }
     ui->jsonEditor->setPlainText(document.toJson(QJsonDocument::Indented));
@@ -135,7 +136,7 @@ void JsonEditor::removeComments() {
     QJsonParseError error;
     const auto document = QJsonDocument::fromJson(stripJsonComments(ui->jsonEditor->toPlainText()).toUtf8(), &error);
     if (error.error != QJsonParseError::NoError) {
-        MessageBoxWarning(tr("Syntax Errors"), tr("Please fix the JSON errors or remove the comments before continue"));
+        QMessageBox::warning(this, tr("Syntax Errors"), tr("Please fix the JSON errors or remove the comments before continuing."));
         return;
     }
     ui->jsonEditor->setPlainText(document.toJson(QJsonDocument::Indented));

@@ -279,7 +279,7 @@
         <translation>Предупреждение</translation>
     </message>
     <message>
-        <source>Please input URL</source>
+        <source>Please enter a URL.</source>
         <translation>Пожалуйста, введите URL</translation>
     </message>
     <message>
@@ -709,7 +709,7 @@
         <translation>Пожалуйста, введите полную конфигурацию.</translation>
     </message>
     <message>
-        <source>Please pick a core.</source>
+        <source>Please select a core.</source>
         <translation>Пожалуйста, выберите ядро.</translation>
     </message>
 </context>
@@ -1030,7 +1030,7 @@
         <translation>Предпросмотр структуры</translation>
     </message>
     <message>
-        <source>Json Contains Syntax Errors</source>
+        <source>JSON Contains Syntax Errors</source>
         <translation>JSON содержит синтаксические ошибки</translation>
     </message>
     <message>
@@ -1046,7 +1046,7 @@
         <translation>Синтаксические ошибки</translation>
     </message>
     <message>
-        <source>Please fix the JSON errors or remove the comments before continue</source>
+        <source>Please fix the JSON errors or remove the comments before continuing.</source>
         <translation>Пожалуйста, чтобы продолжить, исправьте ошибки в JSON или удалите комментарии</translation>
     </message>
 </context>
@@ -1258,16 +1258,8 @@
         <translation>Перезапустить прокси</translation>
     </message>
     <message>
-        <source>Load routing and apply: %1</source>
+        <source>Load and apply routing: %1</source>
         <translation>Загрузить маршруты и активировать: %1</translation>
-    </message>
-    <message>
-        <source>Tun Settings changed</source>
-        <translation>Настройки TUN изменились</translation>
-    </message>
-    <message>
-        <source>Restart Tun to take effect.</source>
-        <translation>Перезапустите TUN чтобы применить изменения.</translation>
     </message>
     <message>
         <source>Confirmation</source>
